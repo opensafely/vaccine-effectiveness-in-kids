@@ -38,3 +38,51 @@ actions:
       highly_sensitive:
         rds: output/data/data_processed.rds
         vaxlong: output/data/data_vaxlong.rds
+
+  skim_process:
+    run: r:latest analysis/data_skim.R output/data/data_processed.rds output/data_properties
+    needs:
+    - data_process
+    outputs:
+      moderately_sensitive:
+        cohort: output/data_properties/data_processed*.txt
+
+  data_process_long:
+    run: r:latest analysis/data_process_long.R
+    needs:
+    - data_process
+    outputs:
+      highly_sensitive:
+        processed: output/data/data_long*.rds
+
+  data_selection:
+    run: r:latest analysis/data_selection.R
+    needs:
+    - data_process
+    outputs:
+      highly_sensitive:
+        data: output/data/data_cohort.rds
+        feather: output/data/data_cohort.feather
+      moderately_sensitive:
+        flow: output/data/flowchart.csv
+
+  skim_selection:
+      run: r:latest analysis/data_skim.R output/data/data_cohort.rds output/data_properties
+      needs:
+      - data_selection
+      outputs:
+        moderately_sensitive:
+          cohort: output/data_properties/data_cohort*.txt
+
+  cohort_report:
+    run: cohort-report:v3.0.0 output/data/data_cohort.feather
+    needs:
+    - data_selection
+    outputs:
+      moderately_sensitive:
+        html: output/data/reports/cohort/*.html
+        png: output/data/reports/cohort/*.png
+    config:
+      output_path: output/data/reports/cohort/
+
+      

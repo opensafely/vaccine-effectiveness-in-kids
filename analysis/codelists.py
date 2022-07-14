@@ -455,3 +455,26 @@ discharged_to_hospital = codelist(
     ["306706006", "1066331000000109", "1066391000000105"],
     system="snomed",
 )
+
+cancer_haem_snomed=codelist_from_csv(
+    "codelists/opensafely-haematological-cancer-snomed.csv",
+    system="snomed",
+    column="id",
+)
+
+cancer_nonhaem_nonlung_snomed=codelist_from_csv(
+    "codelists/opensafely-cancer-excluding-lung-and-haematological-snomed.csv",
+    system="snomed",
+    column="id",
+)
+
+cancer_lung_snomed=codelist_from_csv(
+    "codelists/opensafely-lung-cancer-snomed.csv",
+    system="snomed",
+    column="id",
+)
+
+cancer_nonhaem_snomed=combine_codelists(
+    cancer_nonhaem_nonlung_snomed,
+    cancer_lung_snomed,
+)
