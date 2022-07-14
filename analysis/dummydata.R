@@ -34,8 +34,8 @@ first_pfizerA_day <- as.integer(first_pfizerA_date - index_date)
 first_pfizerC_day <- as.integer(first_pfizerC_date - index_date)
 
 known_variables <- c(
-  "index_date", "studystart_date", "studyend_date", "firstover12_date", "firsunder12_date",
-  "index_day",  "studystart_day", "studyend_day", "firstover12_day", "firsunder12_day"
+  "index_date", "studystart_date", "studyend_date", "first_pfizerA_date", "first_pfizerC_date",
+  "index_day",  "studystart_day", "studyend_day", "first_pfizerA_day", "first_pfizerC_day"
 )
 
 sim_list = lst(
