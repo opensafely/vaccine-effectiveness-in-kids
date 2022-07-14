@@ -1,4 +1,3 @@
-library('dplyr',lib.loc = "C:/Program Files/R/R-4.1.3/library")
 library('tidyverse')
 library('arrow')
 library('here')
@@ -20,10 +19,10 @@ nthmax <- function(x, n=1){
 source(here("lib", "design", "design.R"))
 
 
-studystart_date <- as.Date(study_dates$over12start_date
+studystart_date <- as.Date(study_dates$over12start_date)
 studyend_date <- as.Date(study_dates$studyend_date)
 over12end_date <- as.Date(study_dates$over12end_date)
-index_date <- over12start_date
+index_date <- as.Date(study_dates$over12start_date)
 
 first_pfizerA_date <- as.Date(study_dates$firstover12_date)
 first_pfizerC_date <- as.Date(study_dates$firsunder12_date)
@@ -51,7 +50,12 @@ sim_list = lst(
   ),
   
   age = bn_node(
-    ~as.integer(rnorm(n=..n, mean=60, sd=14))
+    ~as.integer(rnorm(n=..n, mean=10, sd=2))
+  ),
+  
+  ageband = bn_node(
+    ~rfactor(n=..n, levels = c("5-11", "12-15"), p = c(0.65, 0.35)),
+    missing_rate = ~0.001 # this is shorthand for ~(rbernoulli(n=..n, p = 0.2))
   ),
   
   sex = bn_node(
@@ -125,7 +129,7 @@ sim_list = lst(
 
   covid_vax_pfizerA_1_day = bn_node(
     ~as.integer(runif(n=..n, first_pfizerA_day, first_pfizerA_day+60)),
-    missing_rate = ~0.4
+    missing_rate = ~0.45
   ),
   covid_vax_pfizerA_2_day = bn_node(
     ~as.integer(runif(n=..n, covid_vax_pfizer_1_day+30, covid_vax_pfizer_1_day+60)),
@@ -133,7 +137,7 @@ sim_list = lst(
   ),
   covid_vax_pfizerC_1_day = bn_node(
     ~as.integer(runif(n=..n, first_pfizerC_day, first_pfizerC_day+60)),
-    missing_rate = ~ 0.4
+    missing_rate = ~ 0.9
   ),
   covid_vax_pfizerC_2_day = bn_node(
     ~as.integer(runif(n=..n, covid_vax_az_1_day+30, covid_vax_az_1_day+60)),
