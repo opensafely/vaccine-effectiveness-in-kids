@@ -1,4 +1,11 @@
-library('tidyverse')
+#install required versions
+#library('devtools')
+#install_version("tidyr", version = "1.1.2",lib="C:/Program Files/R/R-4.1.3/library")
+#install_version("tidyverse", version = "1.3.0",lib="C:/Program Files/R/R-4.1.3/library")
+
+library('tidyr', lib.loc = "C:/Program Files/R/R-4.1.3/library")
+library('tidyverse', lib.loc = "C:/Program Files/R/R-4.1.3/library")
+#library('tidyverse')
 library('arrow')
 library('here')
 library('glue')
@@ -132,7 +139,7 @@ sim_list = lst(
     missing_rate = ~0.45
   ),
   covid_vax_pfizerA_2_day = bn_node(
-    ~as.integer(runif(n=..n, covid_vax_pfizer_1_day+30, covid_vax_pfizer_1_day+60)),
+    ~as.integer(runif(n=..n, covid_vax_pfizerA_1_day+30, covid_vax_pfizerA_1_day+60)),
     needs = c("covid_vax_pfizerA_1_day"),
   ),
   covid_vax_pfizerC_1_day = bn_node(
@@ -140,7 +147,7 @@ sim_list = lst(
     missing_rate = ~ 0.9
   ),
   covid_vax_pfizerC_2_day = bn_node(
-    ~as.integer(runif(n=..n, covid_vax_az_1_day+30, covid_vax_az_1_day+60)),
+    ~as.integer(runif(n=..n, covid_vax_pfizerC_1_day+30, covid_vax_pfizerC_1_day+60)),
     needs = c("covid_vax_pfizerC_1_day"),
   ),
   

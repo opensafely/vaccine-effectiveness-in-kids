@@ -1,4 +1,5 @@
 
+from ast import And
 from cohortextractor import (
   StudyDefinition,
   patients,
@@ -1003,6 +1004,270 @@ study = StudyDefinition(
     ), 
   ),
   
+  atrisk_group = patients.satisfying(
+    """
+    IMMUNOGROUP
+    OR
+    CKD_GROUP
+    OR
+    RESP_GROUP
+    OR
+    DIAB_GROUP 
+    OR
+    CLD
+    OR
+    CNS_GROUP
+    OR
+    CHD_COV
+    OR
+    SPLN_COV
+    OR
+    LEARNDIS
+    OR
+    SEVMENT_GROUP
+    """,
+  ##### Patients with Immunosuppression
+  IMMUNOGROUP = patients.satisfying(
+    """
+    IMMDX
+    OR
+    IMMRX
+    OR
+    DXT_CHEMO
+    """,
+    ###  any immunosuppressant Read code is recorded
+    IMMDX=patients.with_these_clinical_events(
+      codelists.IMMDX_COV_COD,
+      between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+    ),
+    ### any Immunosuppression medication codes is recorded
+    IMMRX=patients.with_these_clinical_events(
+      codelists.IMMRX_COD,
+      between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+    ),
+    ### Receiving chemotherapy or radiotherapy
+    DXT_CHEMO = patients.with_these_clinical_events(
+      codelists.DXT_CHEMO_COD ,
+      between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+    ),
+  ),
+  # Patients with Chronic Kidney Disease
+  CKD_GROUP= patients.satisfying(
+    """
+     CKD_COV
+     OR
+     (
+     CKD15
+     AND
+     CKD35_DAT>=CKD15_DAT 
+     )
+    """,
+    ### Chronic kidney disease diagnostic codes
+    CKD_COV = patients.with_these_clinical_events(
+      codelists.CKD_COV_COD,
+      between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+    ),
+    ### Chronic kidney disease codes - all stages
+    CKD15 = patients.with_these_clinical_events(
+      codelists.CKD15_COD,
+      between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+    ),
+    ### date of Chronic kidney disease codes-stages 3 – 5  
+    CKD35_DAT=patients.with_these_clinical_events(
+      codelists.CKD35_COD,
+    returning="date",
+    date_format="YYYY-MM-DD",
+    between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+    find_first_match_in_period=True,
+    ),
+    ### date of Chronic kidney disease codes - all stages
+    CKD15_DAT=patients.with_these_clinical_events(
+      codelists.CKD15_COD,
+    returning="date",
+    date_format="YYYY-MM-DD",
+    between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+    find_first_match_in_period=True,
+    ),
+  ),
+  ### Patients who have Chronic Respiratory Disease
+  RESP_GROUP = patients.satisfying(
+    """
+     AST_GROUP
+     OR
+     RESP_COV 
+    """,
+      ### Patients with Asthma 
+      AST_GROUP= patients.satisfying(
+      """
+      ASTADM
+      OR
+      (
+      AST
+      AND
+      ASTRXM1
+      AND
+      ASTRXM2
+      )
+      """,
+        ### Asthma Admission codes
+        ASTADM = patients.with_these_clinical_events(
+            codelists.ASTADM_COD,
+            between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+        ),  
+        ### Asthma Diagnosis code
+        AST = patients.with_these_clinical_events(
+            codelists.AST_COD,
+            between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+        ),  
+        ### Asthma - inhalers in last 12 months
+        ASTRXM1=patients.with_these_medications(
+            codelists.ASTRX_COD,
+            returning="binary_flag",
+            between=["covid_vax_disease_1_date - 30 days", "covid_vax_disease_1_date - 1 day"],
+          ),
+        ### Asthma - systemic oral steroid prescription codes in last 24 months
+        ASTRXM2=patients.with_these_medications(
+            codelists.ASTRX_COD,
+            returning="binary_flag",
+            between=["covid_vax_disease_1_date - 60 days", "covid_vax_disease_1_date - 31 days"],
+          ),
+      ),
+    ### Chronic Respiratory Disease
+    RESP_COV =patients.with_these_clinical_events(
+        codelists.RESP_COV_COD,
+        returning="binary_flag",
+        on_or_before="covid_vax_disease_1_date - 1 day",
+    ),
+  ),
+  ### Patients with Diabetes
+  DIAB_GROUP = patients.satisfying(
+  """
+  DIAB_DAT>DMRES_DAT
+  OR
+  ADDIS
+  OR
+  GDIAB_GROUP
+  """,
+      ### Date any Diabetes diagnosis Read code is recorded
+      DIAB_DAT=patients.with_these_clinical_events(
+        codelists.DIAB_COD,
+        returning="date",
+        find_last_match_in_period=True,
+        on_or_before="covid_vax_disease_1_date - 1 day",
+        date_format="YYYY-MM-DD",
+      ),
+      ### Date of Diabetes resolved codes
+      DMRES_DAT=patients.with_these_clinical_events(
+        codelists.DMRES_COD,
+        returning="date",
+        find_last_match_in_period=True,
+        on_or_before="covid_vax_disease_1_date - 1 day",
+        date_format="YYYY-MM-DD",
+      ),
+      ### Addison’s disease & Pan-hypopituitary diagnosis codes
+      ADDIS = patients.with_these_clinical_events(
+        codelists.ADDIS_COD,
+        returning="binary_flag",
+        on_or_before="covid_vax_disease_1_date - 1 day",
+      ),
+      ### Patients who are currently pregnant with gestational diabetes 
+      GDIAB_GROUP = patients.satisfying(
+      """
+      GDAIB
+      AND
+      PREG1_GROUP
+      """,
+        ### Gestational Diabetes diagnosis codes
+        GDAIB =  patients.with_these_clinical_events(
+          codelists.GDAIB_COD,
+          returning="binary_flag",
+          on_or_before="covid_vax_disease_1_date - 1 day",
+        ),
+        ### Patients who are currently pregnant 
+        PREG1_GROUP = patients.satisfying(
+          """
+          PREG
+          AND
+          PREGDEL_DAT < PREG_DAT
+          """,
+            ### Pregnancy codes recorded
+            PREG =  patients.with_these_clinical_events(
+            codelists.PREG_COD,
+            returning="binary_flag",
+            on_or_before="covid_vax_disease_1_date - 1 day",
+            ),
+            ### Pregnancy or Delivery codes 
+            PREGDEL_DAT=patients.with_these_clinical_events(
+            codelists.PREGDEL_COD,
+            returning="date",
+            find_last_match_in_period=True,
+            on_or_before="covid_vax_disease_1_date - 1 day",
+            date_format="YYYY-MM-DD",
+            ),
+            ### date of Pregnancy codes recorded
+            PREG_DAT=patients.with_these_clinical_events(
+            codelists.PREG_COD,
+            returning="date",
+            find_last_match_in_period=True,
+            on_or_before="covid_vax_disease_1_date - 1 day",
+            date_format="YYYY-MM-DD",
+            ),
+        ),
+      ),
+    ),  
+  ### Chronic Liver disease codes
+  CLD = patients.with_these_clinical_events(
+    codelists.CLD_COD,
+    returning="binary_flag",
+    on_or_before="covid_vax_disease_1_date - 1 day",
+  ),
+  ### Patients with CNS Disease (including Stroke/TIA)
+  CNS_GROUP= patients.with_these_clinical_events(
+    codelists.CNS_COV_COD,
+    returning="binary_flag",
+    on_or_before="covid_vax_disease_1_date - 1 day",
+  ),  
+  ### Chronic heart disease codes
+  CHD_COV = patients.with_these_clinical_events(
+    codelists.CHD_COV_COD,
+    returning="binary_flag",
+    on_or_before="covid_vax_disease_1_date - 1 day",
+  ),  
+  ### Asplenia or Dysfunction of the Spleen codes
+  SPLN_COV= patients.with_these_clinical_events(
+      codelists.SPLN_COV_COD,
+      returning="binary_flag",
+      on_or_before="covid_vax_disease_1_date - 1 day",
+  ),  
+  ### Wider Learning Disability
+  LEARNDIS = patients.with_these_clinical_events(
+      codelists.LEARNDIS_COD,
+      returning="binary_flag",
+      on_or_before="covid_vax_disease_1_date - 1 day",
+  ),
+  ### Patients with Severe Mental Health
+  SEVMENT_GROUP = patients.satisfying(
+  """
+  SEV_MENTAL_DAT > SMHRES_DAT
+  """,
+    ### date of Severe Mental Illness codes
+    SEV_MENTAL_DAT=   patients.with_these_clinical_events(
+        codelists.SEV_MENTAL_COD,
+        returning="date",
+        find_last_match_in_period=True,
+        on_or_before="covid_vax_disease_1_date - 1 day",
+        date_format="YYYY-MM-DD",
+    ),
+    ### date of Remission codes relating to Severe Mental Illness
+    SMHRES_DAT=   patients.with_these_clinical_events(
+      codelists.SMHRES_COD,
+      returning="date",
+      find_last_match_in_period=True,
+      on_or_before="covid_vax_disease_1_date - 1 day",
+      date_format="YYYY-MM-DD",
+    ),
+  ),
+),
 
   ############################################################
   ## Post-baseline variables (outcomes)
