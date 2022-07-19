@@ -1038,17 +1038,17 @@ study = StudyDefinition(
     ###  any immunosuppressant Read code is recorded
     IMMDX=patients.with_these_clinical_events(
       codelists.IMMDX_COV_COD,
-      between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+      on_or_before="covid_vax_disease_1_date - 1 day",
     ),
     ### any Immunosuppression medication codes is recorded
     IMMRX=patients.with_these_clinical_events(
       codelists.IMMRX_COD,
-      between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+      on_or_before="covid_vax_disease_1_date - 1 day",
     ),
     ### Receiving chemotherapy or radiotherapy
     DXT_CHEMO = patients.with_these_clinical_events(
       codelists.DXT_CHEMO_COD ,
-      between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+      on_or_before="covid_vax_disease_1_date - 1 day",
     ),
   ),
   # Patients with Chronic Kidney Disease
@@ -1065,19 +1065,19 @@ study = StudyDefinition(
     ### Chronic kidney disease diagnostic codes
     CKD_COV = patients.with_these_clinical_events(
       codelists.CKD_COV_COD,
-      between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+      on_or_before="covid_vax_disease_1_date - 1 day",
     ),
     ### Chronic kidney disease codes - all stages
     CKD15 = patients.with_these_clinical_events(
       codelists.CKD15_COD,
-      between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+      on_or_before="covid_vax_disease_1_date - 1 day",
     ),
     ### date of Chronic kidney disease codes-stages 3 – 5  
     CKD35_DAT=patients.with_these_clinical_events(
       codelists.CKD35_COD,
     returning="date",
     date_format="YYYY-MM-DD",
-    between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+    on_or_before="covid_vax_disease_1_date - 1 day",
     find_first_match_in_period=True,
     ),
     ### date of Chronic kidney disease codes - all stages
@@ -1085,7 +1085,7 @@ study = StudyDefinition(
       codelists.CKD15_COD,
     returning="date",
     date_format="YYYY-MM-DD",
-    between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+    on_or_before="covid_vax_disease_1_date - 1 day",
     find_first_match_in_period=True,
     ),
   ),
@@ -1112,12 +1112,12 @@ study = StudyDefinition(
         ### Asthma Admission codes
         ASTADM = patients.with_these_clinical_events(
             codelists.ASTADM_COD,
-            between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+            on_or_before="covid_vax_disease_1_date - 1 day",
         ),  
         ### Asthma Diagnosis code
         AST = patients.with_these_clinical_events(
             codelists.AST_COD,
-            between=["housebound_date", "covid_vax_disease_1_date - 1 day"],
+            on_or_before="covid_vax_disease_1_date - 1 day",
         ),  
         ### Asthma - inhalers in last 12 months
         ASTRXM1=patients.with_these_medications(
