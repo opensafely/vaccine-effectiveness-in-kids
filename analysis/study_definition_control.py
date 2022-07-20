@@ -5,11 +5,8 @@ from ast import And
 ############################################################
 ## PRIMIS variables
 ############################################################
-from variables_primis import generate_primis_variables 
-primis_variables = generate_primis_variables(index_date="index_date -1 days")
-
-
-
+# from variables_primis import generate_primis_variables 
+# primis_variables = generate_primis_variables(index_date="index_date -1 days")
 
 
 from cohortextractor import (
@@ -188,7 +185,7 @@ study = StudyDefinition(
   
   # Configure the expectations framework
   default_expectations={
-    "date": {"earliest": "2020-01-01", "latest": studyend_date},
+    "date": {"earliest": studystart_date, "latest": studyend_date},
     "rate": "uniform",
     "incidence": 0.2,
     "int": {"distribution": "normal", "mean": 1000, "stddev": 100},
@@ -199,21 +196,22 @@ study = StudyDefinition(
   
   # This line defines the study population
   population=patients.satisfying(
-    f"""
+    """
       registered
       AND
-      NOT has_died
-      AND
-      covid_vax_disease_1_date
+      (NOT has_died)
     """,
-   ),
     # we define baseline variables on the day _before_ the study date (start date = day of first possible booster vaccination)
     registered=patients.registered_as_of(
-    "covid_vax_disease_1_date  - 1 day",
+    "index_date  - 1 day",
     ),    
     has_died=patients.died_from_any_cause(
-      on_or_before="covid_vax_disease_1_date  - 1 day",
+      on_or_before="index_date  - 1 day",
       returning="binary_flag",
+        return_expectations={
+            "incidence": 0.01,
+        },
+    ),
     ), 
     startdate = patients.fixed_value(studystart_date),
     enddate = patients.fixed_value(studyend_date),
@@ -249,9 +247,6 @@ study = StudyDefinition(
     target_disease_matches="SARS-2 CORONAVIRUS"
   ),
   
-  
-  
-  
   ###############################################################################
   ## Admin and demographics
   ###############################################################################
@@ -268,7 +263,7 @@ study = StudyDefinition(
   ############################################################
   
   
-  **primis_variables,
+ # **primis_variables,
   
   #####################################
   # JCVI groups
