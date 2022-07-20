@@ -1194,7 +1194,8 @@ study = StudyDefinition(
             PREG =  patients.with_these_clinical_events(
             codelists.PREG_COD,
             returning="binary_flag",
-            on_or_before="covid_vax_disease_1_date - 1 day",
+              ### pregnancy in the previous 44 weeks 
+            between=["covid_vax_disease_1_date - 308 days", "covid_vax_disease_1_date - 1 days"],
             ),
             ### Pregnancy or Delivery codes 
             PREGDEL_DAT=patients.with_these_clinical_events(
