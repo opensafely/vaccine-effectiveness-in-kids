@@ -78,3 +78,4 @@ primis-covid19-vacc-uptake/spln_cov/2e6d885e
 primis-covid19-vacc-uptake/learndis/44ca3b9d
 primis-covid19-vacc-uptake/sev_mental/477cfb93
 primis-covid19-vacc-uptake/smhres/1be8eded
+opensafely/ethnicity-snomed-0removed/2e641f61/

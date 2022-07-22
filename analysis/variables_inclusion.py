@@ -1,89 +1,27 @@
-from cohortextractor import patients
+from cohortextractor import patients, combine_codelists
 from codelists import *
+import json
 import codelists
 
+def generate_inclusion_variables(index_date):
+    inclusion_variables = dict(
+    
+    registered=patients.registered_as_of(
+        "index_date",
+    ), 
 
-def generate_jcvi_variables(index_date):
-    jcvi_variables = dict(
-    cev_ever = patients.with_these_clinical_events(
-      codelists.shield,
+    has_died=patients.died_from_any_cause(
+      on_or_before="index_date",
       returning="binary_flag",
-      on_or_before = "index_date - 1 day",
-      find_last_match_in_period = True,
+    ),
+
+    age=patients.age_as_of( 
+        "2021-09-01",
     ),
     
-    endoflife = patients.satisfying(
-      """
-      midazolam OR
-      endoflife_coding
-      """,
     
-      midazolam = patients.with_these_medications(
-        codelists.midazolam,
-        returning="binary_flag",
-        on_or_before = "index_date - 1 day",
-      ),
-      
-      endoflife_coding = patients.with_these_clinical_events(
-        codelists.eol,
-        returning="binary_flag",
-        on_or_before = "index_date - 1 day",
-        find_last_match_in_period = True,
-      ),
-          
-    ),
-      
-    housebound = patients.satisfying(
-      """housebound_date
-      AND NOT no_longer_housebound
-      AND NOT moved_into_care_home
-      """,
-          
-      housebound_date=patients.with_these_clinical_events( 
-        codelists.housebound, 
-        on_or_before="index_date - 1 day",
-        find_last_match_in_period = True,
-        returning="date",
-        date_format="YYYY-MM-DD",
-      ),   
-      no_longer_housebound=patients.with_these_clinical_events( 
-        codelists.no_longer_housebound, 
-        between=["housebound_date", "index_date - 1 day"],
-      ),
-      moved_into_care_home=patients.with_these_clinical_events(
-        codelists.carehome,
-        between=["housebound_date", "index_date - 1 day"],
-      ),
-    ),
-  
-    prior_covid_test_frequency=patients.with_test_result_in_sgss(
-      pathogen="SARS-CoV-2",
-      test_result="any",
-      between=["index_date - 182 days", "index_date - 1 day"], # 182 days = 26 weeks
-      returning="number_of_matches_in_period", 
-      date_format="YYYY-MM-DD",
-      restrict_to_earliest_specimen_date=False,
-    ),
-  
-  # # overnight hospital admission at time of 3rd / booster dose
-  # inhospital = patients.satisfying(
-  
-  #   "discharged_0_date >= index_date",
-    
-  #   discharged_0_date=patients.admitted_to_hospital(
-  #     returning="date_discharged",
-  #     on_or_before="index_date", # this is the admission date
-  #     # see https://github.com/opensafely-core/cohort-extractor/pull/497 for codes
-  #     # see https://docs.opensafely.org/study-def-variables/#sus for more info
-  #     with_admission_method = ['11', '12', '13', '21', '2A', '22', '23', '24', '25', '2D', '28', '2B', '81'],
-  #     with_patient_classification = ["1"], # ordinary admissions only
-  #     date_format="YYYY-MM-DD",
-  #     find_last_match_in_period=True,
-  #   ), 
-  # ),
-  
- 
-    atrisk_group = patients.satisfying(
+  ########## At risk
+  atrisk_group = patients.satisfying(
     """
     immunogroup
     OR
@@ -120,14 +58,20 @@ def generate_jcvi_variables(index_date):
       on_or_before="index_date - 1 day",
     ),
     ### any immunosuppression medication codes is recorded
+    # The medication code should be in the last 6 months, however to 
+    # prevent patients from dropping out of the audit as the vaccination 
+    # campaign progresses, we look back for medications from 01/07/2020.  
+    # This ensures that patients whose latest immunosuppressant medication 
+    # issue was originally within the 6 month timescale but then subsequently 
+    # exceeds it are still included in the at-risk group.
     immrx_1=patients.with_these_clinical_events(
       codelists.immrx_cod,
-      on_or_before="index_date - 1 day",
+      between=["2020-07-01", "index_date - 1 day"],
     ),
     ### receiving chemotherapy or radiotherapy
     dxt_chemo = patients.with_these_clinical_events(
       codelists.dxt_chemo_cod ,
-      on_or_before="index_date - 1 day",
+      between=["2020-07-01", "index_date - 1 day"],
     ),
     ),
     # patients with chronic kidney disease
@@ -185,13 +129,13 @@ def generate_jcvi_variables(index_date):
       AND
       astrxm1_1
       AND
-      astrxm2_1
+      astrxm2_1 >= 2
       )
       """,
         ### asthma admission codes
         astadm_1 = patients.with_these_clinical_events(
             codelists.astadm_cod,
-            on_or_before="index_date - 1 day",
+            between=["index_date - 730 days","index_date - 1 day"],
         ),  
         ### asthma diagnosis code
         ast_1 = patients.with_these_clinical_events(
@@ -202,13 +146,13 @@ def generate_jcvi_variables(index_date):
         astrxm1_1=patients.with_these_medications(
             codelists.astrx_cod,
             returning="binary_flag",
-            between=["index_date - 30 days", "index_date - 1 day"],
+            between=["index_date - 12 months", "index_date - 1 day"],
           ),
         ### asthma - systemic oral steroid prescription codes in last 24 months
         astrxm2_1=patients.with_these_medications(
             codelists.astrx_cod,
-            returning="binary_flag",
-            between=["index_date - 60 days", "index_date - 31 days"],
+            returning="number_of_matches_in_period",
+            between=["index_date - 24 months", "index_date - 1 day"],
           ),
       ),
     ### chronic respiratory disease
@@ -260,7 +204,7 @@ def generate_jcvi_variables(index_date):
         gdaib =  patients.with_these_clinical_events(
           codelists.gdaib_cod,
           returning="binary_flag",
-          on_or_before="index_date - 1 day",
+          between=["index_date - 254 days","index_date - 1 day"],
         ),
         ### patients who are currently pregnant 
         preg1_group = patients.satisfying(
@@ -273,18 +217,19 @@ def generate_jcvi_variables(index_date):
             preg =  patients.with_these_clinical_events(
             codelists.preg_cod,
             returning="binary_flag",
-              ### pregnancy in the previous 44 weeks 
-            between=["index_date - 308 days", "index_date - 1 days"],
+              ### Pregnancy codes recorded in the 8.5 months before the audit run date
+            between=["index_date - 254 days", "index_date - 1 days"],
             ),
             ### pregnancy or delivery codes 
             pregdel_dat=patients.with_these_clinical_events(
             codelists.pregdel_cod,
             returning="date",
             find_last_match_in_period=True,
-            on_or_before="index_date - 1 day",
+            between=["index_date - 254 days", "index_date - 1 days"],
             date_format="YYYY-MM-DD",
             ),
             ### date of pregnancy codes recorded
+            # (Pregnancy or Delivery codes recorded in the 8.5 months before audit run date)
             preg_dat=patients.with_these_clinical_events(
             codelists.preg_cod,
             returning="date",
@@ -348,32 +293,8 @@ def generate_jcvi_variables(index_date):
     ),
     ),
     ),
-     cev = patients.satisfying(
-    """severely_clinically_vulnerable AND NOT less_vulnerable""",
-    ##### The shielded patient list was retired in March/April 2021 when shielding ended
-    ##### so it might be worth using that as the end date instead of index_date, as we're not sure
-    ##### what has happened to these codes since then, e.g. have doctors still been adding new
-    ##### shielding flags or low-risk flags? Depends what you're looking for really. Could investigate separately.
+    ########## end of at risk criteria
 
-    ### SHIELDED GROUP - first flag all patients with "high risk" codes
-    severely_clinically_vulnerable = patients.with_these_clinical_events(
-    codelists.shield,
-    returning="binary_flag",
-    on_or_before = "index_date - 1 day",
-    find_last_match_in_period = True,
-    ),
-
-    # find date at which the high risk code was added
-    date_severely_clinically_vulnerable = patients.date_of(
-    "severely_clinically_vulnerable",
-    date_format="YYYY-MM-DD",
-    ),
-
-    ### NOT SHIELDED GROUP (medium and low risk) - only flag if later than 'shielded'
-    less_vulnerable = patients.with_these_clinical_events(
-    codelists.nonshield,
-    between=["date_severely_clinically_vulnerable + 1 day", "index_date - 1 day",],
-    ),
-    ),
     )
-    return jcvi_variables
+    return inclusion_variables
+

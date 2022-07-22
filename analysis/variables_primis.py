@@ -3,48 +3,48 @@ from codelists import *
 import json
 import codelists
 
-def generate_primis_variables(index_date):
+def generate_primis_variables(index_date,prefix):
     primis_variables = dict(
      # From PRIMIS
 
   
-    asthma = patients.satisfying(
-    """
-      astadm OR
-      (ast AND astrxm1 AND astrxm2 AND astrxm3)
-      """,
-    # Asthma Admission codes
-    astadm=patients.with_these_clinical_events(
-      codelists.astadm,
-      returning="binary_flag",
-      on_or_before="index_date - 1 day",
-    ),
-    # Asthma Diagnosis code
-    ast = patients.with_these_clinical_events(
-      codelists.ast,
-      returning="binary_flag",
-      on_or_before="index_date - 1 day",
-    ),
-    # Asthma systemic steroid prescription code in month 1
-    astrxm1=patients.with_these_medications(
-      codelists.astrx,
-      returning="binary_flag",
-      between=["index_date - 30 days", "index_date - 1 day"],
-    ),
-    # Asthma systemic steroid prescription code in month 2
-    astrxm2=patients.with_these_medications(
-      codelists.astrx,
-      returning="binary_flag",
-      between=["index_date - 60 days", "index_date - 31 days"],
-    ),
-    # Asthma systemic steroid prescription code in month 3
-    astrxm3=patients.with_these_medications(
-      codelists.astrx,
-      returning="binary_flag",
-      between= ["index_date - 90 days", "index_date - 61 days"],
-    ),
+    # asthma = patients.satisfying(
+    # """
+    #   astadm OR
+    #   (ast AND astrxm1 AND astrxm2 AND astrxm3)
+    #   """,
+    # # Asthma Admission codes
+    # # astadm=patients.with_these_clinical_events(
+    # #   codelists.astadm,
+    # #   returning="binary_flag",
+    # #   on_or_before="index_date - 1 day",
+    # # ),
+    # # # Asthma Diagnosis code
+    # # ast = patients.with_these_clinical_events(
+    # #   codelists.ast,
+    # #   returning="binary_flag",
+    # #   on_or_before="index_date - 1 day",
+    # # ),
+    # # # Asthma systemic steroid prescription code in month 1
+    # # astrxm1=patients.with_these_medications(
+    # #   codelists.astrx,
+    # #   returning="binary_flag",
+    # #   between=["index_date - 30 days", "index_date - 1 day"],
+    # # ),
+    # # # Asthma systemic steroid prescription code in month 2
+    # # astrxm2=patients.with_these_medications(
+    # #   codelists.astrx,
+    # #   returning="binary_flag",
+    # #   between=["index_date - 60 days", "index_date - 31 days"],
+    # # ),
+    # # Asthma systemic steroid prescription code in month 3
+    # astrxm3=patients.with_these_medications(
+    #   codelists.astrx,
+    #   returning="binary_flag",
+    #   between= ["index_date - 90 days", "index_date - 61 days"],
+    # ),
 
-    ),
+    # ),
 
     # Chronic Neurological Disease including Significant Learning Disorder
     chronic_neuro_disease=patients.with_these_clinical_events(
@@ -53,15 +53,15 @@ def generate_primis_variables(index_date):
     on_or_before="index_date - 1 day",
     ),
 
-    # Chronic Respiratory Disease
-    chronic_resp_disease = patients.satisfying(
-    "asthma OR resp_cov",
-    resp_cov=patients.with_these_clinical_events(
-      codelists.resp_cov,
-      returning="binary_flag",
-      on_or_before="index_date - 1 day",
-    ),
-    ),
+    # # Chronic Respiratory Disease
+    # chronic_resp_disease = patients.satisfying(
+    # "asthma OR resp_cov",
+    # resp_cov=patients.with_these_clinical_events(
+    #   codelists.resp_cov,
+    #   returning="binary_flag",
+    #   on_or_before="index_date - 1 day",
+    # ),
+    # ),
 
     sev_obesity = patients.satisfying(
     """
@@ -195,22 +195,22 @@ def generate_primis_variables(index_date):
     ),
 
 
-    immunosuppressed=patients.satisfying(
-    "immrx OR immdx",
+    # immunosuppressed=patients.satisfying(
+    # "immrx OR immdx",
 
-    # Immunosuppression diagnosis codes
-    immdx=patients.with_these_clinical_events(
-      codelists.immdx_cov,
-      returning="binary_flag",
-      on_or_before="index_date - 1 day",
-    ),
-    # Immunosuppression medication codes
-    immrx=patients.with_these_medications(
-      codelists.immrx,
-      returning="binary_flag",
-      between=["index_date - 182 days", "index_date - 1 day"]
-    ),
-    ),
+    # # Immunosuppression diagnosis codes
+    # immdx=patients.with_these_clinical_events(
+    #   codelists.immdx_cov,
+    #   returning="binary_flag",
+    #   on_or_before="index_date - 1 day",
+    # ),
+    # # Immunosuppression medication codes
+    # immrx=patients.with_these_medications(
+    #   codelists.immrx,
+    #   returning="binary_flag",
+    #   between=["index_date - 182 days", "index_date - 1 day"]
+    # ),
+    # ),
 
     # Asplenia or Dysfunction of the Spleen codes
     asplenia=patients.with_these_clinical_events(
@@ -220,11 +220,11 @@ def generate_primis_variables(index_date):
     ),
 
     # Wider Learning Disability
-    learndis=patients.with_these_clinical_events(
-    codelists.learndis,
-    returning="binary_flag",
-    on_or_before="index_date - 1 day",
-    ),
+    # learndis=patients.with_these_clinical_events(
+    # codelists.learndis,
+    # returning="binary_flag",
+    # on_or_before="index_date - 1 day",
+    # ),
 
 
     # to represent household contact of shielding individual
@@ -260,5 +260,6 @@ def generate_primis_variables(index_date):
     ), 
     ),
     )
+    primis_variables = {f"{prefix}{key}": val for key, val in primis_variables.items()}
     return primis_variables
 
