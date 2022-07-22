@@ -101,7 +101,7 @@ def generate_inclusion_variables(index_date):
     returning="date",
     date_format="YYYY-MM-DD",
     on_or_before="index_date - 1 day",
-    find_first_match_in_period=True,
+    find_last_match_in_period=True,
     ),
     ### date of chronic kidney disease codes - all stages
     ckd15_dat=patients.with_these_clinical_events(
@@ -109,7 +109,7 @@ def generate_inclusion_variables(index_date):
     returning="date",
     date_format="YYYY-MM-DD",
     on_or_before="index_date - 1 day",
-    find_first_match_in_period=True,
+    find_last_match_in_period=True,
     ),
     ),
     ### patients who have chronic respiratory disease
@@ -234,7 +234,7 @@ def generate_inclusion_variables(index_date):
             codelists.preg_cod,
             returning="date",
             find_last_match_in_period=True,
-            on_or_before="index_date - 1 day",
+            between=["index_date - 254 days", "index_date - 1 days"],
             date_format="YYYY-MM-DD",
             ),
         ),
