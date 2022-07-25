@@ -344,30 +344,16 @@ data_processed <- data_processed %>%
 
 
     vax1_type_descr = fct_case_when(
-      vax1_type == "pfizer" ~ "BNT162b2",
-      vax1_type == "az" ~ "ChAdOx1",
-      vax1_type == "moderna" ~ "Moderna",
+      vax1_type == "pfizerA" ~ "BNT162b2 30micrograms/0.3ml",
+      vax1_type == "pfizerC" ~ "BNT162b2 10mcg/0.2ml",
       TRUE ~ NA_character_
     ),
     vax2_type_descr = fct_case_when(
-      vax2_type == "pfizer" ~ "BNT162b2",
-      vax2_type == "az" ~ "ChAdOx1",
-      vax2_type == "moderna" ~ "Moderna",
+      vax1_type == "pfizerA" ~ "BNT162b2 30micrograms/0.3ml",
+      vax1_type == "pfizerC" ~ "BNT162b2 10mcg/0.2ml",
       TRUE ~ NA_character_
     ),
-    vax3_type_descr = fct_case_when(
-      vax3_type == "pfizer" ~ "BNT162b2",
-      vax3_type == "az" ~ "ChAdOx1",
-      vax3_type == "moderna" ~ "Moderna",
-      TRUE ~ NA_character_
-    ),
-    vax4_type_descr = fct_case_when(
-      vax4_type == "pfizer" ~ "BNT162b2",
-      vax4_type == "az" ~ "ChAdOx1",
-      vax4_type == "moderna" ~ "Moderna",
-      TRUE ~ NA_character_
-    ),
-
+    
     vax12_type_descr = paste0(vax1_type_descr, "-", vax2_type_descr),
 
     vax1_date = covid_vax_1_date,
