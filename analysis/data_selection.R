@@ -43,14 +43,14 @@ data_criteria <- data_processed %>%
     has_ethnicity = !is.na(ethnicity_combined),
     has_region = !is.na(region),
     #has_msoa = !is.na(msoa),
-    isnot_hscworker = !hscworker,
-    isnot_carehomeresident = !care_home_combined,
+    # isnot_hscworker = !hscworker,
+    # isnot_carehomeresident = !care_home_combined,
     isnot_endoflife = !endoflife,
     isnot_housebound = !housebound,
     vax1_afterfirstvaxdate = case_when(
       (vax1_type=="pfizer") & (vax1_date >= study_dates$firstpfizer_date) ~ TRUE,
-      (vax1_type=="az") & (vax1_date >= study_dates$firstaz_date) ~ TRUE,
-      (vax1_type=="moderna") & (vax1_date >= study_dates$firstmoderna_date) ~ TRUE,
+      # (vax1_type=="az") & (vax1_date >= study_dates$firstaz_date) ~ TRUE,
+      # (vax1_type=="moderna") & (vax1_date >= study_dates$firstmoderna_date) ~ TRUE,
       TRUE ~ FALSE
     ),
     vax2_beforelastvaxdate = !is.na(vax2_date) & (vax2_date <= study_dates$lastvax2_date),
