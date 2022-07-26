@@ -72,7 +72,7 @@ sim_list = lst(
     ~rbernoulli(n=..n, p = 0.1),
   ),
   
-  atrisk_group = bn_node(
+  wchild = bn_node(
     ~rbernoulli(n=..n, p = 0.1),
   ),
   

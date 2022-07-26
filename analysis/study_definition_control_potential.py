@@ -65,7 +65,7 @@ study = StudyDefinition(
       NOT has_died
       )
       AND
-      NOT atrisk_group
+      NOT wchild
     """,
     # we define baseline variables on the day _before_ the study date (start date = day of first possible booster vaccination)
   ),

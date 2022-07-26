@@ -409,4 +409,8 @@ smhres_cod=codelist_from_csv(
     column="code",
 )
 
-
+hhld_imdef_cod=codelist_from_csv(
+    "codelists/primis-covid19-vacc-uptake-hhld_imdef.csv",
+    system="snomed",
+    column="code",
+)

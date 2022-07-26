@@ -72,7 +72,7 @@ study = StudyDefinition(
       NOT has_died
       )
       AND
-      NOT atrisk_group
+      NOT wchild
       AND 
       covid_vax_any_1_date >= startdate
       AND
