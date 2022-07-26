@@ -11,11 +11,11 @@ import json
 ############################################################
 ## inclusion variables
 from variables_inclusion import generate_inclusion_variables 
-inclusion_variables = generate_inclusion_variables(index_date="index_date")
+inclusion_variables = generate_inclusion_variables(index_date="trial_date")
 ############################################################
 ## matching variables
 from variables_matching import generate_matching_variables 
-matching_variables = generate_matching_variables(index_date="index_date")
+matching_variables = generate_matching_variables(index_date="trial_date")
 ############################################################
 
 
@@ -51,19 +51,18 @@ study = StudyDefinition(
   },
   
   # This line defines the study population
-  population = patients.satisfying(
-    "controls",
-    controls = which_exist_in_file("output/match/potential_matched_controls_1.csv.gz")
-  ),
+  # FIXME this line needs to be matching_round specific -- currently it's only using data from matching_round=1
+  # might be necessary to have round-specific study definitions which is a pain, but metaprogrammable.
+  population = patients.which_exist_in_file(f_path="output/match/potential_matched_controls1.csv.gz"),
+
+  index_date = "2020-01-01", # this shouldn't be used anywhere!
   
-  # select index_date from file
-  trial_date = with_value_from_file("output/match/potential_matched_controls_1.csv.gz", returning="trial_date", returning_type="date", date_format='YYYY-MM-DD'),
-  match_id = with_value_from_file("output/match/potential_matched_controls_1.csv.gz", returning="match_id", returning_type="int"),
+  trial_date = patients.with_value_from_file(f_path="output/match/potential_matched_controls1.csv.gz", returning="trial_date", returning_type="date", date_format='YYYY-MM-DD'),
   
-  index_date = with_value_from_file("output/match/potential_matched_controls_1.csv.gz", returning="trial_date", returning_type="date", date_format='YYYY-MM-DD'),
+  match_id = patients.with_value_from_file(f_path="output/match/potential_matched_controls1.csv.gz", returning="match_id", returning_type="int"),
   
   **vaccination_date_X(
-    name = "covid_vax_disease",
+    name = "covid_vax_any",
     index_date = "1900-01-01",
     n = 1,
     target_disease_matches="SARS-2 CORONAVIRUS"

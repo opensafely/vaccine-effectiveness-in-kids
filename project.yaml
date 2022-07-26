@@ -60,13 +60,14 @@ actions:
         cohort: output/input_control_match1.feather 
   
   matching_filter1:
-    run: r:latest analysis/matching_filter.R over12s 1
+    run: r:latest analysis/matching_filter.R over12 1
     needs:
     - matching1
-    - generate_study_population_match_control1
+    - generate_study_match_control1
     outputs:
       highly_sensitive:
-        rds: output/match/match_data_matchstatus1.rds
-        csv: output/match/potential_matched_controls1.csv.gz
+        rds1: output/match/data_matchstatus_allrounds1.rds
+        rds2: output/match/data_match_actual1.rds
+        
 
       
