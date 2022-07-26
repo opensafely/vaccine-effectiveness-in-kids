@@ -71,7 +71,7 @@ study = StudyDefinition(
   ),
   
   **vaccination_date_X(
-    name = "covid_vax_disease",
+    name = "covid_vax_any",
     index_date = "1900-01-01",
     n = 1,
     target_disease_matches="SARS-2 CORONAVIRUS"
