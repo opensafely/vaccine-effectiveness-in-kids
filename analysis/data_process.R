@@ -84,9 +84,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
     apply(unmatched_types, 1, function(row) paste(paste(row, collapse=" : "), "\n"))
   )
 
-  data_extract <- data_custom_dummy %>%
-    # because dummy data for days in critical care is factor, so that we can do zero-inflation
-    mutate(across(starts_with("covidadmitted_ccdays"), ~ as.numeric(as.character(.))))
+  data_extract <- data_custom_dummy 
 } else {
   data_extract <- read_feather(here("output", "input.feather")) %>%
     #because date types are not returned consistently by cohort extractor
@@ -336,13 +334,7 @@ data_processed <- data_processed %>%
   mutate(
     vax1_type = covid_vax_1_type,
     vax2_type = covid_vax_2_type,
-    vax3_type = covid_vax_3_type,
-    vax4_type = covid_vax_4_type,
-
-    vax12_type = paste0(vax1_type, "-", vax2_type),
-
-
-
+    
     vax1_type_descr = fct_case_when(
       vax1_type == "pfizerA" ~ "BNT162b2 30micrograms/0.3ml",
       vax1_type == "pfizerC" ~ "BNT162b2 10mcg/0.2ml",
@@ -358,16 +350,7 @@ data_processed <- data_processed %>%
 
     vax1_date = covid_vax_1_date,
     vax2_date = covid_vax_2_date,
-    vax3_date = covid_vax_3_date,
-    vax4_date = covid_vax_4_date,
-    vax1_day = as.integer(floor((vax1_date - study_dates$index_date))+1), # day 0 is the day before "start_date"
-    vax2_day = as.integer(floor((vax2_date - study_dates$index_date))+1), # day 0 is the day before "start_date"
-    vax3_day = as.integer(floor((vax3_date - study_dates$index_date))+1), # day 0 is the day before "start_date"
-    vax4_day = as.integer(floor((vax4_date - study_dates$index_date))+1), # day 0 is the day before "start_date"
-    vax1_week = as.integer(floor((vax1_date - study_dates$index_date)/7)+1), # week 1 is days 1-7.
-    vax2_week = as.integer(floor((vax2_date - study_dates$index_date)/7)+1), # week 1 is days 1-7.
-    vax3_week = as.integer(floor((vax3_date - study_dates$index_date)/7)+1), # week 1 is days 1-7.
-    vax4_week = as.integer(floor((vax4_date - study_dates$index_date)/7)+1), # week 1 is days 1-7.
+   
 ) %>%
 select(
   -starts_with("covid_vax_"),
