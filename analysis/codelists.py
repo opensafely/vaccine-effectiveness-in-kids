@@ -354,7 +354,7 @@ addis_cod=codelist_from_csv(
     system="snomed",
     column="code",
 )
-gdaib_cod=codelist_from_csv(
+gdiab_cod=codelist_from_csv(
     "codelists/primis-covid19-vacc-uptake-gdiab_cod.csv",
     system="snomed",
     column="code",

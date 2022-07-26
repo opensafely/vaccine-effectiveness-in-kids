@@ -252,13 +252,13 @@ def generate_jcvi_variables(index_date):
       ### patients who are currently pregnant with gestational diabetes 
       gdiab_group = patients.satisfying(
       """
-      gdaib
+      gdiab
       AND
       preg1_group
       """,
         ### gestational diabetes diagnosis codes
-        gdaib =  patients.with_these_clinical_events(
-          codelists.gdaib_cod,
+        gdiab =  patients.with_these_clinical_events(
+          codelists.gdiab_cod,
           returning="binary_flag",
           on_or_before="index_date - 1 day",
         ),
