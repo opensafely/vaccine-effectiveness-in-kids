@@ -3,10 +3,10 @@ library('arrow')
 library('tidyverse')
 
 case<-read_feather(here("output", "input_case.feather")) %>%
-  mutate(casecontrol=as.logical(TRUE))
+  mutate(casecontrol=TRUE)
 
 control<-read_feather(here("output", "input_control.feather")) %>%
-  mutate(casecontrol=as.logical(FALSE))
+  mutate(casecontrol=FALSE)
 
 input <-case %>% 
   bind_rows(control)  %>%
