@@ -312,6 +312,7 @@ def generate_inclusion_variables(index_date):
           ),
           ),
           ),
+          ),
           ########## end of at risk criteria
 
     )
