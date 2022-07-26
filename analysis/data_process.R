@@ -319,8 +319,6 @@ data_vax <- local({
 
 })
 
-write_rds(data_vax, here("output", "data", "data_vaxlong.rds"), compress="gz")
-
 data_vax_wide = data_vax %>%
   pivot_wider(
     id_cols= patient_id,

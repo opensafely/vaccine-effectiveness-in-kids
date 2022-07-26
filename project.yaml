@@ -11,8 +11,8 @@ actions:
       highly_sensitive:
         cohort: output/input_case.feather
 
-  generate_study_population_control:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_control  --output-format feather
+  generate_study_population_control1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_control --output-format feather
     outputs:
       highly_sensitive:
         cohort: output/input_control.feather
@@ -53,7 +53,6 @@ actions:
     outputs:
       highly_sensitive:
         rds: output/data/data_processed.rds
-        vaxlong: output/data/data_vaxlong.rds
 
   # skim_process:
   #   run: r:latest analysis/data_skim.R output/data/data_processed.rds output/data_properties
@@ -62,14 +61,6 @@ actions:
   #   outputs:
   #     moderately_sensitive:
   #       cohort: output/data_properties/data_processed*.txt
-
-  # data_process_long:
-  #   run: r:latest analysis/data_process_long.R
-  #   needs:
-  #   - data_process
-  #   outputs:
-  #     highly_sensitive:
-  #       processed: output/data/data_long*.rds
 
   # data_selection:
   #   run: r:latest analysis/data_selection.R
@@ -90,15 +81,30 @@ actions:
   #       moderately_sensitive:
   #         cohort: output/data_properties/data_cohort*.txt
 
-  # cohort_report:
-  #   run: cohort-report:v3.0.0 output/data/data_cohort.feather
-  #   needs:
-  #   - data_selection
-  #   outputs:
-  #     moderately_sensitive:
-  #       html: output/data/reports/cohort/*.html
-  #       png: output/data/reports/cohort/*.png
-  #   config:
-  #     output_path: output/data/reports/cohort/
+  matching1:
+    run: r:latest analysis/matching.R over12s 1
+    needs:
+    - data_process
+    outputs:
+      highly_sensitive:
+        rds: output/match/data_potential_matchstatus1.rds
+        rds: output/match/data_potential_matched1.rds
+        csv: output/match/potential_matched_controls1.csv.gz
+  
+  generate_study_population_match_control1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_match_control --output-format feather
+    outputs:
+      highly_sensitive:
+        cohort: output/input_match_control1.feather
+  
+  matching_filter1:
+    run: r:latest analysis/matching_filter.R over12s 1
+    needs:
+    - matching1
+    - generate_study_population_match_control1
+    outputs:
+      highly_sensitive:
+        rds: output/match/match_data_matchstatus1.rds
+        csv: output/match/potential_matched_controls1.csv.gz
 
       
