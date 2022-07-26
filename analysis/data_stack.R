@@ -2,13 +2,13 @@ library('here')
 library('arrow')
 library('tidyverse')
 
-case<-read_feather(here("output", "input_case.feather")) %>%
-  mutate(casecontrol=TRUE)
+treated<-read_feather(here("output", "input_treated.feather")) %>%
+  mutate(treated=TRUE)
 
 control<-read_feather(here("output", "input_control.feather")) %>%
-  mutate(casecontrol=FALSE)
+  mutate(treated=FALSE)
 
-input <-case %>% 
+input <-treated %>% 
   bind_rows(control)  %>%
    mutate(across(ends_with("_date"),  as.Date))
  
