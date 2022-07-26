@@ -3,6 +3,7 @@ from codelists import *
 import codelists
 
 
+
 def vaccination_date_X(name, index_date, n, product_name_matches=None, target_disease_matches=None):
   # vaccination date, given product_name
   def var_signature(
@@ -141,6 +142,12 @@ def critcare_dates(name, on_or_after, n, with_these_diagnoses, with_admission_me
   return variables
 
 
+
+#FIXME the `index_date` argument is not being used anywhere within the function definition.
+# need to replace:
+# `"index_date"` with `index_date`, 
+# `"index_date - 1 day"` with `f"{index_date} - 1 day"`
+# etc etc
 def generate_outcome_variables(index_date):
     outcome_variables = dict(
 

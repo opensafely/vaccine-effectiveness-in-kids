@@ -3,6 +3,13 @@ from codelists import *
 import json
 import codelists
 
+
+#FIXME the `index_date` argument is not being used anywhere within the function definition.
+# need to replace:
+# `"index_date"` with `index_date`, 
+# `"index_date - 1 day"` with `f"{index_date} - 1 day"`
+# etc etc
+
 def generate_matching_variables(index_date):
     matching_variables = dict(
 
