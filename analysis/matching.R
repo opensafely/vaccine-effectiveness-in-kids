@@ -22,8 +22,8 @@ args <- commandArgs(trailingOnly=TRUE)
 if(length(args)==0){
   # use for interactive testing
   removeobjects <- FALSE
-  matching_round <- 1
   agegroup <- "over12"
+  matching_round <- "1"
 } else {
   #FIXME replace with actual eventual action variables
   removeobjects <- TRUE
@@ -56,24 +56,47 @@ study_dates <-
   jsonlite::read_json(path=here("lib", "design", "study-dates.json")) %>%
   map(as.Date)
 
-## one pow per patient ----
-data_eligible0 <- read_rds(here("output", "data", "data_processed.rds"))
+
+
+## import treated populations ----
+data_treated <- read_rds(here("output", "data", "data_treated_eligible.rds")) %>% mutate(treated=1L)
+
+## import control populations ----
+data_control <- read_rds(here("output", "data", glue("data_control_potential{matching_round}.rds"))) %>% mutate(treated=0L)
+
+# remove already-matched people from previous mathcing rounds
+if(matching_round>1){
+  
+  previous_round <- as.integer(matching_round)-1L
+  
+  data_matchstatusprevious <- read_rds(fs::path(output_dir, glue("data_matchstatus_allrounds{previous_round}.rds"))) 
+    filter(matched) %>%
+    select(patient_id, treated)
+  
+  data_treated <- 
+    data_treated %>%
+    anti_join(
+      data_matchstatusprevious, by=c("patient_id", "treated")
+    )
+  
+  data_control <- 
+    data_control %>%
+    anti_join(
+      data_matchstatusprevious, by=c("patient_id", "treated")
+    )
+  
+}
 
 
 ## import matching variables ----
 
-#FIXME pick these up automatically from.. somewhere
+#FIXME pick these up automatically from... somewhere
 exact_variables <- c("age", "sex", "region")
 caliper_variables <- character()
 
 data_eligible <-
-  data_eligible0 %>%
-  filter(
-    # FIXME these should be excluded in the data selection step or in the study definitions
-    !is.na(sex), !is.na(region), !is.na(age)
-  ) %>%
+  bind_rows(data_treated, data_control) %>%
   mutate(
-    patient_id,
     
     treatment_date = if_else(vax1_type %in% treatment, vax1_date, as.Date(NA))-1, # -1 because we assume vax occurs at the start of the day
 
@@ -136,7 +159,7 @@ local({
   trials <- seq(start_trial_time+1, end_trial_time, 1) 
   
   # initialise list of candidate controls
-  candidate_ids0 <- unique(data_eligible$patient_id)
+  candidate_ids0 <- data_control$patient_id
 
   # initialise matching summary data
   data_treated <- NULL
@@ -155,14 +178,14 @@ local({
       data_eligible %>%
       filter(
         # select treated
-        casecontrol,
+        treated==1L,
         (censor_date > trial_date) | is.na(censor_date),
         # select people vaccinated on trial day i
         treatment_date == trial_date
         ) %>% 
       transmute(
         patient_id,
-        treated=1L,
+        treated,
         trial_time=trial_time,
         trial_date=trial_date
       )
@@ -176,7 +199,7 @@ local({
       data_eligible %>%
       filter(
         # select controls
-        !casecontrol,
+        treated==0L,
         # remove anyone already censored
         (censor_date > trial_date) | is.na(censor_date),
         # remove anyone already vaccinated
@@ -186,7 +209,7 @@ local({
       ) %>%
       transmute(
         patient_id,
-        treated=0L,
+        treated,
         trial_time=trial_time,
         trial_date=trial_date
       )
@@ -333,6 +356,9 @@ write_rds(data_matchstatus, fs::path(output_dir, glue("data_potential_matchstatu
 data_matchstatus %>% 
   filter(control==1L) %>% 
   select(patient_id, trial_date, match_id) %>%
+  mutate(
+    trial_date=as.character(trial_date)
+  ) %>%
   write_csv(fs::path(output_dir, glue("potential_matched_controls{matching_round}.csv.gz")))
 
 # number of treated/controls per trial

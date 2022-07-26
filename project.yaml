@@ -40,20 +40,24 @@ actions:
         rds: output/data/data_control_potential1.rds
  
   matching1:
-    run: r:latest analysis/matching.R over12s 1
+    run: r:latest analysis/matching.R over12 1
     needs:
-    - data_process
+    - data_process_treated
+    - data_process_control_potential1
     outputs:
       highly_sensitive:
-        rds: output/match/data_potential_matchstatus1.rds
-        rds: output/match/data_potential_matched1.rds
+        rds1: output/match/data_potential_matchstatus1.rds
+        rds2: output/match/data_potential_matched1.rds
         csv: output/match/potential_matched_controls1.csv.gz
-  
-  generate_study_population_match_control1:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_match_control --output-format feather
+ 
+ 
+  generate_study_match_control1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_control_match1 --output-format feather
+    needs:
+    - matching1
     outputs:
       highly_sensitive:
-        cohort: output/input_match_control1.feather
+        cohort: output/input_control_match1.feather 
   
   matching_filter1:
     run: r:latest analysis/matching_filter.R over12s 1
