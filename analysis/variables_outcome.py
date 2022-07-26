@@ -141,13 +141,6 @@ def critcare_dates(name, on_or_after, n, with_these_diagnoses, with_admission_me
   
   return variables
 
-
-
-#FIXME the `index_date` argument is not being used anywhere within the function definition.
-# need to replace:
-# `"index_date"` with `index_date`, 
-# `"index_date - 1 day"` with `f"{index_date} - 1 day"`
-# etc etc
 def generate_outcome_variables(index_date):
     outcome_variables = dict(
 
@@ -160,7 +153,7 @@ def generate_outcome_variables(index_date):
     ),
     returning="date",
     date_format="YYYY-MM-DD",
-    on_or_after="index_date",
+    on_or_after=index_date,
     find_first_match_in_period=True,
   ),
   
@@ -169,7 +162,7 @@ def generate_outcome_variables(index_date):
   covid_test_date=patients.with_test_result_in_sgss(
     pathogen="SARS-CoV-2",
     test_result="any",
-    on_or_after="index_date",
+    on_or_after=index_date,
     find_first_match_in_period=True,
     restrict_to_earliest_specimen_date=False,
     returning="date",
@@ -182,7 +175,7 @@ def generate_outcome_variables(index_date):
       test_result="positive",
       returning="date",
       date_format="YYYY-MM-DD",
-      on_or_after="index_date",
+      on_or_after=index_date,
       find_first_match_in_period=True,
       restrict_to_earliest_specimen_date=False,
   ),
@@ -191,7 +184,7 @@ def generate_outcome_variables(index_date):
   covidemergency_date=patients.attended_emergency_care(
     returning="date_arrived",
     date_format="YYYY-MM-DD",
-    on_or_after="index_date",
+    on_or_after=index_date,
     with_these_diagnoses = codelists.covid_emergency,
     find_first_match_in_period=True,
   ),
@@ -200,7 +193,7 @@ def generate_outcome_variables(index_date):
   covidemergencyhosp_date=patients.attended_emergency_care(
     returning="date_arrived",
     date_format="YYYY-MM-DD",
-    on_or_after="index_date",
+    on_or_after=index_date,
     find_first_match_in_period=True,
     with_these_diagnoses = codelists.covid_emergency,
     discharged_to = codelists.discharged_to_hospital,
@@ -211,7 +204,7 @@ def generate_outcome_variables(index_date):
   # respemergency_date=patients.attended_emergency_care(
   #   returning="date_arrived",
   #   date_format="YYYY-MM-DD",
-  #   on_or_after="index_date",
+  #   on_or_after=index_date,
   #   with_these_diagnoses = codelists.resp_emergency,
   #   find_first_match_in_period=True,
   # ),
@@ -221,7 +214,7 @@ def generate_outcome_variables(index_date):
   # respemergencyhosp_date=patients.attended_emergency_care(
   #   returning="date_arrived",
   #   date_format="YYYY-MM-DD",
-  #   on_or_after="index_date",
+  #   on_or_after=index_date,
   #   find_first_match_in_period=True,
   #   with_these_diagnoses = codelists.resp_emergency,
   #   discharged_to = codelists.discharged_to_hospital,
@@ -230,7 +223,7 @@ def generate_outcome_variables(index_date):
   # any emergency attendance
   emergency_date=patients.attended_emergency_care(
     returning="date_arrived",
-    on_or_after="index_date",
+    on_or_after=index_date,
     date_format="YYYY-MM-DD",
     find_first_match_in_period=True,
   ),
@@ -238,7 +231,7 @@ def generate_outcome_variables(index_date):
   # emergency attendance resulting in discharge to hospital
   emergencyhosp_date=patients.attended_emergency_care(
     returning="date_arrived",
-    on_or_after="index_date",
+    on_or_after=index_date,
     date_format="YYYY-MM-DD",
     find_last_match_in_period=True,
     discharged_to = codelists.discharged_to_hospital,
@@ -248,7 +241,7 @@ def generate_outcome_variables(index_date):
   # unplanned hospital admission
   admitted_unplanned_date=patients.admitted_to_hospital(
     returning="date_admitted",
-    on_or_after="index_date",
+    on_or_after=index_date,
     # see https://github.com/opensafely-core/cohort-extractor/pull/497 for codes
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],
@@ -260,7 +253,7 @@ def generate_outcome_variables(index_date):
   # planned hospital admission
   admitted_planned_date=patients.admitted_to_hospital(
     returning="date_admitted",
-    on_or_after="index_date",
+    on_or_after=index_date,
     # see https://github.com/opensafely-core/cohort-extractor/pull/497 for codes
     # see https://docs.opensafely.org/study-def-variables/#sus for more info
     with_admission_method=["11", "12", "13", "81"],
@@ -274,14 +267,14 @@ def generate_outcome_variables(index_date):
     returning="date_admitted",
     with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],
     with_these_diagnoses=codelists.covid_icd10,
-    on_or_after="index_date",
+    on_or_after=index_date,
     date_format="YYYY-MM-DD",
     find_first_match_in_period=True,
   ),
   
   **critcare_dates(
     name = "potentialcovidcritcare", 
-    on_or_after = "index_date", 
+    on_or_after = index_date, 
     n = 3,
     with_admission_method = ["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],
     with_these_diagnoses = codelists.covid_icd10

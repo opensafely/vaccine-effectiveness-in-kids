@@ -4,12 +4,6 @@ import json
 import codelists
 
 
-#FIXME the `index_date` argument is not being used anywhere within the function definition.
-# need to replace:
-# `"index_date"` with `index_date`, 
-# `"index_date - 1 day"` with `f"{index_date} - 1 day"`
-# etc etc
-
 def generate_matching_variables(index_date):
     matching_variables = dict(
 
@@ -41,7 +35,7 @@ ethnicity = patients.with_these_clinical_events(
 #   ),
 
   practice_id=patients.registered_practice_as_of(
-    "index_date - 1 day",
+    f"{index_date} - 1 day",
     returning="pseudo_id",
     return_expectations={
       "int": {"distribution": "normal", "mean": 1000, "stddev": 100},
@@ -52,7 +46,7 @@ ethnicity = patients.with_these_clinical_events(
   # msoa
   
   msoa=patients.address_as_of(
-    "index_date - 1 day",
+    f"{index_date} - 1 day",
     returning="msoa",
     return_expectations={
       "rate": "universal",
@@ -65,7 +59,7 @@ ethnicity = patients.with_these_clinical_events(
   # stp is an NHS administration region based on geography
 
   stp=patients.registered_practice_as_of(
-    "index_date - 1 day",
+    f"{index_date} - 1 day",
     returning="stp_code",
     return_expectations={
       "rate": "universal",
@@ -88,7 +82,7 @@ ethnicity = patients.with_these_clinical_events(
   # NHS administrative region
 
   region=patients.registered_practice_as_of(
-    "index_date - 1 day",
+    f"{index_date} - 1 day",
     returning="nuts1_region_name",
     return_expectations={
       "rate": "universal",
@@ -123,7 +117,7 @@ ethnicity = patients.with_these_clinical_events(
     },
   
     imd=patients.address_as_of(
-    "index_date - 1 day",
+    f"{index_date} - 1 day",
     returning="index_of_multiple_deprivation",
     round_to_nearest=100,
     return_expectations={
@@ -140,7 +134,7 @@ ethnicity = patients.with_these_clinical_events(
   #   ),
   #   returning="date",
   #   date_format="YYYY-MM-DD",
-  #   on_or_before="index_date - 1 day",
+  #   on_or_before=f"{index_date} - 1 day",
   #   find_last_match_in_period=True,
   # ),
   
@@ -148,7 +142,7 @@ ethnicity = patients.with_these_clinical_events(
   # covid_test_0_date=patients.with_test_result_in_sgss(
   #   pathogen="SARS-CoV-2",
   #   test_result="any",
-  #   on_or_before="index_date - 1 day",
+  #   on_or_before=f"{index_date} - 1 day",
   #   returning="date",
   #   date_format="YYYY-MM-DD",
   #   find_last_match_in_period=True,
@@ -162,7 +156,7 @@ ethnicity = patients.with_these_clinical_events(
   #     test_result="positive",
   #     returning="date",
   #     date_format="YYYY-MM-DD",
-  #     on_or_before="index_date - 1 day",
+  #     on_or_before=f"{index_date} - 1 day",
   #     find_last_match_in_period=True,
   #     restrict_to_earliest_specimen_date=False,
   # ),
@@ -170,7 +164,7 @@ ethnicity = patients.with_these_clinical_events(
   # # emergency attendance for covid
   # covidemergency_0_date=patients.attended_emergency_care(
   #   returning="date_arrived",
-  #   on_or_before="index_date - 1 day",
+  #   on_or_before=f"{index_date} - 1 day",
   #   with_these_diagnoses = codelists.covid_emergency,
   #   date_format="YYYY-MM-DD",
   #   find_last_match_in_period=True,
@@ -181,7 +175,7 @@ ethnicity = patients.with_these_clinical_events(
   #   returning="date_admitted",
   #   with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],
   #   with_these_diagnoses=codelists.covid_icd10,
-  #   on_or_before="index_date - 1 day",
+  #   on_or_before=f"{index_date} - 1 day",
   #   date_format="YYYY-MM-DD",
   #   find_last_match_in_period=True,
   # ),
