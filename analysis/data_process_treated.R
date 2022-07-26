@@ -9,6 +9,25 @@
 ######################################
 
 
+# import command-line arguments ----
+
+args <- commandArgs(trailingOnly=TRUE)
+
+
+if(length(args)==0){
+  # use for interactive testing
+  removeobjects <- FALSE
+  agegroup <- "over12"
+} else {
+  #FIXME replace with actual eventual action variables
+  removeobjects <- TRUE
+  agegroup <- args[[1]]
+}
+
+# define vaccination of interest
+if(agegroup=="under12") treatment <- "pfizerC"
+if(agegroup=="over12") treatment <- "pfizerA"
+
 
 
 # Import libraries ----
@@ -16,6 +35,7 @@ library('tidyverse')
 library('lubridate')
 library('arrow')
 library('here')
+library('glue')
 
 source(here("lib", "functions", "utility.R"))
 
@@ -38,13 +58,13 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
 
-  data_studydef_dummy <- read_feather(here("output", "input.feather")) %>%
+  data_studydef_dummy <- read_feather(here("output", "input_treated.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), ~ as.Date(.))) %>%
     # because of a bug in cohort extractor -- remove once pulled new version
     mutate(patient_id = as.integer(patient_id))
 
-  data_custom_dummy <- read_feather(here("lib", "dummydata", "dummyinput.feather")) %>%
+  data_custom_dummy <- read_feather(here("lib", "dummydata", "dummyinput_treated.feather")) %>%
     mutate(
       msoa = sample(factor(c("1", "2")), size=n(), replace=TRUE) # override msoa so matching success more likely
     )
@@ -86,7 +106,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 
   data_extract <- data_custom_dummy 
 } else {
-  data_extract <- read_feather(here("output", "input.feather")) %>%
+  data_extract <- read_feather(here("output", "input_treated.feather")) %>%
     #because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"),  as.Date))
 }
@@ -160,89 +180,10 @@ data_processed <- data_extract %>%
     # multimorb = cut(multimorb, breaks = c(0, 1, 2, Inf), labels=c("0", "1", "2+"), right=FALSE),
     # immuno = immunosuppressed | asplenia,
 
-
-    # original priority groups https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1007737/Greenbook_chapter_14a_30July2021.pdf#page=15
-    # new priority groups https://www.england.nhs.uk/coronavirus/wp-content/uploads/sites/52/2021/07/C1327-covid-19-vaccination-autumn-winter-phase-3-planning.pdf
-    # group 10 split into 16-39 and 40-49 because of earlier roll-out in 40+ from 15 Nov https://www.gov.uk/government/news/jcvi-issues-advice-on-covid-19-booster-vaccines-for-those-aged-40-to-49-and-second-doses-for-16-to-17-year-olds
-
-    # jcvi_ageband = cut(
-    #   age_august2021,
-    #   breaks=c(-Inf, 18, 40, 50, 55, 60, 65, 70, 75, 80, Inf),
-    #   labels=c("under 18", "18-39", "40-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80+"),
-    #   right=FALSE
-    # ),
-
-
-    # jcvi_group = fct_case_when(
-    #   care_home_combined | hscworker  ~ "1",
-    #   age_august2021>=80 ~ "2",
-    #   age_august2021>=75 ~ "3",
-    #   age_august2021>=70 | (cev & (age_august2021>=16)) ~ "4",
-    #   age_august2021>=65 ~ "5",
-    #   between(age_august2021, 16, 64.999) & cv ~ "6",
-    #   age_august2021>=60 ~ "7",
-    #   age_august2021>=55 ~ "8",
-    #   age_august2021>=50 ~ "9",
-    #   age_august2021>=40 ~ "10a",
-    #   TRUE ~ "10b"
-    # ),
-    # 
-    # jcvi_group_descr = fct_recode(
-    #   jcvi_group,
-    #   "Care home residents and health and social care workers"="1",
-    #   "80+ years"="2",
-    #   "75-79 years"="3",
-    #   "70-74 years or clinically extremely vulnerable"="4",
-    #   "65-69 years"="5",
-    #   "16-64 years or clinically at-risk"="6",
-    #   "60-64 years"="7",
-    #   "55-59 years"="8",
-    #   "50-54 years"="9",
-    #   "40-49 years"="10a",
-    #   "16-39 years"="10b"
-    # ),
-
-
     # prior_tests_cat = cut(prior_covid_test_frequency, breaks=c(0, 1, 2, 3, Inf), labels=c("0", "1", "2", "3+"), right=FALSE),
 
     # prior_covid_infection0 = (!is.na(positive_test_0_date)) | (!is.na(admitted_covid_0_date)) | (!is.na(primary_care_covid_case_0_date)),
 
-
-    #covidemergency_1_date = pmin(covidemergency_1_date, covidadmitted_1_date, na.rm=TRUE),
-
-    # # because this value is returned as a factor by the study definition
-    # admitted_covid_ccdays_1 = as.numeric(as.character(admitted_covid_ccdays_1)),
-    # admitted_covid_ccdays_2 = as.numeric(as.character(admitted_covid_ccdays_2)),
-    # admitted_covid_ccdays_3 = as.numeric(as.character(admitted_covid_ccdays_3)),
-    # admitted_covid_ccdays_4 = as.numeric(as.character(admitted_covid_ccdays_4)),
-    # 
-    # 
-    # covidcc_1_date = case_when(
-    #   admitted_covid_ccdays_1 > 0 ~ admitted_covid_1_date,
-    #   admitted_covid_ccdays_2 > 0 ~ admitted_covid_2_date,
-    #   admitted_covid_ccdays_3 > 0 ~ admitted_covid_3_date,
-    #   admitted_covid_ccdays_4 > 0 ~ admitted_covid_4_date,
-    #   TRUE ~ as.Date(NA_character_)
-    # ),
-    # 
-    # covidcc_2_date = case_when(
-    #   (admitted_covid_ccdays_2 > 0) & (admitted_covid_2_date > covidcc_1_date) ~ admitted_covid_2_date,
-    #   (admitted_covid_ccdays_3 > 0) & (admitted_covid_3_date > covidcc_1_date) ~ admitted_covid_3_date,
-    #   (admitted_covid_ccdays_4 > 0) & (admitted_covid_4_date > covidcc_1_date) ~ admitted_covid_4_date,
-    #   TRUE ~ as.Date(NA_character_)
-    # ),
-    # 
-    # covidcc_3_date = case_when(
-    #   (admitted_covid_ccdays_3 > 0) & (admitted_covid_3_date > covidcc_2_date) ~ admitted_covid_3_date,
-    #   (admitted_covid_ccdays_4 > 0) & (admitted_covid_4_date > covidcc_2_date) ~ admitted_covid_4_date,
-    #   TRUE ~ as.Date(NA_character_)
-    # ),
-    # 
-    # covidcc_4_date = case_when(
-    #   (admitted_covid_ccdays_4 > 0) & (admitted_covid_4_date > covidcc_3_date) ~ admitted_covid_4_date,
-    #   TRUE ~ as.Date(NA_character_)
-    # ),
-    # 
     # # latest covid event before study start
     # anycovid_0_date = pmax(positive_test_0_date, covidemergency_0_date, admitted_covid_0_date, na.rm=TRUE),
     # 
@@ -251,13 +192,11 @@ data_processed <- data_extract %>%
     # 
     # noncoviddeath_date = if_else(!is.na(death_date) & is.na(coviddeath_date), death_date, as.Date(NA_character_)),
     # 
-    # 
     # cause_of_death = fct_case_when(
     #   !is.na(coviddeath_date) ~ "covid-related",
     #   !is.na(death_date) ~ "not covid-related",
     #   TRUE ~ NA_character_
     # ),
-
 
   )
 
@@ -265,16 +204,17 @@ data_processed <- data_extract %>%
 
 data_vax <- local({
 
-  # data_vax_all <- data_processed %>%
-  #   select(patient_id, matches("covid\\_vax\\_\\d+\\_date")) %>%
-  #   pivot_longer(
-  #     cols = -patient_id,
-  #     names_to = c(NA, "vax_index"),
-  #     names_pattern = "^(.*)_(\\d+)_date",
-  #     values_to = "date",
-  #     values_drop_na = TRUE
-  #   ) %>%
-  #   arrange(patient_id, date)
+  data_vax_any <- data_processed %>%
+    select(patient_id, matches("covid\\_vax\\_any\\_\\d+\\_date")) %>%
+    pivot_longer(
+      cols = -patient_id,
+      names_to = c(NA, "vax_any_index"),
+      names_pattern = "^(.*)_(\\d+)_date",
+      values_to = "date",
+      values_drop_na = TRUE
+    ) %>%
+    arrange(patient_id, date)
+  
   data_vax_pfizerA <- data_processed %>%
     select(patient_id, matches("covid\\_vax\\_pfizerA\\_\\d+\\_date")) %>%
     pivot_longer(
@@ -299,12 +239,14 @@ data_vax <- local({
   
  
   data_vax <-
-    data_vax_pfizerA %>%
+    data_vax_any %>%
+    full_join(data_vax_pfizerA, by=c("patient_id", "date")) %>%
     full_join(data_vax_pfizerC, by=c("patient_id", "date")) %>%
     mutate(
       type = fct_case_when(
         is.na(vax_pfizerC_index) & (!is.na(vax_pfizerA_index)) ~ "pfizerA",
-        !is.na(vax_pfizerC_index) & is.na(vax_pfizerA_index)  ~ "pfizerC",
+        (!is.na(vax_pfizerC_index)) & is.na(vax_pfizerA_index)  ~ "pfizerC",
+        !is.na(vax_any_index) ~ "other",
         TRUE ~ NA_character_
       )
     ) %>%
@@ -336,16 +278,16 @@ data_processed <- data_processed %>%
     vax1_type_descr = fct_case_when(
       vax1_type == "pfizerA" ~ "BNT162b2 30micrograms/0.3ml",
       vax1_type == "pfizerC" ~ "BNT162b2 10mcg/0.2ml",
+      vax1_type == "any" ~ "Other",
       TRUE ~ NA_character_
     ),
     vax2_type_descr = fct_case_when(
-      vax1_type == "pfizerA" ~ "BNT162b2 30micrograms/0.3ml",
-      vax1_type == "pfizerC" ~ "BNT162b2 10mcg/0.2ml",
+      vax2_type == "pfizerA" ~ "BNT162b2 30micrograms/0.3ml",
+      vax2_type == "pfizerC" ~ "BNT162b2 10mcg/0.2ml",
+      vax2_type == "any" ~ "Other",
       TRUE ~ NA_character_
     ),
     
-    vax12_type_descr = paste0(vax1_type_descr, "-", vax2_type_descr),
-
     vax1_date = covid_vax_1_date,
     vax2_date = covid_vax_2_date,
    
@@ -355,4 +297,74 @@ select(
 )
 
 
-write_rds(data_processed, here("output", "data", "data_processed.rds"), compress="gz")
+#write_rds(data_processed, here("output", "data", "data_processed_treated.rds"), compress="gz")
+
+
+
+## select eligible patients and create flowchart ----
+
+
+
+# Define selection criteria ----
+data_criteria <- data_processed %>%
+  transmute(
+    patient_id,
+    has_age = !is.na(age),
+    has_sex = !is.na(sex) & !(sex %in% c("I", "U")),
+    has_imd = imd_Q5 != "Unknown",
+    #has_ethnicity = !is.na(ethnicity_combined),
+    has_region = !is.na(region),
+    vax1_betweenentrydates = case_when(
+      (vax1_type==treatment) & (vax1_date >= study_dates[[glue("first{agegroup}_date")]]) & (vax1_date <= study_dates[[glue("{agegroup}end_date")]]) ~ TRUE,
+      TRUE ~ FALSE
+    ),
+    has_vaxgap12 = vax2_date >= (vax1_date+17), # at least 17 days between first two vaccinations
+
+    include = (
+      vax1_betweenentrydates & has_vaxgap12  &
+        has_age & has_sex & has_imd & # has_ethnicity &
+        has_region 
+    ),
+  )
+
+data_treated_eligible <- 
+  data_criteria %>%
+  filter(include) %>%
+  select(patient_id) %>%
+  left_join(data_processed, by="patient_id") %>%
+  droplevels()
+
+write_rds(data_treated_eligible, here("output", "data", "data_treated_eligible.rds"), compress="gz")
+
+
+## Flowchart ----
+
+
+data_flowchart <- data_criteria %>%
+  transmute(
+    c0 = vax1_betweenentrydates & has_vaxgap12,
+    c1 = c0 & (has_age & has_sex & has_imd & has_region),
+  ) %>%
+  summarise(
+    across(.fns=sum)
+  ) %>%
+  pivot_longer(
+    cols=everything(),
+    names_to="criteria",
+    values_to="n"
+  ) %>%
+  mutate(
+    n_exclude = lag(n) - n,
+    pct_exclude = n_exclude/lag(n),
+    pct_all = n / first(n),
+    pct_step = n / lag(n),
+    crit = str_extract(criteria, "^c\\d+"),
+    criteria = fct_case_when(
+      crit == "c0" ~ "Received age-correct vaccine within study entry dates", 
+      crit == "c1" ~ "  with no missing demographic information",
+      TRUE ~ NA_character_
+    )
+  )
+write_csv(data_flowchart, here("output", "data", "flowchart_treated_eligible.csv"))
+
+

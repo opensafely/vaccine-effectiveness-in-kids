@@ -16,7 +16,7 @@ library('glue')
 library('dd4d')
 
 
-population_size <- 200000
+population_size <- 20000
 
 # get nth largest value from list
 nthmax <- function(x, n=1){
@@ -60,24 +60,20 @@ sim_list = lst(
     ~as.integer(rnorm(n=..n, mean=10, sd=2))
   ),
   
-  casecontrol = bn_node(
+  treated = bn_node(
     ~rbernoulli(n=..n, p = 0.3),
-    missing_rate = ~0.001
   ),
   
   registered = bn_node(
     ~rbernoulli(n=..n, p = 1),
-    missing_rate = ~0.001
   ),
   
   has_died =  bn_node(
     ~rbernoulli(n=..n, p = 0.1),
-    missing_rate = ~0.001
   ),
   
   atrisk_group = bn_node(
     ~rbernoulli(n=..n, p = 0.1),
-    missing_rate = ~0.001
   ),
   
   ethnicity = bn_node(
@@ -144,31 +140,27 @@ sim_list = lst(
   # 
   
   ## vaccination variables
-
+  
+  first_vax_type = bn_node(~rcat(n=..n, c("pfizerA","pfizerC"), c(0.5,0.5)), keep=FALSE),
+  
   covid_vax_pfizerA_1_day = bn_node(
-    ~as.integer(runif(n=..n, first_pfizerA_day, first_pfizerA_day+60)),
-    missing_rate = ~0.45
+    ~as.integer(runif(n=..n, first_pfizerA_day, first_pfizerA_day+90)),
+    missing_rate = ~1-(first_vax_type=="pfizerA")
   ),
   covid_vax_pfizerA_2_day = bn_node(
-    ~as.integer(runif(n=..n, covid_vax_pfizerA_1_day+30, covid_vax_pfizerA_1_day+60)),
+    ~as.integer(runif(n=..n, covid_vax_pfizerA_1_day+180, covid_vax_pfizerA_1_day+240)),
     needs = c("covid_vax_pfizerA_1_day"),
   ),
+  
   covid_vax_pfizerC_1_day = bn_node(
-    ~as.integer(runif(n=..n, first_pfizerC_day, first_pfizerC_day+60)),
-    missing_rate = ~ 0.9
+    ~as.integer(runif(n=..n, first_pfizerC_day, first_pfizerC_day+90)),
+    missing_rate = ~1-(first_vax_type=="pfizerC")
   ),
   covid_vax_pfizerC_2_day = bn_node(
-    ~as.integer(runif(n=..n, covid_vax_pfizerC_1_day+30, covid_vax_pfizerC_1_day+60)),
+    ~as.integer(runif(n=..n, covid_vax_pfizerC_1_day+180, covid_vax_pfizerC_1_day+240)),
     needs = c("covid_vax_pfizerC_1_day"),
   ),
   
-  # covid vax any
-  covid_vax_disease_1_day = bn_node(
-    ~pmin(covid_vax_pfizerA_1_day, covid_vax_pfizerC_1_day, na.rm=TRUE),
-  ),
-  covid_vax_disease_2_day = bn_node(
-    ~pmin(covid_vax_pfizerA_2_day, covid_vax_pfizerC_2_day,na.rm=TRUE),
-  ),
   
   ## baseline clinical variables
   
@@ -347,15 +339,11 @@ dummydata <-bn_simulate(bn, pop_size = population_size, keep_all = FALSE, .id="p
 
 
 dummydata_processed <- dummydata %>%
-  # change index date from fixed to third / booster dose date
-  
   mutate(
-    across(c(
-      
-    ))
-  ) %>%
-  
-  mutate(
+    
+    # covid vax any
+    covid_vax_any_1_day = pmin(covid_vax_pfizerA_1_day, covid_vax_pfizerC_1_day, na.rm=TRUE),
+    covid_vax_any_2_day = pmin(covid_vax_pfizerA_2_day, covid_vax_pfizerC_2_day, na.rm=TRUE),
     
   ) %>%
   #convert logical to integer as study defs output 0/1 not TRUE/FALSE
@@ -367,3 +355,6 @@ dummydata_processed <- dummydata %>%
 
 fs::dir_create(here("lib", "dummydata"))
 write_feather(dummydata_processed, sink = here("lib", "dummydata", "dummyinput.feather"))
+
+write_feather(dummydata_processed %>% filter(treated) %>% select(-treated), sink = here("lib", "dummydata", "dummyinput_treated.feather"))
+write_feather(dummydata_processed %>% filter(!treated) %>% select(-treated), sink = here("lib", "dummydata", "dummyinput_control_potential1.feather"))

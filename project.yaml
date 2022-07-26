@@ -5,8 +5,8 @@ expectations:
 
 actions:
 
-  generate_study_population_case:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_case  --output-format feather
+  generate_study_treated:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_treated  --output-format feather
     outputs:
       highly_sensitive:
         cohort: output/input_case.feather

@@ -10,11 +10,11 @@ import json
 ############################################################
 ## inclusion variables
 from variables_inclusion import generate_inclusion_variables 
-inclusion_variables = generate_inclusion_variables(index_date="covid_vax_disease_1_date")
+inclusion_variables = generate_inclusion_variables(index_date="covid_vax_any_1_date")
 ############################################################
 ## matching variables
 from variables_matching import generate_matching_variables 
-matching_variables = generate_matching_variables(index_date="covid_vax_disease_1_date")
+matching_variables = generate_matching_variables(index_date="covid_vax_any_1_date")
 ############################################################
 
 
@@ -74,12 +74,12 @@ study = StudyDefinition(
       AND
       NOT atrisk_group
       AND 
-      covid_vax_disease_1_date >= startdate
+      covid_vax_any_1_date >= startdate
       AND
-      covid_vax_disease_1_date <= enddate
+      covid_vax_any_1_date <= enddate
       AND 
       (
-      covid_vax_disease_1_date=covid_vax_pfizerA_1_date
+      covid_vax_any_1_date=covid_vax_pfizerA_1_date
       )
     """,
   startdate = patients.fixed_value(studystart_date),
@@ -87,7 +87,7 @@ study = StudyDefinition(
   ),
   
   **vaccination_date_X(
-    name = "covid_vax_disease",
+    name = "covid_vax_any",
     index_date = "1900-01-01",
     n = 2,
     target_disease_matches="SARS-2 CORONAVIRUS"
