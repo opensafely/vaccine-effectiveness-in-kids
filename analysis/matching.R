@@ -59,7 +59,7 @@ study_dates <-
 
 
 ## import treated populations ----
-data_treated <- read_rds(here("output", "data", "data_treated_eligible.rds")) %>% mutate(treated=1L)
+data_alltreated <- read_rds(here("output", "data", "data_treated_eligible.rds")) %>% mutate(treated=1L)
 
 ## import control populations ----
 data_control <- read_rds(here("output", "data", glue("data_control_potential{matching_round}.rds"))) %>% mutate(treated=0L)
@@ -73,8 +73,8 @@ if(matching_round>1){
     filter(matched) %>%
     select(patient_id, treated)
   
-  data_treated <- 
-    data_treated %>%
+  data_alltreated <- 
+    data_alltreated %>%
     anti_join(
       data_matchstatusprevious, by=c("patient_id", "treated")
     )
@@ -95,7 +95,7 @@ exact_variables <- c("age", "sex", "region")
 caliper_variables <- character()
 
 data_eligible <-
-  bind_rows(data_treated, data_control) %>%
+  bind_rows(data_alltreated, data_control) %>%
   mutate(
     
     treatment_date = if_else(vax1_type %in% treatment, vax1_date, as.Date(NA))-1, # -1 because we assume vax occurs at the start of the day
@@ -138,7 +138,6 @@ data_eligible <-
 
   ) 
 
-if(removeobjects) rm(data_eligible0)
 
 local({
 
