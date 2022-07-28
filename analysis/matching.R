@@ -115,6 +115,7 @@ data_eligible <-
       #dereg_date,
       #competingtreatment_date-1, # -1 because we assume vax occurs at the start of the day
       vax2_date-1, # -1 because we assume vax occurs at the start of the day
+      study_dates[[glue("{agegroup}followupend_date")]],
       na.rm=TRUE
     ),
 
