@@ -85,7 +85,7 @@ write_rds(postbaselinecuts, here("lib", "design", "postbaselinecuts.rds"))
 # what matching variables
 exact_variables <- c(
 
-  "jcvi_ageband",
+  "ageband",
   "cev_cv",
   "vax12_type",
   #"vax2_week",
