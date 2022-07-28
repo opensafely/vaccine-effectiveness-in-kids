@@ -250,7 +250,7 @@ local({
        # caliper = caliper_variables, std.caliper=FALSE,
         m.order = "data", # data is sorted on (effectively random) patient ID
         #verbose = TRUE,
-        ratio = 1L # irritatingly you can't set this for "exact" method, so have to filter later
+        ratio = 1L 
       )[[1]]
 
     
@@ -298,12 +298,12 @@ local({
       filter(!is.na(match_id)) %>% # remove unmatched people. equivalent to weight != 0
       arrange(match_id, desc(treated)) %>%
       left_join(
-        data_eligible %>% select(patient_id, censor_date, treatment_date),
-        by = "patient_id"
+        data_eligible %>% select(patient_id, treated, censor_date, vax1_date),
+        by = c("patient_id", "treated")
       ) %>%
       group_by(match_id) %>%
       mutate(
-        controlistreated_date = treatment_date[treated==0], # this only works because of the group_by statement above! do not remove group_by statement!
+        controlistreated_date = vax1_date[treated==0], # this only works because of the group_by statement above! do not remove group_by statement!
         matchcensor_date = pmin(censor_date, controlistreated_date, na.rm=TRUE), # new censor date based on whether control gets treated or not
       ) %>%
       ungroup()

@@ -174,6 +174,8 @@ data_processed <- data_extract %>%
     #   !is.na(death_date) ~ "not covid-related",
     #   TRUE ~ NA_character_
     # ),
+    
+    vax1_date = covid_vax_any_1_date
 
   )
 
