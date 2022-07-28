@@ -147,39 +147,6 @@ data_processed <- data_extract %>%
       `South West` = "South West"
     ),
 
-    # rural_urban_group = fct_case_when(
-    #   rural_urban %in% c(1,2) ~ "Urban conurbation",
-    #   rural_urban %in% c(3,4) ~ "Urban city or town",
-    #   rural_urban %in% c(5,6,7,8) ~ "Rural town or village",
-    #   TRUE ~ NA_character_
-    # ),
-
-    # care_home_combined = care_home_tpp | care_home_code, # any carehome flag
-
-    # clinically at-risk group
-    # cv = immunosuppressed | chronic_kidney_disease | chronic_resp_disease | diabetes | chronic_liver_disease |
-    #   chronic_neuro_disease | chronic_heart_disease | asplenia | learndis | sev_mental,
-    # 
-    # cev_cv = fct_case_when(
-    #   cev ~ "Clinically extremely vulnerable",
-    #   cv ~ "Clinically at-risk",
-    #   TRUE ~ "Not clinically at-risk"
-    # ) %>% fct_rev(),
-
-    # multimorb =
-    #   (sev_obesity) +
-    #   (chronic_heart_disease) +
-    #   (chronic_kidney_disease)+
-    #   (diabetes) +
-    #   (chronic_liver_disease)+
-    #   (chronic_resp_disease | asthma)+
-    #   (chronic_neuro_disease)#+
-    #   #(learndis)+
-    #   #(sev_mental),
-    # ,
-    # multimorb = cut(multimorb, breaks = c(0, 1, 2, Inf), labels=c("0", "1", "2+"), right=FALSE),
-    # immuno = immunosuppressed | asplenia,
-
     # prior_tests_cat = cut(prior_covid_test_frequency, breaks=c(0, 1, 2, 3, Inf), labels=c("0", "1", "2", "3+"), right=FALSE),
 
     # prior_covid_infection0 = (!is.na(positive_test_0_date)) | (!is.na(admitted_covid_0_date)) | (!is.na(primary_care_covid_case_0_date)),
