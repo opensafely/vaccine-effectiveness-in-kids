@@ -52,6 +52,8 @@ def generate_inclusion_variables(index_date):
           learndis_1
           OR
           sevment_group
+          OR
+          preg1_group
           """,
           ##### patients with immunosuppression
           immunogroup = patients.satisfying(
