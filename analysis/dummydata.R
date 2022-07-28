@@ -3,8 +3,8 @@
 #install_version("tidyr", version = "1.1.2",lib="C:/Program Files/R/R-4.1.3/library")
 #install_version("tidyverse", version = "1.3.0",lib="C:/Program Files/R/R-4.1.3/library")
 
-library('tidyr', lib.loc = "C:/Program Files/R/R-4.1.3/library")
-library('tidyverse', lib.loc = "C:/Program Files/R/R-4.1.3/library")
+library('tidyr')#, lib.loc = "C:/Program Files/R/R-4.1.3/library")
+library('tidyverse')#, lib.loc = "C:/Program Files/R/R-4.1.3/library")
 #library('tidyverse')
 library('arrow')
 library('here')
@@ -27,12 +27,12 @@ source(here("lib", "design", "design.R"))
 
 
 studystart_date <- as.Date(study_dates$over12start_date)
-studyend_date <- as.Date(study_dates$studyend_date)
-over12end_date <- as.Date(study_dates$over12end_date)
+studyend_date <- as.Date(study_dates$over12end_date)
+followupend_date <- as.Date(study_dates$over12followupend_date)
 index_date <- as.Date(study_dates$over12start_date)
 
-first_pfizerA_date <- as.Date(study_dates$firstover12_date)
-first_pfizerC_date <- as.Date(study_dates$firsunder12_date)
+first_pfizerA_date <- as.Date(study_dates$over12start_date)
+first_pfizerC_date <- as.Date(study_dates$under12start_date)
 
 index_day <- 0L
 studystart_day <- as.integer(studystart_date - index_date)

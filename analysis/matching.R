@@ -59,7 +59,7 @@ study_dates <-
 
 
 ## import treated populations ----
-data_treated <- read_rds(here("output", "data", "data_treated_eligible.rds")) %>% mutate(treated=1L)
+data_alltreated <- read_rds(here("output", "data", "data_treated_eligible.rds")) %>% mutate(treated=1L)
 
 ## import control populations ----
 data_control <- read_rds(here("output", "data", glue("data_control_potential{matching_round}.rds"))) %>% mutate(treated=0L)
@@ -73,8 +73,8 @@ if(matching_round>1){
     filter(matched) %>%
     select(patient_id, treated)
   
-  data_treated <- 
-    data_treated %>%
+  data_alltreated <- 
+    data_alltreated %>%
     anti_join(
       data_matchstatusprevious, by=c("patient_id", "treated")
     )
@@ -95,7 +95,7 @@ exact_variables <- c("age", "sex", "region")
 caliper_variables <- character()
 
 data_eligible <-
-  bind_rows(data_treated, data_control) %>%
+  bind_rows(data_alltreated, data_control) %>%
   mutate(
     
     treatment_date = if_else(vax1_type %in% treatment, vax1_date, as.Date(NA))-1, # -1 because we assume vax occurs at the start of the day
@@ -106,7 +106,7 @@ data_eligible <-
       #competingtreatment_date-1, # -1 because we assume vax occurs at the start of the day
       vax2_date-1, # -1 because we assume vax occurs at the start of the day
       #death_date,
-      study_dates$studyend_date,
+      study_dates[[glue("{agegroup}followupend_date")]],
       na.rm=TRUE
     ),
 
@@ -115,7 +115,7 @@ data_eligible <-
       #dereg_date,
       #competingtreatment_date-1, # -1 because we assume vax occurs at the start of the day
       vax2_date-1, # -1 because we assume vax occurs at the start of the day
-      study_dates$studyend_date,
+      study_dates[[glue("{agegroup}followupend_date")]],
       na.rm=TRUE
     ),
 
@@ -138,7 +138,6 @@ data_eligible <-
 
   ) 
 
-if(removeobjects) rm(data_eligible0)
 
 local({
 
@@ -251,7 +250,7 @@ local({
        # caliper = caliper_variables, std.caliper=FALSE,
         m.order = "data", # data is sorted on (effectively random) patient ID
         #verbose = TRUE,
-        ratio = 1L # irritatingly you can't set this for "exact" method, so have to filter later
+        ratio = 1L 
       )[[1]]
 
     
@@ -299,12 +298,12 @@ local({
       filter(!is.na(match_id)) %>% # remove unmatched people. equivalent to weight != 0
       arrange(match_id, desc(treated)) %>%
       left_join(
-        data_eligible %>% select(patient_id, censor_date, treatment_date),
-        by = "patient_id"
+        data_eligible %>% select(patient_id, treated, censor_date, vax1_date),
+        by = c("patient_id", "treated")
       ) %>%
       group_by(match_id) %>%
       mutate(
-        controlistreated_date = treatment_date[treated==0], # this only works because of the group_by statement above! do not remove group_by statement!
+        controlistreated_date = vax1_date[treated==0], # this only works because of the group_by statement above! do not remove group_by statement!
         matchcensor_date = pmin(censor_date, controlistreated_date, na.rm=TRUE), # new censor date based on whether control gets treated or not
       ) %>%
       ungroup()
