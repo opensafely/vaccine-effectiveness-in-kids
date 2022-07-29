@@ -71,12 +71,16 @@ exact_variables <- c("age", "sex", "region")
 caliper_variables <- character()
 
 
+## trial info for matched controls
+data_control_matchinfo <- read_csv(fs::path(output_dir, glue("potential_matched_controls{matching_round}.csv.gz")))
+
 # use externally created dummy data if not running in the server
 # check variables are as they should be
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   
   # just reuse previous extraction for dummy run
-  data_extract <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==0L) %>% select(patient_id, treated, all_of(exact_variables))
+  data_extract <- read_feather(fs::path("output", glue("input_control_potential_{matching_round_date}.feather"))) %>%
+    filter(patient_id %in% data_control_matchinfo$patient_id)
 
 } else {
   data_extract <- read_feather(fs::path("output", glue("input_control_match{matching_round}.feather"))) %>%
@@ -85,17 +89,66 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 }
 
 
+data_processed <- 
+  data_extract %>%
+  mutate(
+    
+    sex = fct_case_when(
+      sex == "F" ~ "Female",
+      sex == "M" ~ "Male",
+      #sex == "I" ~ "Inter-sex",
+      #sex == "U" ~ "Unknown",
+      TRUE ~ NA_character_
+    ),
+    
+    region = fct_collapse(
+      region,
+      `East of England` = "East",
+      `London` = "London",
+      `Midlands` = c("West Midlands", "East Midlands"),
+      `North East and Yorkshire` = c("Yorkshire and The Humber", "North East"),
+      `North West` = "North West",
+      `South East` = "South East",
+      `South West` = "South West"
+    ),
+    
+    vax1_date = covid_vax_any_1_date
+    
+  )
+
+# Define selection criteria ----
+data_criteria <- data_processed %>%
+  transmute(
+    patient_id,
+    has_age = !is.na(age),
+    has_sex = !is.na(sex) & !(sex %in% c("I", "U")),
+    has_imd = imd_Q5 != "Unknown",
+    #has_ethnicity = !is.na(ethnicity_combined),
+    has_region = !is.na(region),
+    include = (
+      has_age & has_sex & has_imd & # has_ethnicity &
+        has_region 
+    ),
+  )
+
+data_control0 <- data_criteria %>%
+  filter(include) %>%
+  select(patient_id) %>%
+  left_join(data_control0, by="patient_id") %>%
+  droplevels()
+
+
+
 data_treated <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==1L)
 
-data_control_matchinfo <- read_csv(fs::path(output_dir, glue("potential_matched_controls{matching_round}.csv.gz")))
 
-data_control <- data_extract %>% 
+
+data_control <- data_control0 %>% 
   mutate(treated=0L) %>%
   left_join(data_control_matchinfo, by="patient_id")
 
 matching_candidates <- 
   bind_rows(data_treated, data_control) 
-
 
 
 ## Easiest thing is to rematch, with additional exact matching on "match_id" and "trial_date"
