@@ -369,6 +369,7 @@ data_matchstatus %>%
   write_csv(fs::path(output_dir, glue("potential_matched_controls{matching_round}.csv.gz")))
 
 
+print(paste0("number of duplicate control IDs is ", data_matchstatus %>% filter(control==1L) %>% group_by(patient_id) %>% summarise(n=n()) %>% filter(n>1) %>% nrow() ))
 
 data_matched <- 
   data_matchstatus %>%
