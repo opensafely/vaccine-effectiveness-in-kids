@@ -354,6 +354,8 @@ write_rds(data_matchstatus, fs::path(output_dir, glue("data_potential_matchstatu
 # number of treated/controls per trial
 with(data_matchstatus %>% filter(matched==1), table(trial_time, treated))
 
+# total matched pairs
+with(data_matchstatus %>% filter(matched==1), table(treated))
 
 # max trial date
 print(paste0("max trial day is ", as.integer(max(data_matchstatus %>% filter(matched==1) %>% pull(trial_time), na.rm=TRUE))))
