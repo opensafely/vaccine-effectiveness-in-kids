@@ -173,6 +173,8 @@ local({
     trial_time <- trial-1
     trial_date <- study_dates[[glue("{agegroup}start_date")]]+trial_time
 
+    
+    # set of people vaccinated on trial day
     data_treated_i <-
       data_eligible %>%
       filter(
@@ -192,8 +194,7 @@ local({
     # append total treated on trial day i to all previous treated people
     data_treated <- bind_rows(data_treated, data_treated_i)
 
-    # set of people boosted on trial day, + their candidate controls
-    
+    # set of people still eligible for control inclusion on trial day
     data_control_i <-
       data_eligible %>%
       filter(
@@ -313,7 +314,7 @@ local({
     # append matched data to matches from previous trials
     data_matched <- bind_rows(data_matched, data_matched_i)
     
-    #update list of candidate controls to those who have not already been recruited
+    # update list of candidate controls to those who have not already been recruited
     candidate_ids0 <- candidate_ids0[!(candidate_ids0 %in% data_matched_i$patient_id)]
 
   }
@@ -340,7 +341,7 @@ local({
     left_join(data_matched %>% filter(control==0L), by=c("patient_id", "trial_time", "trial_date")) %>%
     mutate(
       matched = replace_na(matched, 0L), # 1 if matched, 0 if unmatched
-      control = if_else(matched==1L, 0L, NA_integer_) # 0 if matched control, 1 if matched treated, NA if unmatched treated
+      control = if_else(matched==1L, 0L, NA_integer_) # 1 if matched control, 0 if matched treated, NA if unmatched treated
     ) %>%
     bind_rows(
       data_matched %>% filter(control==1L) %>% mutate(treated=0L)
@@ -349,6 +350,13 @@ local({
 
 # output matching status ----
 write_rds(data_matchstatus, fs::path(output_dir, glue("data_potential_matchstatus{matching_round}.rds")), compress="gz")
+
+# number of treated/controls per trial
+with(data_matchstatus %>% filter(matched==1), table(trial_time, treated))
+
+
+# max trial date
+print(paste0("max trial day is ", as.integer(max(data_matchstatus %>% filter(matched==1) %>% pull(trial_time), na.rm=TRUE))))
 
 
 # output csv for subsequent study definition
@@ -359,12 +367,6 @@ data_matchstatus %>%
     trial_date=as.character(trial_date)
   ) %>%
   write_csv(fs::path(output_dir, glue("potential_matched_controls{matching_round}.csv.gz")))
-
-# number of treated/controls per trial
-with(data_matchstatus %>% filter(matched==1), table(trial_time, treated))
-
-# max trial date
-print(paste0("max trial day is ", as.integer(max(data_matchstatus %>% filter(matched==1) %>% pull(trial_time), na.rm=TRUE))))
 
 
 
