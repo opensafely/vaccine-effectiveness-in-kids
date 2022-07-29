@@ -229,12 +229,13 @@ local({
         data_eligible %>% 
           select(
             patient_id, 
+            treated,
             all_of(
               exact_variables#, 
               #names(caliper_variables)
             ),
         ),
-        by = "patient_id"
+        by = c("patient_id", "treated")
       )
     
 
