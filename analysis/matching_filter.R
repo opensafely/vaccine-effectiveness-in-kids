@@ -78,8 +78,8 @@ data_control_matchinfo <- read_csv(fs::path(output_dir, glue("potential_matched_
 # check variables are as they should be
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   
-  # just reuse previous extraction for dummy run
-  data_extract <- read_feather(fs::path("output", glue("input_control_potential_{matching_round_date}.feather"))) %>%
+  # just reuse previous extraction for dummy run dummyinput_control_potential1.feather
+  data_extract <- read_feather(fs::path("lib", "dummydata", glue("dummyinput_control_potential1.feather"))) %>%
     filter(patient_id %in% data_control_matchinfo$patient_id)
 
 } else {
