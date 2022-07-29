@@ -361,7 +361,7 @@ print(paste0("max trial day is ", as.integer(max(data_matchstatus %>% filter(mat
 
 # output csv for subsequent study definition
 data_matchstatus %>% 
-  filter(control==1L) %>% 
+  filter(control==1L, matched==1L) %>% 
   select(patient_id, trial_date, match_id) %>%
   mutate(
     trial_date=as.character(trial_date)
