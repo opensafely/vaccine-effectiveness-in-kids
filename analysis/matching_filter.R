@@ -134,7 +134,7 @@ data_criteria <- data_processed %>%
 data_control0 <- data_criteria %>%
   filter(include) %>%
   select(patient_id) %>%
-  left_join(data_control0, by="patient_id") %>%
+  left_join(data_processed, by="patient_id") %>%
   droplevels()
 
 
