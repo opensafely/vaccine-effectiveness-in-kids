@@ -76,7 +76,7 @@ caliper_variables <- character()
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   
   # just reuse previous extraction for dummy run
-  data_extract <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==0L)
+  data_extract <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==0L) %>% select(patient_id, treated, all_of(exact_variables))
 
 } else {
   data_extract <- read_feather(fs::path("output", glue("input_control_match{matching_round}.feather"))) %>%
@@ -87,7 +87,11 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 
 data_treated <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==1L)
 
-data_control <- data_extract %>% mutate(treated=0L)
+data_control_matchinfo <- read_csv(fs::path(output_dir, glue("potential_matched_controls{matching_round}.csv.gz")))
+
+data_control <- data_extract %>% 
+  mutate(treated=0L) %>%
+  left_join(data_control_matchinfo, by="patient_id")
 
 matching_candidates <- 
   bind_rows(data_treated, data_control) 
