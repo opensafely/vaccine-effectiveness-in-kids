@@ -357,4 +357,4 @@ fs::dir_create(here("lib", "dummydata"))
 write_feather(dummydata_processed, sink = here("lib", "dummydata", "dummyinput.feather"))
 
 write_feather(dummydata_processed %>% filter(treated) %>% select(-treated), sink = here("lib", "dummydata", "dummyinput_treated.feather"))
-write_feather(dummydata_processed %>% filter(!treated) %>% select(-treated), sink = here("lib", "dummydata", "dummyinput_control_potential1.feather"))
+write_feather(dummydata_processed %>% select(-treated), sink = here("lib", "dummydata", "dummyinput_control_potential1.feather"))
