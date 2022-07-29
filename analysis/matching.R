@@ -98,7 +98,7 @@ data_eligible <-
   bind_rows(data_alltreated, data_control) %>%
   mutate(
     
-    treatment_date = if_else(vax1_type %in% treatment, vax1_date, as.Date(NA))-1, # -1 because we assume vax occurs at the start of the day
+    treatment_date = if_else(vax1_type %in% treatment, vax1_date, as.Date(NA)),
 
     # person-time is up to and including censor date #FIXME to include dereg and death dates
     censor_date = pmin(
@@ -124,6 +124,7 @@ data_eligible <-
     
     ## FIXME kept these comments, as the code can be resused once the final cohort is chosen
     ## tte = time-to-event, and always indicates time from study start date
+    ## remember to deduct 1 day from treatment date, as this is no longer done above
     # day0_date = study_dates$index_date-1, # day before the first trial date
     ## possible competing events
     # tte_coviddeath = tte(day0_date, coviddeath_date, noncompetingcensor_date, na.censor=TRUE),
@@ -158,7 +159,7 @@ local({
   trials <- seq(start_trial_time+1, end_trial_time, 1) 
   
   # initialise list of candidate controls
-  candidate_ids0 <- data_control$patient_id
+  candidate_ids <- data_control$patient_id
 
   # initialise matching summary data
   data_treated <- NULL
@@ -171,7 +172,7 @@ local({
 
     cat("matching trial ", trial, "\n")
     trial_time <- trial-1
-    trial_date <- study_dates[[glue("{agegroup}start_date")]]+trial_time
+    trial_date <- study_dates[[glue("{agegroup}start_date")]] + trial_time
 
     
     # set of people vaccinated on trial day
@@ -180,7 +181,7 @@ local({
       filter(
         # select treated
         treated==1L,
-        (censor_date > trial_date) | is.na(censor_date),
+        (censor_date >= trial_date) | is.na(censor_date), # equality here as we censor at the end of the day but assume treatment is at the start of the day
         # select people vaccinated on trial day i
         treatment_date == trial_date
         ) %>% 
@@ -201,11 +202,11 @@ local({
         # select controls
         treated==0L,
         # remove anyone already censored
-        (censor_date > trial_date) | is.na(censor_date),
+        (censor_date >= trial_date) | is.na(censor_date), # equality here as we censor at the end of the day but assume treatment is at the start of the day
         # remove anyone already vaccinated
-        (treatment_date > trial_date) | is.na(treatment_date),
+        (vax1_date > trial_date) | is.na(vax1_date),
         # select only people not already selected as a control
-        patient_id %in% candidate_ids0
+        patient_id %in% candidate_ids
       ) %>%
       transmute(
         patient_id,
@@ -315,7 +316,7 @@ local({
     data_matched <- bind_rows(data_matched, data_matched_i)
     
     # update list of candidate controls to those who have not already been recruited
-    candidate_ids0 <- candidate_ids0[!(candidate_ids0 %in% data_matched_i$patient_id)]
+    candidate_ids <- candidate_ids[!(candidate_ids %in% data_matched_i$patient_id)]
 
   }
 
@@ -329,6 +330,7 @@ local({
       patient_id, 
       match_id, 
       matched=1L, 
+      treated,
       control=1L-treated, 
       trial_time, 
       trial_date, 
@@ -340,7 +342,7 @@ local({
   # includes: unmatched treated; matched treated; matched control
   data_matchstatus <<-
     data_treated %>%
-    left_join(data_matched %>% filter(control==0L), by=c("patient_id", "trial_time", "trial_date")) %>%
+    left_join(data_matched %>% filter(treated==1L, matched==1L), by=c("patient_id", "treated", "trial_time", "trial_date")) %>%
     mutate(
       matched = replace_na(matched, 0L), # 1 if matched, 0 if unmatched
       control = if_else(matched==1L, 0L, NA_integer_) # 1 if matched control, 0 if matched treated, NA if unmatched treated
@@ -348,6 +350,8 @@ local({
     bind_rows(
       data_matched %>% filter(control==1L) %>% mutate(treated=0L)
     )
+  
+  unmatched_control_ids <<- candidate_ids
 })
 
 # output matching status ----
