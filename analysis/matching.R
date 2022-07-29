@@ -336,6 +336,8 @@ local({
       matchcensor_date
     )
 
+  # matching status for all treated people and their controls (if matched).
+  # includes: unmatched treated; matched treated; matched control
   data_matchstatus <<-
     data_treated %>%
     left_join(data_matched %>% filter(control==0L), by=c("patient_id", "trial_time", "trial_date")) %>%
