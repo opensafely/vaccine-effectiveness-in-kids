@@ -79,7 +79,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   data_extract <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==0L)
 
 } else {
-  data_extract <- read_feather(here("output", glue("input_control_potential_{matching_round_date}.feather"))) %>%
+  data_extract <- read_feather(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>%
     #because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"),  as.Date))
 }
