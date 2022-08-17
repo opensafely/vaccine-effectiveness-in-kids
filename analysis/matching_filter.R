@@ -154,6 +154,16 @@ data_control <- data_control0 %>%
 matching_candidates <- 
   bind_rows(data_treated, data_control) 
 
+### debug ###
+
+#print missing values
+
+map(matching_candidates, ~any(is.na(.x)))
+
+### /debug ###
+
+
+#########
 
 ## Easiest thing is to rematch, with additional exact matching on "match_id" and "trial_date"
 ## but might be quite slow
