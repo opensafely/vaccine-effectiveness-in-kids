@@ -387,13 +387,15 @@ data_matched <-
     data_eligible %>%
     select(
       patient_id,
+      treated,
       all_of(
         exact_variables#, 
         #names(caliper_variables)
       ),
     ),
-    by="patient_id"
-  ) 
+    by=c("patient_id", "treated")
+  ) %>% 
+  arrange(trial_date, match_id, treated)
 
 ## output dataset containing all matched pairs + matching factors
 write_rds(data_matched, fs::path(output_dir, glue("data_potential_matched{matching_round}.rds")), compress="gz")
