@@ -10,7 +10,6 @@ opensafely/covid-identification-in-primary-care-exposure-to-disease/2020-06-23
 opensafely/cancer-excluding-lung-and-haematological-snomed/2020-04-15
 opensafely/haematological-cancer-snomed/2020-04-15
 opensafely/lung-cancer-snomed/2020-04-15
-opensafely/haematological-cancer-snomed/2020-04-15
 opensafely/solid-organ-transplantation/2020-04-10/
 opensafely/lung-cancer/2020-04-15/
 opensafely/ethnicity/2020-04-27
