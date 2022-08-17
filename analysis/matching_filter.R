@@ -78,9 +78,13 @@ data_control_matchinfo <- read_csv(fs::path(output_dir, glue("potential_matched_
 # check variables are as they should be
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   
-  # just reuse previous extraction for dummy run dummyinput_control_potential1.feather
+  # just reuse previous extraction for dummy run, dummyinput_control_potential1.feather
+  # and change a few variables to simulate new index dates
   data_extract <- read_feather(fs::path("lib", "dummydata", glue("dummyinput_control_potential1.feather"))) %>%
-    filter(patient_id %in% data_control_matchinfo$patient_id)
+    filter(patient_id %in% data_control_matchinfo$patient_id) %>%
+    mutate(
+      region = if_else(runif(n())<0.05, sample(x=unique(region), size=n(), replace=TRUE), region),
+    )
 
 } else {
   data_extract <- read_feather(fs::path("output", glue("input_control_match{matching_round}.feather"))) %>%
@@ -156,6 +160,8 @@ matching_candidates <-
 
 ## alternative is to compare old matching variables with new matching variables
 ## but if calipers are used it gets a bit tricky
+
+## so we rematch for now
 
 # run matching algorithm
 obj_matchit <-
