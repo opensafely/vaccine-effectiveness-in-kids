@@ -145,11 +145,13 @@ data_control0 <- data_criteria %>%
 
 data_treated <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==1L)
 
-
-
 data_control <- data_control0 %>% 
-  mutate(treated=0L) %>%
-  left_join(data_control_matchinfo, by="patient_id")
+  mutate(treated=0L) 
+
+if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
+  # these variables are not included in the dummy data so join them on here
+  data_control <- data_control %>% left_join(data_control_matchinfo, by="patient_id")
+}
 
 matching_candidates <- 
   bind_rows(data_treated, data_control) 
@@ -242,3 +244,4 @@ write_rds(data_match_actual, fs::path(output_dir, glue("data_match_actual{matchi
 print(glue("{sum(data_matchstatus$matched & data_matchstatus$treated)} matched-pairs kept out of {sum(data_matchstatus$treated)} 
            ({round(100*(sum(data_matchstatus$matched & data_matchstatus$treated) / sum(data_matchstatus$treated)),2)}%)
            "))
+
