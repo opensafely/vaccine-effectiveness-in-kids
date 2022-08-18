@@ -234,8 +234,13 @@ write_rds(data_matchstatus_allrounds, fs::path(output_dir, glue("data_matchstatu
 
 #actual legitimate matches 
 data_match_actual <- 
-  matching_candidates %>% 
-  filter(patient_id %in% (data_matchstatus %>% filter(matched) %>% pull (patient_id))) 
+  data_matchstatus %>%
+  filter(matched) %>%
+  select(patient_id, treated) %>%
+  left_join(
+    matching_candidates,
+    by=c("patient_id", "treated")
+  )
 
 write_rds(data_match_actual, fs::path(output_dir, glue("data_match_actual{matching_round}.rds")))
 
