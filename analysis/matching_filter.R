@@ -211,29 +211,44 @@ data_matchstatus <-
 
 
 ### alternatively, use a fuzzy join _if_ this is quicker ###
-# 
-# testfuzzy <- 
-#   fuzzyjoin::fuzzy_inner_join(
-#     
+
+# rematch_exact <-
+#   inner_join(
 #     x=data_treated %>% select(match_id, trial_date, all_of(exact_variables)),
 #     y=data_control %>% select(match_id, trial_date, all_of(exact_variables)),
-#     by = c("match_id", "trial_date", exact_variables) %>% set_names(.,.),
-#     match_fun = 
-#       splice(
-#         rep(list(function(x,y){x==y}), 2+length(exact_variables))#,
-#         #add function to check caliper matches here
-#       )
+#     by = c("match_id", "trial_date", exact_variables)
 #   ) 
-#   # fuzzy_join returns `variable.x` and `variable.y` columns, not just `variable` because they might be different values.
-#   # but we know match_id and trial_date are exactly matched, so only need to pick these out to define the legitimate matches
-#   testfuzzy<-testfuzzy %>% select(match_id=match_id.x, trial_date=trial_date.x) %>%
+# 
+# caliper_check <- function(distance){
+#   function(x,y){abs(x-y) <= distance}
+# }
+# 
+# if(length(caliper_variables) >0 ){
+#   rematch_caliper <-
+#     fuzzyjoin::fuzzy_inner_join(
+#       x=data_treated %>% select(match_id, trial_date, all_of(exact_variables)) %>% right_join(rematch_exact, by=c("match_id", "trial_date")),
+#       y=data_control %>% select(match_id, trial_date, all_of(exact_variables)) %>% right_join(rematch_exact, by=c("match_id", "trial_date")),
+#       by = unname(caliper_variables),
+#       #match_fun = list(caliper_check(1), caliper_check(2), ...) #add functions to check caliper matches here
+#   )
+#     # fuzzy_join returns `variable.x` and `variable.y` columns, not just `variable` because they might be different values.
+#     # but we know match_id and trial_date are exactly matched, so only need to pick these out to define the legitimate matches
+#   rematch <- 
+#     rematch_caliper %>% 
+#     select(match_id=match_id.x, trial_date=trial_date.x) %>%
 #     mutate(matched=1L)
 # 
+# } else{
+#   rematch <- 
+#     rematch_caliper %>% 
+#     select(match_id, trial_date) %>%
+#     mutate(matched=1L)
+# }
 # 
 # data_matchstatus <-
 #   matching_candidates %>%
 #   select(patient_id, treated, match_id, trial_date, trial_time) %>%
-#   left_join(testfuzzy, by=c("match_id", "trial_date")) %>%
+#   left_join(rematch, by=c("match_id", "trial_date")) %>%
 #   mutate(
 #     matched= if_else(is.na(matched), 0L, matched),
 #     matching_round = matching_round
