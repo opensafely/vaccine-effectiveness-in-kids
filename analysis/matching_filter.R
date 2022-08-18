@@ -154,7 +154,8 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 }
 
 matching_candidates <- 
-  bind_rows(data_treated, data_control) 
+  bind_rows(data_treated, data_control) %>%
+  arrange(treated, match_id, trial_date)
 
 ### debug ###
 
