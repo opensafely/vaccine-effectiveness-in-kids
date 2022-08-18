@@ -208,6 +208,40 @@ data_matchstatus <-
 
 
 
+
+
+### alternatively, use a fuzzy join _if_ this is quicker ###
+# 
+# testfuzzy <- 
+#   fuzzyjoin::fuzzy_inner_join(
+#     
+#     x=data_treated %>% select(match_id, trial_date, all_of(exact_variables)),
+#     y=data_control %>% select(match_id, trial_date, all_of(exact_variables)),
+#     by = c("match_id", "trial_date", exact_variables) %>% set_names(.,.),
+#     match_fun = 
+#       splice(
+#         rep(list(function(x,y){x==y}), 2+length(exact_variables))#,
+#         #add function to check caliper matches here
+#       )
+#   ) 
+#   # fuzzy_join returns `variable.x` and `variable.y` columns, not just `variable` because they might be different values.
+#   # but we know match_id and trial_date are exactly matched, so only need to pick these out to define the legitimate matches
+#   testfuzzy<-testfuzzy %>% select(match_id=match_id.x, trial_date=trial_date.x) %>%
+#     mutate(matched=1L)
+# 
+# 
+# data_matchstatus <-
+#   matching_candidates %>%
+#   select(patient_id, treated, match_id, trial_date, trial_time) %>%
+#   left_join(testfuzzy, by=c("match_id", "trial_date")) %>%
+#   mutate(
+#     matched= if_else(is.na(matched), 0L, matched),
+#     matching_round = matching_round
+#   ) %>%
+#   arrange(matched, match_id, treated)
+
+###
+
 ## pick up all previous successful matches
 
 matching_roundprevious <- as.integer(matching_round) - 1
