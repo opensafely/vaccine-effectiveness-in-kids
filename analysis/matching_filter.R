@@ -154,7 +154,8 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 }
 
 matching_candidates <- 
-  bind_rows(data_treated, data_control) 
+  bind_rows(data_treated, data_control) %>%
+  arrange(treated, match_id, trial_date)
 
 ### debug ###
 
@@ -173,41 +174,89 @@ map(matching_candidates, ~any(is.na(.x)))
 ## alternative is to compare old matching variables with new matching variables
 ## but if calipers are used it gets a bit tricky
 
-## so we rematch for now
 
-# run matching algorithm
-obj_matchit <-
-  matchit(
-    formula = treated ~ 1,
-    data = matching_candidates,
-    method = "nearest", distance = "glm", # these two options don't really do anything because we only want exact + caliper matching
-    replace = FALSE,
-    estimand = "ATT",
-    exact = c("match_id", "trial_date", exact_variables), 
-    # caliper = caliper_variables, std.caliper=FALSE, 
-    m.order = "data", # data is sorted on (effectively random) patient ID
-    #verbose = TRUE,
-    ratio = 1L # irritatingly you can't set this for "exact" method, so have to filter later
+# run matching algorithm ----
+# obj_matchit <-
+#   matchit(
+#     formula = treated ~ 1,
+#     data = matching_candidates,
+#     method = "nearest", distance = "glm", # these two options don't really do anything because we only want exact + caliper matching
+#     replace = FALSE,
+#     estimand = "ATT",
+#     exact = c("match_id", "trial_date", exact_variables), 
+#     # caliper = caliper_variables, std.caliper=FALSE, 
+#     m.order = "data", # data is sorted on (effectively random) patient ID
+#     #verbose = TRUE,
+#     ratio = 1L # irritatingly you can't set this for "exact" method, so have to filter later
+#   )
+# 
+# 
+# data_matchstatus <-
+#   tibble(
+#     patient_id = matching_candidates$patient_id,
+#     matched = !is.na(obj_matchit$subclass)*1L,
+#     #thread_id = data_thread$thread_id,
+#     match_id = as.integer(as.character(obj_matchit$subclass)),
+#     treated = obj_matchit$treat,
+#     #weight = obj_matchit$weights,
+#     trial_time = matching_candidates$trial_time,
+#     trial_date = matching_candidates$trial_date,
+#     matching_round = matching_round
+#   ) %>%
+#   arrange(matched, match_id, treated)
+# 
+# ###
+
+
+
+### alternatively, use a fuzzy join _if_ this is quicker ----
+
+rematch_exact <-
+  inner_join(
+    x=data_treated %>% select(match_id, trial_date, all_of(exact_variables)),
+    y=data_control %>% select(match_id, trial_date, all_of(exact_variables)),
+    by = c("match_id", "trial_date", exact_variables)
   )
 
+caliper_check <- function(distance){
+  function(x,y){abs(x-y) <= distance}
+}
+
+if(length(caliper_variables) >0 ){
+  rematch_caliper <-
+    fuzzyjoin::fuzzy_inner_join(
+      x=data_treated %>% select(match_id, trial_date, all_of(exact_variables)) %>% right_join(rematch_exact, by=c("match_id", "trial_date")),
+      y=data_control %>% select(match_id, trial_date, all_of(exact_variables)) %>% right_join(rematch_exact, by=c("match_id", "trial_date")),
+      by = unname(caliper_variables),
+      #match_fun = list(caliper_check(1), caliper_check(2), ...) #add functions to check caliper matches here
+  )
+    # fuzzy_join returns `variable.x` and `variable.y` columns, not just `variable` because they might be different values.
+    # but we know match_id and trial_date are exactly matched, so only need to pick these out to define the legitimate matches
+  rematch <-
+    rematch_caliper %>%
+    select(match_id=match_id.x, trial_date=trial_date.x) %>%
+    mutate(matched=1L)
+
+} else{
+  rematch <-
+    rematch_exact %>%
+    select(match_id, trial_date) %>%
+    mutate(matched=1L)
+}
 
 data_matchstatus <-
-  tibble(
-    patient_id = matching_candidates$patient_id,
-    matched = !is.na(obj_matchit$subclass),
-    #thread_id = data_thread$thread_id,
-    match_id = as.integer(as.character(obj_matchit$subclass)),
-    treated = obj_matchit$treat,
-    weight = obj_matchit$weights,
-    trial_time = matching_candidates$trial_time,
-    trial_date = matching_candidates$trial_date,
+  matching_candidates %>%
+  select(patient_id, treated, match_id, trial_date, trial_time) %>%
+  left_join(rematch, by=c("match_id", "trial_date")) %>%
+  mutate(
+    matched= if_else(is.na(matched), 0L, matched),
     matching_round = matching_round
   ) %>%
   arrange(matched, match_id, treated)
 
+###
 
-
-## pick up all previous successful matches
+## pick up all previous successful matches ----
 
 matching_roundprevious <- as.integer(matching_round) - 1
 
@@ -215,26 +264,31 @@ if(matching_round>1){
   
   data_matchstatusprevious <- 
     read_rds(fs::path(output_dir, glue("data_matchstatus_allrounds{matching_roundprevious}.rds"))) %>%
-    filter(matched)
+    filter(matched==1L)
   
   data_matchstatus_allrounds <- 
     data_matchstatus %>% 
-    filter(matched) %>%
+    filter(matched==1L) %>%
     bind_rows(data_matchstatusprevious)
   
   
 } else{
   data_matchstatus_allrounds <- 
     data_matchstatus %>% 
-    filter(matched) 
+    filter(matched==1L) 
 }
 
 write_rds(data_matchstatus_allrounds, fs::path(output_dir, glue("data_matchstatus_allrounds{matching_round}.rds")))
 
 #actual legitimate matches 
 data_match_actual <- 
-  matching_candidates %>% 
-  filter(patient_id %in% (data_matchstatus %>% filter(matched) %>% pull (patient_id))) 
+  data_matchstatus %>%
+  filter(matched==1L) %>%
+  select(patient_id, treated) %>%
+  left_join(
+    matching_candidates,
+    by=c("patient_id", "treated")
+  )
 
 write_rds(data_match_actual, fs::path(output_dir, glue("data_match_actual{matching_round}.rds")))
 
