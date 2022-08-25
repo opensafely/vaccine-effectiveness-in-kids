@@ -11,37 +11,37 @@
 
 # import command-line arguments ----
 
-args <- commandArgs(trailingOnly=TRUE)
+args <- commandArgs(trailingOnly = TRUE)
 
 
-if(length(args)==0){
+if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   agegroup <- "over12"
 } else {
-  #FIXME replace with actual eventual action variables
+  # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   agegroup <- args[[1]]
 }
 
 # define vaccination of interest
-if(agegroup=="under12") treatment <- "pfizerC"
-if(agegroup=="over12") treatment <- "pfizerA"
+if (agegroup == "under12") treatment <- "pfizerC"
+if (agegroup == "over12") treatment <- "pfizerA"
 
 
 
 # Import libraries ----
-library('tidyverse')
-library('lubridate')
-library('arrow')
-library('here')
-library('glue')
+library("tidyverse")
+library("lubridate")
+library("arrow")
+library("here")
+library("glue")
 
 source(here("lib", "functions", "utility.R"))
 
 # import globally defined study dates and convert to "Date"
 study_dates <-
-  jsonlite::read_json(path=here("lib", "design", "study-dates.json")) %>%
+  jsonlite::read_json(path = here("lib", "design", "study-dates.json")) %>%
   map(as.Date)
 
 # output processed data to rds ----
@@ -53,7 +53,7 @@ fs::dir_create(here("output", "data"))
 
 # use externally created dummy data if not running in the server
 # check variables are as they should be
-if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
+if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
 
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
@@ -66,65 +66,71 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 
   data_custom_dummy <- read_feather(here("lib", "dummydata", "dummyinput_treated.feather")) %>%
     mutate(
-      msoa = sample(factor(c("1", "2")), size=n(), replace=TRUE) # override msoa so matching success more likely
+      msoa = sample(factor(c("1", "2")), size = n(), replace = TRUE) # override msoa so matching success more likely
     )
 
 
-  not_in_studydef <- names(data_custom_dummy)[!( names(data_custom_dummy) %in% names(data_studydef_dummy) )]
-  not_in_custom  <- names(data_studydef_dummy)[!( names(data_studydef_dummy) %in% names(data_custom_dummy) )]
+  not_in_studydef <- names(data_custom_dummy)[!(names(data_custom_dummy) %in% names(data_studydef_dummy))]
+  not_in_custom <- names(data_studydef_dummy)[!(names(data_studydef_dummy) %in% names(data_custom_dummy))]
 
 
-  if(length(not_in_custom)!=0) stop(
-    paste(
-      "These variables are in studydef but not in custom: ",
-      paste(not_in_custom, collapse=", ")
+  if (length(not_in_custom) != 0) {
+    stop(
+      paste(
+        "These variables are in studydef but not in custom: ",
+        paste(not_in_custom, collapse = ", ")
+      )
     )
-  )
+  }
 
-  if(length(not_in_studydef)!=0) stop(
-    paste(
-      "These variables are in custom but not in studydef: ",
-      paste(not_in_studydef, collapse=", ")
+  if (length(not_in_studydef) != 0) {
+    stop(
+      paste(
+        "These variables are in custom but not in studydef: ",
+        paste(not_in_studydef, collapse = ", ")
+      )
     )
-  )
+  }
 
   # reorder columns
-  data_studydef_dummy <- data_studydef_dummy[,names(data_custom_dummy)]
+  data_studydef_dummy <- data_studydef_dummy[, names(data_custom_dummy)]
 
   unmatched_types <- cbind(
-    map_chr(data_studydef_dummy, ~paste(class(.), collapse=", ")),
-    map_chr(data_custom_dummy, ~paste(class(.), collapse=", "))
-  )[ (map_chr(data_studydef_dummy, ~paste(class(.), collapse=", ")) != map_chr(data_custom_dummy, ~paste(class(.), collapse=", ")) ), ] %>%
-    as.data.frame() %>% rownames_to_column()
+    map_chr(data_studydef_dummy, ~ paste(class(.), collapse = ", ")),
+    map_chr(data_custom_dummy, ~ paste(class(.), collapse = ", "))
+  )[(map_chr(data_studydef_dummy, ~ paste(class(.), collapse = ", ")) != map_chr(data_custom_dummy, ~ paste(class(.), collapse = ", "))), ] %>%
+    as.data.frame() %>%
+    rownames_to_column()
 
 
-  if(nrow(unmatched_types)>0) stop(
-    #unmatched_types
-    "inconsistent typing in studydef : dummy dataset\n",
-    apply(unmatched_types, 1, function(row) paste(paste(row, collapse=" : "), "\n"))
-  )
+  if (nrow(unmatched_types) > 0) {
+    stop(
+      # unmatched_types
+      "inconsistent typing in studydef : dummy dataset\n",
+      apply(unmatched_types, 1, function(row) paste(paste(row, collapse = " : "), "\n"))
+    )
+  }
 
-  data_extract <- data_custom_dummy 
+  data_extract <- data_custom_dummy
 } else {
   data_extract <- read_feather(here("output", "input_treated.feather")) %>%
-    #because date types are not returned consistently by cohort extractor
-    mutate(across(ends_with("_date"),  as.Date))
+    # because date types are not returned consistently by cohort extractor
+    mutate(across(ends_with("_date"), as.Date))
 }
 
 
 data_processed <- data_extract %>%
   mutate(
-
     sex = fct_case_when(
       sex == "F" ~ "Female",
       sex == "M" ~ "Male",
-      #sex == "I" ~ "Inter-sex",
-      #sex == "U" ~ "Unknown",
+      # sex == "I" ~ "Inter-sex",
+      # sex == "U" ~ "Unknown",
       TRUE ~ NA_character_
     ),
 
     # ethnicity_combined = if_else(is.na(ethnicity), ethnicity_6_sus, ethnicity),
-    # 
+    #
     # ethnicity_combined = fct_case_when(
     #   ethnicity_combined == "1" ~ "White",
     #   ethnicity_combined == "4" ~ "Black",
@@ -133,7 +139,7 @@ data_processed <- data_extract %>%
     #   ethnicity_combined == "5" ~ "Other",
     #   #TRUE ~ "Unknown",
     #   TRUE ~ NA_character_
-    # 
+    #
     # ),
 
     region = fct_collapse(
@@ -153,24 +159,22 @@ data_processed <- data_extract %>%
 
     # # latest covid event before study start
     # anycovid_0_date = pmax(positive_test_0_date, covidemergency_0_date, admitted_covid_0_date, na.rm=TRUE),
-    # 
+    #
     # # earliest covid event after study start
     # anycovid_1_date = pmin(positive_test_1_date, covidemergency_1_date, admitted_covid_1_date, covidcc_1_date, coviddeath_date, na.rm=TRUE),
-    # 
+    #
     # noncoviddeath_date = if_else(!is.na(death_date) & is.na(coviddeath_date), death_date, as.Date(NA_character_)),
-    # 
+    #
     # cause_of_death = fct_case_when(
     #   !is.na(coviddeath_date) ~ "covid-related",
     #   !is.na(death_date) ~ "not covid-related",
     #   TRUE ~ NA_character_
     # ),
-
   )
 
 # reshape vaccination data ----
 
 data_vax <- local({
-
   data_vax_any <- data_processed %>%
     select(patient_id, matches("covid\\_vax\\_any\\_\\d+\\_date")) %>%
     pivot_longer(
@@ -181,7 +185,7 @@ data_vax <- local({
       values_drop_na = TRUE
     ) %>%
     arrange(patient_id, date)
-  
+
   data_vax_pfizerA <- data_processed %>%
     select(patient_id, matches("covid\\_vax\\_pfizerA\\_\\d+\\_date")) %>%
     pivot_longer(
@@ -203,16 +207,16 @@ data_vax <- local({
       values_drop_na = TRUE
     ) %>%
     arrange(patient_id, date)
-  
- 
+
+
   data_vax <-
     data_vax_any %>%
-    full_join(data_vax_pfizerA, by=c("patient_id", "date")) %>%
-    full_join(data_vax_pfizerC, by=c("patient_id", "date")) %>%
+    full_join(data_vax_pfizerA, by = c("patient_id", "date")) %>%
+    full_join(data_vax_pfizerC, by = c("patient_id", "date")) %>%
     mutate(
       type = fct_case_when(
         is.na(vax_pfizerC_index) & (!is.na(vax_pfizerA_index)) ~ "pfizerA",
-        (!is.na(vax_pfizerC_index)) & is.na(vax_pfizerA_index)  ~ "pfizerC",
+        (!is.na(vax_pfizerC_index)) & is.na(vax_pfizerA_index) ~ "pfizerC",
         !is.na(vax_any_index) ~ "other",
         TRUE ~ NA_character_
       )
@@ -220,28 +224,26 @@ data_vax <- local({
     arrange(patient_id, date) %>%
     group_by(patient_id) %>%
     mutate(
-      vax_index=row_number()
+      vax_index = row_number()
     ) %>%
     ungroup()
 
   data_vax
-
 })
 
-data_vax_wide = data_vax %>%
+data_vax_wide <- data_vax %>%
   pivot_wider(
-    id_cols= patient_id,
+    id_cols = patient_id,
     names_from = c("vax_index"),
     values_from = c("date", "type"),
     names_glue = "covid_vax_{vax_index}_{.value}"
   )
 
 data_processed <- data_processed %>%
-  left_join(data_vax_wide, by ="patient_id") %>%
+  left_join(data_vax_wide, by = "patient_id") %>%
   mutate(
     vax1_type = covid_vax_1_type,
     vax2_type = covid_vax_2_type,
-    
     vax1_type_descr = fct_case_when(
       vax1_type == "pfizerA" ~ "BNT162b2 30micrograms/0.3ml",
       vax1_type == "pfizerC" ~ "BNT162b2 10mcg/0.2ml",
@@ -254,17 +256,15 @@ data_processed <- data_processed %>%
       vax2_type == "any" ~ "Other",
       TRUE ~ NA_character_
     ),
-    
     vax1_date = covid_vax_1_date,
     vax2_date = covid_vax_2_date,
-   
-) %>%
-select(
-  -starts_with("covid_vax_"),
-)
+  ) %>%
+  select(
+    -starts_with("covid_vax_"),
+  )
 
 
-#write_rds(data_processed, here("output", "data", "data_processed_treated.rds"), compress="gz")
+# write_rds(data_processed, here("output", "data", "data_processed_treated.rds"), compress="gz")
 
 
 
@@ -279,29 +279,29 @@ data_criteria <- data_processed %>%
     has_age = !is.na(age),
     has_sex = !is.na(sex) & !(sex %in% c("I", "U")),
     has_imd = imd_Q5 != "Unknown",
-    #has_ethnicity = !is.na(ethnicity_combined),
+    # has_ethnicity = !is.na(ethnicity_combined),
     has_region = !is.na(region),
     vax1_betweenentrydates = case_when(
-      (vax1_type==treatment) & (vax1_date >= study_dates[[glue("first{agegroup}_date")]]) & (vax1_date <= study_dates[[glue("{agegroup}end_date")]]) ~ TRUE,
+      (vax1_type == treatment) & (vax1_date >= study_dates[[glue("first{agegroup}_date")]]) & (vax1_date <= study_dates[[glue("{agegroup}end_date")]]) ~ TRUE,
       TRUE ~ FALSE
     ),
-    has_vaxgap12 = vax2_date >= (vax1_date+17), # at least 17 days between first two vaccinations
+    has_vaxgap12 = vax2_date >= (vax1_date + 17), # at least 17 days between first two vaccinations
 
     include = (
-      vax1_betweenentrydates & has_vaxgap12  &
+      vax1_betweenentrydates & has_vaxgap12 &
         has_age & has_sex & has_imd & # has_ethnicity &
-        has_region 
+        has_region
     ),
   )
 
-data_treated_eligible <- 
+data_treated_eligible <-
   data_criteria %>%
   filter(include) %>%
   select(patient_id) %>%
-  left_join(data_processed, by="patient_id") %>%
+  left_join(data_processed, by = "patient_id") %>%
   droplevels()
 
-write_rds(data_treated_eligible, here("output", "data", "data_treated_eligible.rds"), compress="gz")
+write_rds(data_treated_eligible, here("output", "data", glue("data_treated_eligible_{agegroup}.rds")), compress = "gz")
 
 
 ## Flowchart ----
@@ -313,25 +313,23 @@ data_flowchart <- data_criteria %>%
     c1 = c0 & (has_age & has_sex & has_imd & has_region),
   ) %>%
   summarise(
-    across(.fns=sum)
+    across(.fns = sum)
   ) %>%
   pivot_longer(
-    cols=everything(),
-    names_to="criteria",
-    values_to="n"
+    cols = everything(),
+    names_to = "criteria",
+    values_to = "n"
   ) %>%
   mutate(
     n_exclude = lag(n) - n,
-    pct_exclude = n_exclude/lag(n),
+    pct_exclude = n_exclude / lag(n),
     pct_all = n / first(n),
     pct_step = n / lag(n),
     crit = str_extract(criteria, "^c\\d+"),
     criteria = fct_case_when(
-      crit == "c0" ~ "Received age-correct vaccine within study entry dates", 
+      crit == "c0" ~ "Received age-correct vaccine within study entry dates",
       crit == "c1" ~ "  with no missing demographic information",
       TRUE ~ NA_character_
     )
   )
-write_csv(data_flowchart, here("output", "data", "flowchart_treated_eligible.csv"))
-
-
+write_csv(data_flowchart, here("output", "data", glue("flowchart_treated_eligible_{agegroup}.csv")))
