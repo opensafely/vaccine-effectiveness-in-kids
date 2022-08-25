@@ -266,15 +266,15 @@ actions_list <- splice(
   action_process("control_potential", "over12", "1"),
   action_match("treated", "control_potential", "over12", "1"),
   action_generate_needs("control_match", "over12", "1"),
-  action_match_filter("over12", "1"),
-  comment("# # # # # # # # # # # # # # # # # # #", "matching round 2", "# # # # # # # # # # # # # # # # # # #"),
-  action_generate_date("control_potential", "2021-10-04", "2"),
-  action_process("control_potential", "over12", "2"),
-  action_match("treated", "control_potential", "over12", "2"),
-  action_generate_needs("control_match", "over12", "2"),
-  action_match_filter("over12", "2"),
-  comment("# # # # # # # # # # # # # # # # # # #", "combine together", "# # # # # # # # # # # # # # # # # # #"),
-  action_combine("over12")
+  action_match_filter("over12", "1")#,
+  # comment("# # # # # # # # # # # # # # # # # # #", "matching round 2", "# # # # # # # # # # # # # # # # # # #"),
+  # action_generate_date("control_potential", "2021-10-04", "2"),
+  # action_process("control_potential", "over12", "2"),
+  # action_match("treated", "control_potential", "over12", "2"),
+  # action_generate_needs("control_match", "over12", "2"),
+  # action_match_filter("over12", "2"),
+  # comment("# # # # # # # # # # # # # # # # # # #", "combine together", "# # # # # # # # # # # # # # # # # # #"),
+  # action_combine("over12")
 )
 
 
@@ -303,7 +303,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("expectations", "tpp")) {
 } else if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("")) {
 
   ## output to file ----
-  writeLines(thisproject, here("project2.yaml"))
+  writeLines(thisproject, here("project.yaml"))
   # yaml::write_yaml(project_list, file =here("project.yaml"))
 
   ## grab all action names and send to a txt file
