@@ -303,7 +303,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("expectations", "tpp")) {
 } else if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("")) {
 
   ## output to file ----
-  writeLines(thisproject, here("project.yaml"))
+  writeLines(thisproject, here("project2.yaml"))
   # yaml::write_yaml(project_list, file =here("project.yaml"))
 
   ## grab all action names and send to a txt file

@@ -59,7 +59,7 @@ study_dates <-
 
 
 ## import treated populations ----
-data_alltreated <- read_rds(here("output", "data", "data_treated_eligible.rds")) %>% mutate(treated = 1L)
+data_alltreated <- read_rds(here("output", "data", glue("data_treated_eligible_{agegroup}.rds"))) %>% mutate(treated = 1L)
 
 ## import control populations ----
 data_control <- read_rds(here("output", "data", glue("data_control_potential{matching_round}_{agegroup}.rds"))) %>% mutate(treated = 0L)
@@ -68,7 +68,7 @@ data_control <- read_rds(here("output", "data", glue("data_control_potential{mat
 if (matching_round > 1) {
   previous_round <- as.integer(matching_round) - 1L
 
-  data_matchstatusprevious <- read_rds(fs::path(output_dir, glue("data_matchstatus_allrounds{previous_round}.rds")))
+  data_matchstatusprevious <- read_rds(fs::path(output_dir, glue("data_matchstatus_allrounds{previous_round}_{agegroup}.rds")))
   filter(matched) %>%
     select(patient_id, treated)
 
