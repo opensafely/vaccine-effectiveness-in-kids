@@ -160,6 +160,8 @@ action_skim <- function(cohort, agegroup) {
 ## match action function ----
 
 action_match <- function(cohort1, cohort2, agegroup, matching_round) {
+  previous_round<-as.numeric(matching_round)-1
+  if (matching_round=="1"){
   splice(
     action(
       name = glue("matching{matching_round}_{agegroup}"),
@@ -185,24 +187,69 @@ action_match <- function(cohort1, cohort2, agegroup, matching_round) {
       ),
     )
   )
+  } else {
+    splice(
+      action(
+        name = glue("matching{matching_round}_{agegroup}"),
+        run = glue("r:latest analysis/matching.R"),
+        arguments = c(agegroup, matching_round),
+        needs = list(
+          glue("data_process_{cohort1}_{agegroup}"),
+          glue("data_process_{cohort2}{matching_round}_{agegroup}"),
+          glue("matching_filter{previous_round}_{agegroup}")
+        ),
+        highly_sensitive = list(
+          rds1 = glue("output/match/data_potential_matchstatus{matching_round}_{agegroup}.rds"),
+          rds2 = glue("output/match/data_potential_matched{matching_round}_{agegroup}.rds"),
+          csv =  glue("output/match/potential_matched_controls{matching_round}_{agegroup}.csv.gz")
+        ),
+      ),
+      action(
+        name = glue("skim_potential_matched{matching_round}_{agegroup}"),
+        run = glue("r:latest analysis/data_skim.R"),
+        arguments = glue("output/match/data_potential_matched{matching_round}_{agegroup}.rds", "  output/data_properties"),
+        needs = list(glue("matching{matching_round}_{agegroup}")),
+        moderately_sensitive = lst(
+          txt = glue("output/data_properties/data_potential_matched{matching_round}_{agegroup}*.txt")
+        ),
+      )
+    )
+  } 
 }
 
 action_match_filter <- function(agegroup, matching_round) {
-  action(
-    name = glue("matching_filter{matching_round}_{agegroup}"),
-    run = glue("r:latest analysis/matching_filter.R"),
-    arguments = c(agegroup, matching_round),
-    needs = list(
-      glue("matching{matching_round}_{agegroup}"),
-      glue("generate_study_control_potential{matching_round}")
-    ),
-    highly_sensitive = list(
-      rds1 = glue("output/match/data_matchstatus_allrounds{matching_round}_{agegroup}.rds"),
-      rds2 = glue("output/match/data_match_actual{matching_round}_{agegroup}.rds")
-    ),
-  )
+previous_round<-as.numeric(matching_round)-1
+if (matching_round=="1"){
+    action(
+      name = glue("matching_filter{matching_round}_{agegroup}"),
+      run = glue("r:latest analysis/matching_filter.R"),
+      arguments = c(agegroup, matching_round),
+      needs = list(
+        glue("matching{matching_round}_{agegroup}fsaf"),
+        glue("generate_study_control_potential{matching_round}"),
+      ),
+      highly_sensitive = list(
+        rds1 = glue("output/match/data_matchstatus_allrounds{matching_round}_{agegroup}.rds"),
+        rds2 = glue("output/match/data_match_actual{matching_round}_{agegroup}.rds")
+      ),
+    )
+  } else {
+    action(
+      name = glue("matching_filter{matching_round}_{agegroup}"),
+      run = glue("r:latest analysis/matching_filter.R"),
+      arguments = c(agegroup, matching_round),
+      needs = list(
+        glue("matching{matching_round}_{agegroup}"),
+        glue("generate_study_control_potential{matching_round}"),
+        glue("matching_filter{previous_round}_{agegroup}")
+      ),
+      highly_sensitive = list(
+        rds1 = glue("output/match/data_matchstatus_allrounds{matching_round}_{agegroup}.rds"),
+        rds2 = glue("output/match/data_match_actual{matching_round}_{agegroup}.rds")
+      ),
+    )
+  } 
 }
-
 action_combine <- function(agegroup) {
   action(
     name = glue("combine_together_{agegroup}"),
@@ -266,15 +313,15 @@ actions_list <- splice(
   action_process("control_potential", "over12", "1"),
   action_match("treated", "control_potential", "over12", "1"),
   action_generate_needs("control_match", "over12", "1"),
-  action_match_filter("over12", "1")#,
-  # comment("# # # # # # # # # # # # # # # # # # #", "matching round 2", "# # # # # # # # # # # # # # # # # # #"),
-  # action_generate_date("control_potential", "2021-10-04", "2"),
-  # action_process("control_potential", "over12", "2"),
-  # action_match("treated", "control_potential", "over12", "2"),
-  # action_generate_needs("control_match", "over12", "2"),
-  # action_match_filter("over12", "2"),
-  # comment("# # # # # # # # # # # # # # # # # # #", "combine together", "# # # # # # # # # # # # # # # # # # #"),
-  # action_combine("over12")
+  action_match_filter("over12", "1"),
+  comment("# # # # # # # # # # # # # # # # # # #", "matching round 2", "# # # # # # # # # # # # # # # # # # #"),
+  action_generate_date("control_potential", "2021-10-04", "2"),
+  action_process("control_potential", "over12", "2"),
+  action_match("treated", "control_potential", "over12", "2"),
+  action_generate_needs("control_match", "over12", "2"),
+  action_match_filter("over12", "2"),
+  comment("# # # # # # # # # # # # # # # # # # #", "combine together", "# # # # # # # # # # # # # # # # # # #"),
+  action_combine("over12")
 )
 
 

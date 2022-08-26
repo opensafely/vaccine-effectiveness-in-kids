@@ -68,8 +68,8 @@ data_control <- read_rds(here("output", "data", glue("data_control_potential{mat
 if (matching_round > 1) {
   previous_round <- as.integer(matching_round) - 1L
 
-  data_matchstatusprevious <- read_rds(fs::path(output_dir, glue("data_matchstatus_allrounds{previous_round}_{agegroup}.rds")))
-  filter(matched) %>%
+  data_matchstatusprevious <- read_rds(fs::path(output_dir, glue("data_matchstatus_allrounds{previous_round}_{agegroup}.rds"))) %>%
+    filter(matched==1) %>%
     select(patient_id, treated)
 
   data_alltreated <-
