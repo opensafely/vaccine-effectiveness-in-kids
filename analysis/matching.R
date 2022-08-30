@@ -64,12 +64,12 @@ data_alltreated <- read_rds(here("output", "data", "data_treated_eligible.rds"))
 ## import control populations ----
 data_control <- read_rds(here("output", "data", glue("data_control_potential{matching_round}.rds"))) %>% mutate(treated=0L)
 
-# remove already-matched people from previous mathcing rounds
+# remove already-matched people from previous matching rounds
 if(matching_round>1){
   
   previous_round <- as.integer(matching_round)-1L
   
-  data_matchstatusprevious <- read_rds(fs::path(output_dir, glue("data_matchstatus_allrounds{previous_round}.rds"))) 
+  data_matchstatusprevious <- read_rds(fs::path(output_dir, glue("data_matchstatus_allrounds{previous_round}.rds"))) %>%
     filter(matched) %>%
     select(patient_id, treated)
   
@@ -122,7 +122,7 @@ data_eligible <-
     # assume vaccination occurs at the start of the day, and all other events occur at the end of the day.
 
     
-    ## FIXME kept these comments, as the code can be resused once the final cohort is chosen
+    ## FIXME kept these comments, as the code can be reused once the final cohort is chosen
     ## tte = time-to-event, and always indicates time from study start date
     ## remember to deduct 1 day from treatment date, as this is no longer done above
     # day0_date = study_dates$index_date-1, # day before the first trial date
@@ -379,7 +379,10 @@ data_matchstatus %>%
 
 
 print(paste0("number of duplicate control IDs is ", data_matchstatus %>% filter(control==1L, matched==1L) %>% group_by(patient_id) %>% summarise(n=n()) %>% filter(n>1) %>% nrow() ))
+# should be zero
 
+
+## output dataset containing all matched pairs + matching factors
 data_matched <- 
   data_matchstatus %>%
   filter(matched==1L) %>%
@@ -397,5 +400,5 @@ data_matched <-
   ) %>% 
   arrange(trial_date, match_id, treated)
 
-## output dataset containing all matched pairs + matching factors
+
 write_rds(data_matched, fs::path(output_dir, glue("data_potential_matched{matching_round}.rds")), compress="gz")
