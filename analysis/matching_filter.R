@@ -75,7 +75,6 @@ caliper_variables <- character()
 data_control_matchinfo <- read_csv(fs::path(output_dir, glue("potential_matched_controls{matching_round}.csv.gz")))
 
 # use externally created dummy data if not running in the server
-# check variables are as they should be
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   
   # just reuse previous extraction for dummy run, dummyinput_control_potential1.feather
@@ -116,7 +115,8 @@ data_processed <-
       `South West` = "South West"
     ),
     
-    vax1_date = covid_vax_any_1_date
+    vax1_date = covid_vax_any_1_date,
+    vax2_date = covid_vax_any_2_date,
     
   )
 
@@ -246,7 +246,7 @@ if(length(caliper_variables) >0 ){
 
 data_matchstatus <-
   matching_candidates %>%
-  select(patient_id, treated, match_id, trial_date, trial_time) %>%
+  select(patient_id, treated, match_id, trial_date) %>%
   left_join(rematch, by=c("match_id", "trial_date")) %>%
   mutate(
     matched= if_else(is.na(matched), 0L, matched),
@@ -255,6 +255,14 @@ data_matchstatus <-
   arrange(matched, match_id, treated)
 
 ###
+
+
+## how many matches are lost?
+
+print(glue("{sum(data_matchstatus$matched & data_matchstatus$treated)} matched-pairs kept out of {sum(data_matchstatus$treated)} 
+           ({round(100*(sum(data_matchstatus$matched & data_matchstatus$treated) / sum(data_matchstatus$treated)),2)}%)
+           "))
+
 
 ## pick up all previous successful matches ----
 
@@ -280,22 +288,28 @@ if(matching_round>1){
 
 write_rds(data_matchstatus_allrounds, fs::path(output_dir, glue("data_matchstatus_allrounds{matching_round}.rds")))
 
-#actual legitimate matches 
-data_match_actual <- 
-  data_matchstatus %>%
-  filter(matched==1L) %>%
-  select(patient_id, treated) %>%
-  left_join(
-    matching_candidates,
-    by=c("patient_id", "treated")
-  )
 
-write_rds(data_match_actual, fs::path(output_dir, glue("data_match_actual{matching_round}.rds")))
+# output all patient ids for subsequent study definition
+data_matchstatus_allrounds %>%
+  select(patient_id, treated, trial_date, match_id) %>%
+  mutate(
+    trial_date=as.character(trial_date)
+  ) %>%
+  write_csv(fs::path(output_dir, glue("cumulative_matched{matching_round}.csv.gz")))
 
 
-## how many matches are lost?
 
-print(glue("{sum(data_matchstatus$matched & data_matchstatus$treated)} matched-pairs kept out of {sum(data_matchstatus$treated)} 
-           ({round(100*(sum(data_matchstatus$matched & data_matchstatus$treated) / sum(data_matchstatus$treated)),2)}%)
-           "))
+# #actual legitimate matches 
+# data_match_actual <- 
+#   
+#   select(patient_id, treated) %>%
+#   left_join(
+#     matching_candidates,
+#     by=c("patient_id", "treated")
+#   )
+# 
+# write_rds(data_match_actual, fs::path(output_dir, glue("data_match_actual{matching_round}.rds")))
+# 
+
+
 
