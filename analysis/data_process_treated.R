@@ -285,7 +285,7 @@ data_criteria <- data_processed %>%
       (vax1_type==treatment) & (vax1_date >= study_dates[[glue("first{agegroup}_date")]]) & (vax1_date <= study_dates[[glue("{agegroup}end_date")]]) ~ TRUE,
       TRUE ~ FALSE
     ),
-    has_vaxgap12 = vax2_date >= (vax1_date+17), # at least 17 days between first two vaccinations
+    has_vaxgap12 = vax2_date >= (vax1_date+17) | is.na(vax2_date), # at least 17 days between first two vaccinations
 
     include = (
       vax1_betweenentrydates & has_vaxgap12  &
