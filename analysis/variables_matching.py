@@ -181,6 +181,8 @@ def generate_matching_variables(index_date):
       find_last_match_in_period=True,
     ),
   
+  
+
   )
   return matching_variables
 
