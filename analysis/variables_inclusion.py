@@ -5,7 +5,7 @@ import codelists
 
 
 def generate_inclusion_variables(index_date):
-    inclusion_variables = dict(
+  inclusion_variables = dict(
     
     registered=patients.registered_as_of(
         index_date,
@@ -312,11 +312,12 @@ def generate_inclusion_variables(index_date):
             on_or_before=f"{index_date} - 1 day",
             date_format="YYYY-MM-DD",
           ),
-          ),
-          ),
-          ),
-          ########## end of at risk criteria
-
-    )
-    return inclusion_variables
+        ),
+      ),
+    ),
+    ########## end of at risk criteria
+    
+          
+  )
+  return inclusion_variables
 
