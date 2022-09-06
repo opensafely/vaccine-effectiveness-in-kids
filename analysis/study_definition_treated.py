@@ -58,7 +58,6 @@ study = StudyDefinition(
   },
   
   index_date = studystart_date,
-  
   # This line defines the study population
   population=patients.satisfying(
     f"""
@@ -72,7 +71,7 @@ study = StudyDefinition(
       NOT has_died
       )
       AND
-      NOT wchild
+      NOT child_atrisk
       AND 
       covid_vax_any_1_date >= startdate
       AND

@@ -40,7 +40,7 @@ studyend_date = study_dates["over12end_date"]
 
 # Specify study defeinition
 study = StudyDefinition(
-  
+ 
   # Configure the expectations framework
   default_expectations={
     "date": {"earliest": "2020-01-01", "latest": studyend_date},
