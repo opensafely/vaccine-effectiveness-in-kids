@@ -149,13 +149,13 @@ data_processed <- data_extract %>%
 
     # prior_tests_cat = cut(prior_covid_test_frequency, breaks=c(0, 1, 2, 3, Inf), labels=c("0", "1", "2", "3+"), right=FALSE),
 
-    # prior_covid_infection0 = (!is.na(positive_test_0_date)) | (!is.na(admitted_covid_0_date)) | (!is.na(primary_care_covid_case_0_date)),
+    prior_covid_infection = (!is.na(postest_0_date)) | (!is.na(covidadmitted_0_date)) | (!is.na(primary_care_covid_case_0_date)),
 
-    # # latest covid event before study start
-    # anycovid_0_date = pmax(positive_test_0_date, covidemergency_0_date, admitted_covid_0_date, na.rm=TRUE),
-    # 
+    # latest covid event before study start
+    anycovid_0_date = pmax(postest_0_date, covidemergency_0_date, covidadmitted_0_date, na.rm=TRUE),
+    
     # # earliest covid event after study start
-    # anycovid_1_date = pmin(positive_test_1_date, covidemergency_1_date, admitted_covid_1_date, covidcc_1_date, coviddeath_date, na.rm=TRUE),
+    # anycovid_1_date = pmin(postest_1_date, covidemergency_1_date, covidadmitted_1_date, covidcc_1_date, coviddeath_date, na.rm=TRUE),
     # 
     # noncoviddeath_date = if_else(!is.na(death_date) & is.na(coviddeath_date), death_date, as.Date(NA_character_)),
     # 
@@ -286,11 +286,13 @@ data_criteria <- data_processed %>%
       TRUE ~ FALSE
     ),
     has_vaxgap12 = vax2_date >= (vax1_date+17) | is.na(vax2_date), # at least 17 days between first two vaccinations
+    no_recentcovid90 = is.na(anycovid_0_date) |  ((vax1_date - anycovid_0_date)>90),
 
     include = (
       vax1_betweenentrydates & has_vaxgap12  &
         has_age & has_sex & has_imd & # has_ethnicity &
-        has_region 
+        has_region &
+        no_recentcovid90
     ),
   )
 
@@ -311,6 +313,7 @@ data_flowchart <- data_criteria %>%
   transmute(
     c0 = vax1_betweenentrydates & has_vaxgap12,
     c1 = c0 & (has_age & has_sex & has_imd & has_region),
+    c2 = c1 + no_recentcovid90
   ) %>%
   summarise(
     across(.fns=sum)
@@ -329,6 +332,7 @@ data_flowchart <- data_criteria %>%
     criteria = fct_case_when(
       crit == "c0" ~ "Received age-correct vaccine within study entry dates", 
       crit == "c1" ~ "  with no missing demographic information",
+      crit == "c2" ~ "  with no COVID-19 90 days prior",
       TRUE ~ NA_character_
     )
   )

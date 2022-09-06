@@ -156,9 +156,13 @@ data_processed <- data_extract %>%
       `South West` = "South West"
     ),
     
-    vax1_date = covid_vax_any_1_date,
-    vax2_date = covid_vax_any_2_date,
-
+    
+    prior_covid_infection = (!is.na(postest_0_date)) | (!is.na(covidadmitted_0_date)) | (!is.na(primary_care_covid_case_0_date)),
+    
+    # latest covid event before study start
+    anycovid_0_date = pmax(postest_0_date, covidemergency_0_date, covidadmitted_0_date, na.rm=TRUE),
+    
+    vax1_date = covid_vax_any_1_date
   )
 
 
@@ -175,11 +179,14 @@ data_criteria <- data_processed %>%
     has_imd = imd_Q5 != "Unknown",
     #has_ethnicity = !is.na(ethnicity_combined),
     has_region = !is.na(region),
+    no_recentcovid90 = is.na(anycovid_0_date) |  ((vax1_date - anycovid_0_date)>90),
     include = (
         has_age & has_sex & has_imd & # has_ethnicity &
-        has_region 
+        has_region &
+        no_recentcovid90
     ),
   )
+
 
 data_control_potential <- data_criteria %>%
   filter(include) %>%

@@ -115,6 +115,11 @@ data_processed <-
       `South West` = "South West"
     ),
     
+    # latest covid event before study start
+    anycovid_0_date = pmax(postest_0_date, covidemergency_0_date, covidadmitted_0_date, na.rm=TRUE),
+    
+    prior_covid_infection0 = (!is.na(postest_0_date)) | (!is.na(covidadmitted_0_date)) | (!is.na(primary_care_covid_case_0_date)),
+    
     vax1_date = covid_vax_any_1_date,
     vax2_date = covid_vax_any_2_date,
     
@@ -129,18 +134,31 @@ data_criteria <- data_processed %>%
     has_imd = imd_Q5 != "Unknown",
     #has_ethnicity = !is.na(ethnicity_combined),
     has_region = !is.na(region),
+    
+    no_recentcovid90 = is.na(anycovid_0_date) |  ((vax1_date - anycovid_0_date)>90),
+    
     include = (
       has_age & has_sex & has_imd & # has_ethnicity &
-        has_region 
+        has_region &
+        no_recentcovid90
     ),
   )
 
 data_control0 <- data_criteria %>%
+
+data_control <- data_criteria %>%
   filter(include) %>%
   select(patient_id) %>%
   left_join(data_processed, by="patient_id") %>%
   droplevels()
 
+data_treated <- 
+  left_join(
+    data_matchstatus %>% filter(treated==1L, matched==1L),
+    read_rds(here("output", "data", "data_treated_eligible.rds")),
+    by="patient_id"
+  )
+#data_treated <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==1L)
 
 
 data_treated <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==1L)
