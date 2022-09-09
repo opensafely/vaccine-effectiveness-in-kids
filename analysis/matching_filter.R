@@ -75,18 +75,70 @@ data_potential_matchstatus <- read_rds(fs::path("output", "match", glue("data_po
 # use externally created dummy data if not running in the server
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   
+  # ideally in future this will check column existence and types from metadata,
+  # rather than from a cohort-extractor-generated dummy data
+  
+  data_studydef_dummy <- read_feather(here("output", glue("input_control_potential{matching_round}.feather"))) %>%
+    # because date types are not returned consistently by cohort extractor
+    mutate(across(ends_with("_date"), ~ as.Date(.))) %>%
+    # because of a bug in cohort extractor -- remove once pulled new version
+    mutate(patient_id = as.integer(patient_id))
+  
   # just reuse previous extraction for dummy run, dummy_control_potential1.feather
   # and change a few variables to simulate new index dates
-  data_extract <- read_feather(fs::path("lib", "dummydata", glue("dummy_control_potential1.feather"))) %>%
+  data_custom_dummy <- read_feather(fs::path("lib", "dummydata", glue("dummy_control_potential1.feather"))) %>%
     filter(patient_id %in% data_potential_matchstatus[(data_potential_matchstatus$treated==0L),]$patient_id) %>%
     mutate(
       region = if_else(runif(n())<0.05, sample(x=unique(region), size=n(), replace=TRUE), region),
+    )  %>%
+    select(
+      -covid_vax_pfizerA_1_date, -covid_vax_pfizerA_2_date, -covid_vax_pfizerC_1_date, -covid_vax_pfizerC_2_date, -covid_vax_any_2_date
     )
+  
+  
+  not_in_studydef <- names(data_custom_dummy)[!( names(data_custom_dummy) %in% names(data_studydef_dummy) )]
+  not_in_custom  <- names(data_studydef_dummy)[!( names(data_studydef_dummy) %in% names(data_custom_dummy) )]
+  
+  
+  if(length(not_in_custom)!=0) stop(
+    paste(
+      "These variables are in studydef but not in custom: ",
+      paste(not_in_custom, collapse=", ")
+    )
+  )
+  
+  if(length(not_in_studydef)!=0) stop(
+    paste(
+      "These variables are in custom but not in studydef: ",
+      paste(not_in_studydef, collapse=", ")
+    )
+  )
+  
+  # reorder columns
+  data_studydef_dummy <- data_studydef_dummy[,names(data_custom_dummy)]
+  
+  unmatched_types <- cbind(
+    map_chr(data_studydef_dummy, ~paste(class(.), collapse=", ")),
+    map_chr(data_custom_dummy, ~paste(class(.), collapse=", "))
+  )[ (map_chr(data_studydef_dummy, ~paste(class(.), collapse=", ")) != map_chr(data_custom_dummy, ~paste(class(.), collapse=", ")) ), ] %>%
+    as.data.frame() %>% rownames_to_column()
+  
+  
+  if(nrow(unmatched_types)>0) stop(
+    #unmatched_types
+    "inconsistent typing in studydef : dummy dataset\n",
+    apply(unmatched_types, 1, function(row) paste(paste(row, collapse=" : "), "\n"))
+  )
+
+  # these variables are not included in the dummy data so join them on here
+  # they're joined in the study def using `with_values_from_file`
+  data_extract <- data_custom_dummy %>% left_join(data_potential_matchstatus %>% filter(treated==0L), by=c("patient_id"))
 
 } else {
   data_extract <- read_feather(fs::path("output", glue("input_control_match{matching_round}.feather"))) %>%
     #because date types are not returned consistently by cohort extractor
-    mutate(across(ends_with("_date"),  as.Date))
+    mutate(across(ends_with("_date"),  as.Date)) %>% 
+    mutate(treated=0L)
 }
 
 
@@ -119,7 +171,6 @@ data_processed <-
     prior_covid_infection = (!is.na(postest_0_date)) | (!is.na(covidadmitted_0_date)) | (!is.na(primary_care_covid_case_0_date)),
     
     vax1_date = covid_vax_any_1_date,
-    vax2_date = covid_vax_any_2_date,
     
   )
 
@@ -133,7 +184,7 @@ data_criteria <- data_processed %>%
     #has_ethnicity = !is.na(ethnicity_combined),
     has_region = !is.na(region),
     
-    no_recentcovid90 = is.na(anycovid_0_date) |  ((vax1_date - anycovid_0_date)>90),
+    no_recentcovid90 = is.na(anycovid_0_date) |  ((trial_date - anycovid_0_date)>90),
     
     include = (
       has_age & has_sex & has_imd & # has_ethnicity &
@@ -149,6 +200,7 @@ data_control <- data_criteria %>%
   left_join(data_processed, by="patient_id") %>%
   droplevels()
 
+
 data_treated <- 
   left_join(
     data_potential_matchstatus %>% filter(treated==1L),
@@ -157,13 +209,6 @@ data_treated <-
   ) 
 #data_treated <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==1L)
 
-
-if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
-  # these variables are not included in the dummy data so join them on here
-  data_control <- data_control %>% left_join(data_potential_matchstatus %>% filter(treated==0L), by=c("patient_id"))
-} else{
-  data_control <- data_control %>% mutate(treated=0L)
-}
 
 matching_candidates <- 
   #FIXME variables in these datasets don't all agree (for example treated includes outcomes)

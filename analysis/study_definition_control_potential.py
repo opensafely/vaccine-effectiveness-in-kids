@@ -11,6 +11,7 @@ from cohortextractor import params
 agegroup = params["agegroup"]
 matching_round = params["matching_round"]
 index_date = params["index_date"]
+previousmatching_round = int(matching_round)-1
 
 ############################################################
 ## inclusion variables
@@ -65,13 +66,14 @@ study = StudyDefinition(
       AND
       age_aug21 <= 15
       AND
-      (
-      NOT has_died
-      )
+      (NOT has_died)
       AND
-      NOT wchild
+      (NOT wchild)
     """,
-    # we define baseline variables on the day _before_ the study date (start date = day of first possible booster vaccination)
+    #  AND 
+    #  ((covid_vax_any_1_date >= index_date) OR NOT covid_vax_any_1_date)
+    
+    #previouslymatched = patients.which_exist_in_file(f_path="output/match/cumulative_matchedcontrols{matching_round}.csv.gz"),
   ),
   
   **vaccination_date_X(
