@@ -95,6 +95,7 @@ actions:
     - matching1
     - data_process_treated
     - extract_control_match1
+    - extract_control_potential1 # this is only necessary for the dummy data
     outputs:
       highly_sensitive:
         rds1: output/match/data_matchstatus_allrounds1.rds

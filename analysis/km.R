@@ -69,7 +69,7 @@ data_matched <-
     patient_id, treated, trial_date, match_id, 
     controlistreated_date,
     vax1_date,
-    death_date, dereg_date, coviddeath_date, noncoviddeath_date, covid_vax_any_2_date,
+    death_date, dereg_date, coviddeath_date, noncoviddeath_date, vax2_date,
     all_of(c(glue("{outcome}_date")))
   ) %>%
   
@@ -81,7 +81,7 @@ data_matched <-
     # follow-up time is up to and including censor date
     censor_date = pmin(
       dereg_date,
-      covid_vax_any_2_date-1, # -1 because we assume vax occurs at the start of the day
+      vax2_date-1, # -1 because we assume vax occurs at the start of the day
       death_date,
       study_dates[[glue("{agegroup}followupend_date")]],
       trial_date + maxfup,

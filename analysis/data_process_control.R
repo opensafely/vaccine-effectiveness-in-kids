@@ -173,7 +173,7 @@ data_processed <- data_extract %>%
     # latest covid event before study start
     anycovid_0_date = pmax(postest_0_date, covidemergency_0_date, covidadmitted_0_date, na.rm=TRUE),
     
-    vax1_date = covid_vax_any_1_date
+    vax1_date = covid_vax_any_1_date,
   )
 
 
@@ -182,19 +182,22 @@ data_processed <- data_extract %>%
 
 
 # Define selection criteria ----
+
 data_criteria <- data_processed %>%
   transmute(
     patient_id,
     has_age = !is.na(age),
     has_sex = !is.na(sex) & !(sex %in% c("I", "U")),
     has_imd = imd_Q5 != "Unknown",
+    vaccinated = vax1_date<matching_round_date,
     #has_ethnicity = !is.na(ethnicity_combined),
     has_region = !is.na(region),
-    no_recentcovid90 = is.na(anycovid_0_date) |  ((vax1_date - anycovid_0_date)>90),
+    no_recentcovid90 = is.na(anycovid_0_date) |  ((matching_round_date - anycovid_0_date)>90),
     include = (
         has_age & has_sex & has_imd & # has_ethnicity &
         has_region &
-        no_recentcovid90
+        no_recentcovid90 & 
+        !vaccinated
     ),
   )
 
