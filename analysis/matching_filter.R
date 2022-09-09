@@ -13,7 +13,23 @@
 # Preliminaries ----
 
 
-# import command-line arguments ----
+## Import libraries ----
+library('tidyverse')
+library('here')
+library('arrow')
+library('glue')
+library('MatchIt')
+
+## Import lib funcitons ----
+
+## Import custom user functions from lib
+source(here("lib", "functions", "utility.R"))
+
+## Import design elements
+source(here("analysis", "design.R"))
+
+
+## import command-line arguments ----
 
 args <- commandArgs(trailingOnly=TRUE)
 
@@ -22,12 +38,12 @@ if(length(args)==0){
   # use for interactive testing
   removeobjects <- FALSE
   agegroup <- "over12"
-  matching_round <- 1
+  matching_round <- as.integer("1")
 } else {
   #FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   agegroup <- args[[1]]
-  matching_round <- args[[2]]
+  matching_round <- as.integer(args[[2]])
 }
 
 # define vaccination of interest
@@ -35,25 +51,9 @@ if(agegroup=="under12") treatment <- "pfizerC"
 if(agegroup=="over12") treatment <- "pfizerA"
 
 
-#FIXME put this info in study_dates script, probably
-if(matching_round=="1") matching_round_date <- "2021-09-20"
-if(matching_round=="2") matching_round_date <- "2021-10-04"
 
 
-
-## Import libraries ----
-library('tidyverse')
-library('here')
-library('arrow')
-library('glue')
-library('MatchIt')
-
-
-## Import custom user functions from lib
-
-source(here("lib", "functions", "utility.R"))
-
-# create output directories ----
+## create output directories ----
 
 output_dir <- here("output", "match")
 fs::dir_create(output_dir)
@@ -64,23 +64,21 @@ study_dates <-
   map(as.Date)
 
 
-## import matching variables ----
-
-#FIXME pick these up automatically from... somewhere
-exact_variables <- c("age", "sex", "region")
-caliper_variables <- character()
+matching_round_date <- study_dates[[glue("{agegroup}start_date")]] + (matching_round-1)*14
 
 
-## trial info for matched controls
-data_control_matchinfo <- read_csv(fs::path(output_dir, glue("potential_matched_controls{matching_round}.csv.gz")))
+## Import and process data ----
+
+## trial info for potential matches
+data_potential_matchstatus <- read_rds(fs::path("output", "match", glue("data_potential_matchstatus{matching_round}.rds"))) %>% filter(matched==1L)
 
 # use externally created dummy data if not running in the server
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   
-  # just reuse previous extraction for dummy run, dummyinput_control_potential1.feather
+  # just reuse previous extraction for dummy run, dummy_control_potential1.feather
   # and change a few variables to simulate new index dates
-  data_extract <- read_feather(fs::path("lib", "dummydata", glue("dummyinput_control_potential1.feather"))) %>%
-    filter(patient_id %in% data_control_matchinfo$patient_id) %>%
+  data_extract <- read_feather(fs::path("lib", "dummydata", glue("dummy_control_potential1.feather"))) %>%
+    filter(patient_id %in% data_potential_matchstatus[(data_potential_matchstatus$treated==0L),]$patient_id) %>%
     mutate(
       region = if_else(runif(n())<0.05, sample(x=unique(region), size=n(), replace=TRUE), region),
     )
@@ -118,7 +116,7 @@ data_processed <-
     # latest covid event before study start
     anycovid_0_date = pmax(postest_0_date, covidemergency_0_date, covidadmitted_0_date, na.rm=TRUE),
     
-    prior_covid_infection0 = (!is.na(postest_0_date)) | (!is.na(covidadmitted_0_date)) | (!is.na(primary_care_covid_case_0_date)),
+    prior_covid_infection = (!is.na(postest_0_date)) | (!is.na(covidadmitted_0_date)) | (!is.na(primary_care_covid_case_0_date)),
     
     vax1_date = covid_vax_any_1_date,
     vax2_date = covid_vax_any_2_date,
@@ -144,7 +142,6 @@ data_criteria <- data_processed %>%
     ),
   )
 
-data_control0 <- data_criteria %>%
 
 data_control <- data_criteria %>%
   filter(include) %>%
@@ -154,34 +151,27 @@ data_control <- data_criteria %>%
 
 data_treated <- 
   left_join(
-    data_matchstatus %>% filter(treated==1L, matched==1L),
-    read_rds(here("output", "data", "data_treated_eligible.rds")),
+    data_potential_matchstatus %>% filter(treated==1L),
+    read_rds(here("output", "data", "data_treated_eligible.rds")) %>% select(-any_of(events_lookup$event_var)),
     by="patient_id"
-  )
+  ) 
 #data_treated <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==1L)
 
 
-data_treated <- read_rds(fs::path(output_dir, glue("data_potential_matched{matching_round}.rds"))) %>% filter(treated==1L)
-
-data_control <- data_control0 %>% 
-  mutate(treated=0L) 
-
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   # these variables are not included in the dummy data so join them on here
-  data_control <- data_control %>% left_join(data_control_matchinfo, by="patient_id")
+  data_control <- data_control %>% left_join(data_potential_matchstatus %>% filter(treated==0L), by=c("patient_id"))
+} else{
+  data_control <- data_control %>% mutate(treated=0L)
 }
 
 matching_candidates <- 
+  #FIXME variables in these datasets don't all agree (for example treated includes outcomes)
   bind_rows(data_treated, data_control) %>%
   arrange(treated, match_id, trial_date)
 
-### debug ###
-
 #print missing values
-
 map(matching_candidates, ~any(is.na(.x)))
-
-### /debug ###
 
 
 #########
@@ -229,12 +219,6 @@ map(matching_candidates, ~any(is.na(.x)))
 
 ### alternatively, use a fuzzy join _if_ this is quicker ----
 
-rematch_exact <-
-  inner_join(
-    x=data_treated %>% select(match_id, trial_date, all_of(exact_variables)),
-    y=data_control %>% select(match_id, trial_date, all_of(exact_variables)),
-    by = c("match_id", "trial_date", exact_variables)
-  )
 
 caliper_check <- function(distance){
   function(x,y){abs(x-y) <= distance}
@@ -254,80 +238,76 @@ if(length(caliper_variables) >0 ){
     rematch_caliper %>%
     select(match_id=match_id.x, trial_date=trial_date.x) %>%
     mutate(matched=1L)
-
 } else{
+  
   rematch <-
-    rematch_exact %>%
+    inner_join(
+      x=data_treated %>% select(match_id, trial_date, all_of(exact_variables)),
+      y=data_control %>% select(match_id, trial_date, all_of(exact_variables)),
+      by = c("match_id", "trial_date", exact_variables)
+    ) %>%
     select(match_id, trial_date) %>%
     mutate(matched=1L)
+  
 }
 
-data_matchstatus <-
+data_successful_match <-
   matching_candidates %>%
-  select(patient_id, treated, match_id, trial_date) %>%
-  left_join(rematch, by=c("match_id", "trial_date")) %>%
+  # select(
+  #   patient_id, treated, match_id, trial_date,
+  #   controlistreated_date,
+  #   all_of(exact_variables),
+  #   #all_of(names(caliper_variables))
+  # ) %>%
+  inner_join(rematch, by=c("match_id", "trial_date", "matched")) %>%
   mutate(
-    matched= if_else(is.na(matched), 0L, matched),
     matching_round = matching_round
   ) %>%
-  arrange(matched, match_id, treated)
+  arrange(trial_date, match_id, treated)
 
 ###
 
 
+data_successful_matchstatus <- 
+  data_successful_match %>% 
+  select(patient_id, match_id, trial_date, matching_round, treated, controlistreated_date)
+
 ## how many matches are lost?
 
-print(glue("{sum(data_matchstatus$matched & data_matchstatus$treated)} matched-pairs kept out of {sum(data_matchstatus$treated)} 
-           ({round(100*(sum(data_matchstatus$matched & data_matchstatus$treated) / sum(data_matchstatus$treated)),2)}%)
+print(glue("{sum(data_successful_matchstatus$treated)} matched-pairs kept out of {sum(data_potential_matchstatus$treated)} 
+           ({round(100*(sum(data_successful_matchstatus$treated) / sum(data_potential_matchstatus$treated)),2)}%)
            "))
 
 
 ## pick up all previous successful matches ----
 
-matching_roundprevious <- as.integer(matching_round) - 1
+matching_roundprevious <- matching_round - 1
 
 if(matching_round>1){
   
   data_matchstatusprevious <- 
-    read_rds(fs::path(output_dir, glue("data_matchstatus_allrounds{matching_roundprevious}.rds"))) %>%
-    filter(matched==1L)
+    read_rds(fs::path(output_dir, glue("data_matchstatus_allrounds{matching_roundprevious}.rds")))
   
   data_matchstatus_allrounds <- 
-    data_matchstatus %>% 
-    filter(matched==1L) %>%
-    bind_rows(data_matchstatusprevious)
-  
-  
+    data_successful_matchstatus %>% 
+    bind_rows(data_matchstatusprevious) 
+
 } else{
   data_matchstatus_allrounds <- 
-    data_matchstatus %>% 
-    filter(matched==1L) 
+    data_successful_matchstatus
 }
 
-write_rds(data_matchstatus_allrounds, fs::path(output_dir, glue("data_matchstatus_allrounds{matching_round}.rds")))
+write_rds(data_matchstatus_allrounds, fs::path(output_dir, glue("data_matchstatus_allrounds{matching_round}.rds")), compress="gz")
 
 
-# output all patient ids for subsequent study definition
+# output all control patient ids for finalmatched study definition
 data_matchstatus_allrounds %>%
-  select(patient_id, treated, trial_date, match_id) %>%
   mutate(
     trial_date=as.character(trial_date)
   ) %>%
-  write_csv(fs::path(output_dir, glue("cumulative_matched{matching_round}.csv.gz")))
+  filter(treated==0L) %>% #only interested in controls as all
+  write_csv(fs::path(output_dir, glue("cumulative_matchedcontrols{matching_round}.csv.gz")))
 
 
-
-# #actual legitimate matches 
-# data_match_actual <- 
-#   
-#   select(patient_id, treated) %>%
-#   left_join(
-#     matching_candidates,
-#     by=c("patient_id", "treated")
-#   )
-# 
-# write_rds(data_match_actual, fs::path(output_dir, glue("data_match_actual{matching_round}.rds")))
-# 
-
-
+write_rds(data_successful_match %>% filter(treated==0L), fs::path(output_dir, glue("data_successful_matchedcontrols{matching_round}.rds")), compress="gz")
 
