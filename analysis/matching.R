@@ -23,12 +23,12 @@ if(length(args)==0){
   # use for interactive testing
   removeobjects <- FALSE
   agegroup <- "over12"
-  matching_round <- "1"
+  matching_round <- as.integer("1")
 } else {
   #FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   agegroup <- args[[1]]
-  matching_round <- args[[2]]
+  matching_round <- as.integer(args[[2]])
 }
 
 # define vaccination of interest
@@ -51,10 +51,17 @@ source(here("lib", "functions", "utility.R"))
 output_dir <- here("output", "match")
 fs::dir_create(output_dir)
 
+## Import design elements
+source(here("analysis", "design.R"))
+
 ## import globally defined study dates and convert to "Date"
 study_dates <-
   jsonlite::read_json(path=here("lib", "design", "study-dates.json")) %>%
   map(as.Date)
+
+
+matching_round_date <- study_dates[[glue("{agegroup}start_date")]] + (matching_round-1)*14
+
 
 
 
@@ -89,10 +96,6 @@ if(matching_round>1){
 
 
 ## import matching variables ----
-
-#FIXME pick these up automatically from... somewhere
-exact_variables <- c("age", "sex", "region")
-caliper_variables <- character()
 
 data_eligible <-
   bind_rows(data_alltreated, data_control) %>%
@@ -307,7 +310,6 @@ local({
       group_by(match_id) %>%
       mutate(
         controlistreated_date = vax1_date[treated==0], # this only works because of the group_by statement above! do not remove group_by statement!
-        matchcensor_date = pmin(censor_date, controlistreated_date, na.rm=TRUE), # new censor date based on whether control gets treated or not
       ) %>%
       ungroup()
 
@@ -335,8 +337,7 @@ local({
       control=1L-treated, 
       trial_time, 
       trial_date, 
-      controlistreated_date, 
-      matchcensor_date
+      controlistreated_date
     )
 
   # matching status for all treated people and their controls (if matched).
@@ -354,7 +355,7 @@ local({
   
   unmatched_control_ids <<- candidate_ids
 })
-
+ 
 # output matching status ----
 write_rds(data_matchstatus, fs::path(output_dir, glue("data_potential_matchstatus{matching_round}.rds")), compress="gz")
 
@@ -375,30 +376,30 @@ data_matchstatus %>%
   mutate(
     trial_date=as.character(trial_date)
   ) %>%
-  write_csv(fs::path(output_dir, glue("potential_matched_controls{matching_round}.csv.gz")))
+  write_csv(fs::path(output_dir, glue("potential_matchedcontrols{matching_round}.csv.gz")))
 
 
 print(paste0("number of duplicate control IDs is ", data_matchstatus %>% filter(control==1L, matched==1L) %>% group_by(patient_id) %>% summarise(n=n()) %>% filter(n>1) %>% nrow() ))
 # should be zero
-
-
-## output dataset containing all matched pairs + matching factors
-data_matched <- 
-  data_matchstatus %>%
-  filter(matched==1L) %>%
-  left_join(
-    data_eligible %>%
-    select(
-      patient_id,
-      treated,
-      all_of(
-        exact_variables#, 
-        #names(caliper_variables)
-      ),
-    ),
-    by=c("patient_id", "treated")
-  ) %>% 
-  arrange(trial_date, match_id, treated)
-
-
-write_rds(data_matched, fs::path(output_dir, glue("data_potential_matched{matching_round}.rds")), compress="gz")
+# 
+# 
+# ## output dataset containing all matched pairs + matching factors
+# data_matched <-
+#   data_matchstatus %>%
+#   filter(matched==1L) %>%
+#   left_join(
+#     data_eligible %>%
+#     select(
+#       patient_id,
+#       treated,
+#       all_of(
+#         exact_variables#,
+#         #names(caliper_variables)
+#       ),
+#     ),
+#     by=c("patient_id", "treated")
+#   ) %>%
+#   arrange(trial_date, match_id, treated)
+# 
+# 
+# write_rds(data_matched, fs::path(output_dir, glue("data_potential_matched{matching_round}.rds")), compress="gz")
