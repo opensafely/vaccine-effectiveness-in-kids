@@ -64,7 +64,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
     # because of a bug in cohort extractor -- remove once pulled new version
     mutate(patient_id = as.integer(patient_id))
 
-  data_custom_dummy <- read_feather(here("lib", "dummydata", "dummyinput_treated.feather")) %>%
+  data_custom_dummy <- read_feather(here("lib", "dummydata", "dummy_treated.feather")) %>%
     mutate(
       msoa = sample(factor(c("1", "2")), size=n(), replace=TRUE) # override msoa so matching success more likely
     )
@@ -282,7 +282,9 @@ data_criteria <- data_processed %>%
     #has_ethnicity = !is.na(ethnicity_combined),
     has_region = !is.na(region),
     vax1_betweenentrydates = case_when(
-      (vax1_type==treatment) & (vax1_date >= study_dates[[glue("first{agegroup}_date")]]) & (vax1_date <= study_dates[[glue("{agegroup}end_date")]]) ~ TRUE,
+      (vax1_type==treatment) & 
+        (vax1_date >= study_dates[[glue("first{agegroup}_date")]]) & 
+        (vax1_date <= study_dates[[glue("{agegroup}end_date")]]) ~ TRUE,
       TRUE ~ FALSE
     ),
     has_vaxgap12 = vax2_date >= (vax1_date+17) | is.na(vax2_date), # at least 17 days between first two vaccinations

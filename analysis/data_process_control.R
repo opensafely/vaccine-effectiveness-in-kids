@@ -9,7 +9,16 @@
 ######################################
 
 
-# import command-line arguments ----
+# Preliminaries ----
+
+## Import libraries ----
+library('tidyverse')
+library('lubridate')
+library('arrow')
+library('here')
+library('glue')
+
+## import command-line arguments ----
 
 args <- commandArgs(trailingOnly=TRUE)
 
@@ -18,39 +27,41 @@ if(length(args)==0){
   # use for interactive testing
   removeobjects <- FALSE
   agegroup <- "over12"
-  matching_round <- "1"
+  matching_round <- as.integer("1")
 } else {
   #FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   agegroup <- args[[1]]
-  matching_round <- args[[2]]
+  matching_round <- as.integer(args[[2]])
 }
 
-# define vaccination of interest
-if(agegroup=="under12") treatment <- "pfizerC"
-if(agegroup=="over12") treatment <- "pfizerA"
-
-#FIXME put this info in study_dates script, probably
-if(matching_round=="1") matching_round_date <- "2021-09-20"
-if(matching_round=="2") matching_round_date <- "2021-10-04"
 
 
 
-# Import libraries ----
-library('tidyverse')
-library('lubridate')
-library('arrow')
-library('here')
-library('glue')
 
 source(here("lib", "functions", "utility.R"))
+
+## Import design elements
+source(here("analysis", "design.R"))
 
 # import globally defined study dates and convert to "Date"
 study_dates <-
   jsonlite::read_json(path=here("lib", "design", "study-dates.json")) %>%
   map(as.Date)
 
-# output processed data to rds ----
+
+
+start_date <- study_dates[[glue("{agegroup}start_date")]]
+matching_round_date <- study_dates[[glue("{agegroup}start_date")]] + (matching_round-1)*14
+
+
+# define vaccination of interest
+if(agegroup=="under12") {
+  treatment <- "pfizerC"
+}
+if(agegroup=="over12") {
+  treatment <- "pfizerA"
+}
 
 fs::dir_create(here("output", "data"))
 
@@ -64,13 +75,13 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
 
-  data_studydef_dummy <- read_feather(here("output", "input_control_potential_2021-09-20.feather")) %>%
+  data_studydef_dummy <- read_feather(here("output", glue("input_control_potential{matching_round}.feather"))) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), ~ as.Date(.))) %>%
     # because of a bug in cohort extractor -- remove once pulled new version
     mutate(patient_id = as.integer(patient_id))
 
-  data_custom_dummy <- read_feather(here("lib", "dummydata", "dummyinput_control_potential1.feather")) %>%
+  data_custom_dummy <- read_feather(here("lib", "dummydata", "dummy_control_potential1.feather")) %>%
     mutate(
       msoa = sample(factor(c("1", "2")), size=n(), replace=TRUE) # override msoa so matching success more likely
     ) %>%
@@ -115,7 +126,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 
   data_extract <- data_custom_dummy 
 } else {
-  data_extract <- read_feather(here("output", glue("input_control_potential_{matching_round_date}.feather"))) %>%
+  data_extract <- read_feather(here("output", glue("input_control_potential{matching_round}.feather"))) %>%
     #because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"),  as.Date))
 }
