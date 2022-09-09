@@ -6,6 +6,10 @@ ceiling_any <- function(x, to=1){
   ceiling(plyr::round_any(x/to, 1/100000000))*to
 }
 
+roundmid_any <- function(x, to=1){
+  # like ceiling_any, but centers on (integer) midpoint of the rounding points
+  ceiling(x/to)*to - (floor(to/2)*(x!=0))
+}
 
 
 fct_case_when <- function(...) {
@@ -17,34 +21,6 @@ fct_case_when <- function(...) {
   factor(dplyr::case_when(...), levels=levels)
 }
 
-#
-# specify_decimal <- function(x, k, trim=FALSE) {
-#
-#   fmtd <- format(round(x, k), nsmall = k)
-#   if (trim) {fmtd <- trimws(fmtd)}
-#   return(fmtd)
-# }
-#
-# print_est1bracket <- function(x, b, round=1){
-#   paste0(specify_decimal(x, round), " (", specify_decimal(b, round), ")")
-# }
-#
-# print_est2bracket <- function(x, b1, b2, round=1){
-#   paste0(specify_decimal(x, round), " (", specify_decimal(b1, round), ", ", specify_decimal(b2, round), ")")
-# }
-#
-# print_2bracket <- function(b1, b2, round=1){
-#   paste0("(", specify_decimal(b1, round), ", ", specify_decimal(b2, round), ")")
-# }
-#
-# print_pval <- function(pval, k=3){
-#   ifelse(pval < 1/(10^k), paste0("p<", 1/(10^k)), paste0("p=", specify_decimal(pval, k = 3)))
-# }
-#
-#
-#
-#
-#
 
 postvax_cut <- function(event_time, time, breaks, prelabel="pre", prefix=""){
 
@@ -67,11 +43,7 @@ postvax_cut <- function(event_time, time, breaks, prelabel="pre", prefix=""){
 
   period
 }
-#
-#
-#
-#
-#
+
 # define post-vaccination time periods for piece-wise constant hazards (ie time-varying effects / time-varying coefficients)
 # eg c(0, 10, 21) will create 4 periods
 # pre-vaccination, [0, 10), [10, 21), and [21, inf)

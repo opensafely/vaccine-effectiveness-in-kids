@@ -6,21 +6,17 @@ import codelists
 # import json module
 import json
 
-# import parameters
-from cohortextractor import params
-agegroup = params["agegroup"]
-matching_round = params["matching_round"]
-index_date = params["index_date"]
-
-############################################################
-## inclusion variables
-from variables_inclusion import generate_inclusion_variables 
-inclusion_variables = generate_inclusion_variables(index_date="index_date")
 ############################################################
 ## matching variables
 from variables_matching import generate_matching_variables 
-matching_variables = generate_matching_variables(index_date="index_date")
+matching_variables = generate_matching_variables(index_date="trial_date")
 ############################################################
+## outcome variables
+from variables_outcome import generate_outcome_variables 
+outcome_variables = generate_outcome_variables(index_date="trial_date")
+############################################################
+
+
 
 
 from cohortextractor import (
@@ -31,7 +27,6 @@ from cohortextractor import (
   filter_codes_by_category,
   combine_codelists,
 )
-
 
 # import study dates defined in "./lib/design/study-dates.R" script
 with open("./lib/design/study-dates.json") as f:
@@ -54,32 +49,25 @@ study = StudyDefinition(
     "float": {"distribution": "normal", "mean": 25, "stddev": 5},
   },
   
-  index_date = index_date,
+  index_date = studystart_date,
   
   # This line defines the study population
-  population=patients.satisfying(
-    f"""
-      registered
-      AND
-      age_aug21 >= 12
-      AND
-      age_aug21 <= 15
-      AND
-      (
-      NOT has_died
-      )
-      AND
-      NOT wchild
-    """,
-    # we define baseline variables on the day _before_ the study date (start date = day of first possible booster vaccination)
-  ),
+  population = patients.which_exist_in_file(f_path="output/match/cumulative_matchedcontrols1.csv.gz"),
+
+  trial_date = patients.with_value_from_file(f_path="output/match/cumulative_matchedcontrols1.csv.gz", returning="trial_date", returning_type="date", date_format='YYYY-MM-DD'),
   
-  **vaccination_date_X(
-    name = "covid_vax_any",
-    index_date = "1900-01-01",
-    n = 1,
-    target_disease_matches="SARS-2 CORONAVIRUS"
-  ),
-  **inclusion_variables,    
-  **matching_variables,      
+  match_id = patients.with_value_from_file(f_path="output/match/cumulative_matchedcontrols1.csv.gz", returning="match_id", returning_type="int"),
+  
+  
+  ###############################################################################
+  # matching
+  ##############################################################################
+  #**matching_variables,
+  
+  ###############################################################################
+  # outcomes
+  ##############################################################################
+  **outcome_variables,
+  
+  
 )

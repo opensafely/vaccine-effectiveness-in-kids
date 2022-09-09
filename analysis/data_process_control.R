@@ -9,7 +9,16 @@
 ######################################
 
 
-# import command-line arguments ----
+# Preliminaries ----
+
+## Import libraries ----
+library('tidyverse')
+library('lubridate')
+library('arrow')
+library('here')
+library('glue')
+
+## import command-line arguments ----
 
 args <- commandArgs(trailingOnly=TRUE)
 
@@ -18,39 +27,41 @@ if(length(args)==0){
   # use for interactive testing
   removeobjects <- FALSE
   agegroup <- "over12"
-  matching_round <- "1"
+  matching_round <- as.integer("1")
 } else {
   #FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   agegroup <- args[[1]]
-  matching_round <- args[[2]]
+  matching_round <- as.integer(args[[2]])
 }
 
-# define vaccination of interest
-if(agegroup=="under12") treatment <- "pfizerC"
-if(agegroup=="over12") treatment <- "pfizerA"
-
-#FIXME put this info in study_dates script, probably
-if(matching_round=="1") matching_round_date <- "2021-09-20"
-if(matching_round=="2") matching_round_date <- "2021-10-04"
 
 
 
-# Import libraries ----
-library('tidyverse')
-library('lubridate')
-library('arrow')
-library('here')
-library('glue')
 
 source(here("lib", "functions", "utility.R"))
+
+## Import design elements
+source(here("analysis", "design.R"))
 
 # import globally defined study dates and convert to "Date"
 study_dates <-
   jsonlite::read_json(path=here("lib", "design", "study-dates.json")) %>%
   map(as.Date)
 
-# output processed data to rds ----
+
+
+start_date <- study_dates[[glue("{agegroup}start_date")]]
+matching_round_date <- study_dates[[glue("{agegroup}start_date")]] + (matching_round-1)*14
+
+
+# define vaccination of interest
+if(agegroup=="under12") {
+  treatment <- "pfizerC"
+}
+if(agegroup=="over12") {
+  treatment <- "pfizerA"
+}
 
 fs::dir_create(here("output", "data"))
 
@@ -64,13 +75,13 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
 
-  data_studydef_dummy <- read_feather(here("output", "input_control_potential_2021-09-20.feather")) %>%
+  data_studydef_dummy <- read_feather(here("output", glue("input_control_potential{matching_round}.feather"))) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), ~ as.Date(.))) %>%
     # because of a bug in cohort extractor -- remove once pulled new version
     mutate(patient_id = as.integer(patient_id))
 
-  data_custom_dummy <- read_feather(here("lib", "dummydata", "dummyinput_control_potential1.feather")) %>%
+  data_custom_dummy <- read_feather(here("lib", "dummydata", "dummy_control_potential1.feather")) %>%
     mutate(
       msoa = sample(factor(c("1", "2")), size=n(), replace=TRUE) # override msoa so matching success more likely
     ) %>%
@@ -115,7 +126,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 
   data_extract <- data_custom_dummy 
 } else {
-  data_extract <- read_feather(here("output", glue("input_control_potential_{matching_round_date}.feather"))) %>%
+  data_extract <- read_feather(here("output", glue("input_control_potential{matching_round}.feather"))) %>%
     #because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"),  as.Date))
 }
@@ -155,28 +166,14 @@ data_processed <- data_extract %>%
       `South East` = "South East",
       `South West` = "South West"
     ),
-
-
-    # prior_tests_cat = cut(prior_covid_test_frequency, breaks=c(0, 1, 2, 3, Inf), labels=c("0", "1", "2", "3+"), right=FALSE),
-
-    # prior_covid_infection0 = (!is.na(positive_test_0_date)) | (!is.na(admitted_covid_0_date)) | (!is.na(primary_care_covid_case_0_date)),
-
-    # # latest covid event before study start
-    # anycovid_0_date = pmax(positive_test_0_date, covidemergency_0_date, admitted_covid_0_date, na.rm=TRUE),
-    # 
-    # # earliest covid event after study start
-    # anycovid_1_date = pmin(positive_test_1_date, covidemergency_1_date, admitted_covid_1_date, covidcc_1_date, coviddeath_date, na.rm=TRUE),
-    # 
-    # noncoviddeath_date = if_else(!is.na(death_date) & is.na(coviddeath_date), death_date, as.Date(NA_character_)),
-    # 
-    # cause_of_death = fct_case_when(
-    #   !is.na(coviddeath_date) ~ "covid-related",
-    #   !is.na(death_date) ~ "not covid-related",
-    #   TRUE ~ NA_character_
-    # ),
+    
+    
+    prior_covid_infection = (!is.na(postest_0_date)) | (!is.na(covidadmitted_0_date)) | (!is.na(primary_care_covid_case_0_date)),
+    
+    # latest covid event before study start
+    anycovid_0_date = pmax(postest_0_date, covidemergency_0_date, covidadmitted_0_date, na.rm=TRUE),
     
     vax1_date = covid_vax_any_1_date
-
   )
 
 
@@ -193,11 +190,14 @@ data_criteria <- data_processed %>%
     has_imd = imd_Q5 != "Unknown",
     #has_ethnicity = !is.na(ethnicity_combined),
     has_region = !is.na(region),
+    no_recentcovid90 = is.na(anycovid_0_date) |  ((vax1_date - anycovid_0_date)>90),
     include = (
         has_age & has_sex & has_imd & # has_ethnicity &
-        has_region 
+        has_region &
+        no_recentcovid90
     ),
   )
+
 
 data_control_potential <- data_criteria %>%
   filter(include) %>%

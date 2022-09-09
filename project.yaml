@@ -5,26 +5,18 @@ expectations:
 
 actions:
 
-  generate_study_treated:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_treated  --output-format feather
+  extract_treated:
+    run: cohortextractor:latest generate_cohort 
+      --study-definition study_definition_treated
+      --output-file output/input_treated.feather
     outputs:
       highly_sensitive:
         cohort: output/input_treated.feather
 
-  generate_dataset_report:
-    run: >
-      dataset-report:v0.0.9
-        --input-files output/input_treated.feather
-        --output-dir output/
-    needs: [generate_study_treated]
-    outputs:
-      moderately_sensitive:
-        dataset_report: output/input_treated.html
-
   data_process_treated:
     run: r:latest analysis/data_process_treated.R over12
     needs:
-    - generate_study_treated
+    - extract_treated
     outputs:
       highly_sensitive:
         rds: output/data/data_treated_eligible.rds
@@ -43,17 +35,23 @@ actions:
 
   ## matching round 1
   
-  generate_study_control_potential1:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_control_potential --output-format feather --index-date-range "2021-09-20 to 2021-09-20 by week"
+  extract_control_potential1:
+    run: cohortextractor:latest generate_cohort
+      --study-definition study_definition_control_potential
+      --output-file output/input_control_potential1.feather
+      --output-format feather
+      --param agegroup=over12
+      --param matching_round=1
+      --param index_date='2021-09-20'
     outputs:
       highly_sensitive:
-        cohort: output/input_control_potential_2021-09-20.feather
+        cohort: output/input_control_potential1.feather
 
  
   data_process_control_potential1:
     run: r:latest analysis/data_process_control.R over12 1
     needs:
-    - generate_study_control_potential1
+    - extract_control_potential1
     outputs:
       highly_sensitive:
         rds: output/data/data_control_potential1.rds
@@ -65,105 +63,74 @@ actions:
     - data_process_control_potential1
     outputs:
       highly_sensitive:
-        rds1: output/match/data_potential_matchstatus1.rds
-        rds2: output/match/data_potential_matched1.rds
-        csv: output/match/potential_matched_controls1.csv.gz
+        rds: output/match/data_potential_matchstatus1.rds
+        #rds: output/match/data_potential_matched1.rds
+        csv: output/match/potential_matchedcontrols1.csv.gz
  
-  skim_potential_matched1:
-    run: r:latest analysis/data_skim.R output/match/data_potential_matched1.rds output/data_properties
-    needs: [matching1]
-    outputs: 
-      moderately_sensitive:
-        txt1: output/data_properties/data_potential_matched1_skim.txt
-        txt2: output/data_properties/data_potential_matched1_coltypes.txt
-        txt3: output/data_properties/data_potential_matched1_tabulate.txt
+  # skim_control_potential1:
+  #   run: r:latest analysis/data_skim.R output/match/data_potential_matched1.rds output/data_properties
+  #   needs: [matching1]
+  #   outputs: 
+  #     moderately_sensitive:
+  #       txt1: output/data_properties/data_potential_matched1_skim.txt
+  #       txt2: output/data_properties/data_potential_matched1_coltypes.txt
+  #       txt3: output/data_properties/data_potential_matched1_tabulate.txt
  
-  generate_study_match_control1:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_control_match1 --output-format feather
+  extract_control_match1:
+    run: cohortextractor:latest generate_cohort 
+      --study-definition study_definition_control_match
+      --output-file output/input_control_match1.feather 
+      --param agegroup=over12
+      --param matching_round=1
+      --param index_date='2021-09-20'
     needs:
     - matching1
     outputs:
       highly_sensitive:
         cohort: output/input_control_match1.feather 
 
-  generate_dataset_report_control_match1:
-    run: >
-      dataset-report:v0.0.9
-        --input-files output/input_control_match1.feather
-        --output-dir output/
-    needs: [generate_study_match_control1]
-    outputs:
-      moderately_sensitive:
-        dataset_report: output/input_control_match1.html
-  
   matching_filter1:
     run: r:latest analysis/matching_filter.R over12 1
     needs:
     - matching1
-    - generate_study_match_control1
+    - data_process_treated
+    - extract_control_match1
     outputs:
       highly_sensitive:
         rds1: output/match/data_matchstatus_allrounds1.rds
-        rds2: output/match/data_match_actual1.rds
+        rds2: output/match/data_successful_matchedcontrols1.rds
+        csv: output/match/cumulative_matchedcontrols1.csv.gz
+        
+
+  extract_finalmatched:
+    run: cohortextractor:latest generate_cohort 
+      --study-definition study_definition_finalmatched 
+      --output-file output/input_finalmatched.feather
+    needs:
+    - matching_filter1
+    #- matching_filter2
+    outputs:
+      highly_sensitive:
+        cohort: output/input_finalmatched.feather 
+        
+  data_process_finalmatched:
+    run: r:latest analysis/data_process_finalmatched.R over12
+    needs:
+    - data_process_treated
+    - extract_finalmatched
+    - matching_filter1
+    #- matching_filter2
+    outputs:
+      highly_sensitive:
+        rds: output/data/data_finalmatched.rds
         
         
-#   ## matching round 2
-  
-#   generate_study_control_potential1:
-#     run: cohortextractor:latest generate_cohort --study-definition study_definition_control_potential --output-format feather --index-date-range "2021-10-04 to 2021-10-04 by week"
-#     outputs:
-#       highly_sensitive:
-#         cohort: output/input_control_potential_2021-10-04.feather
+  model_km_over12_all_postest:
+    run: r:latest analysis/km.R over12 all postest
+    needs:
+    - data_process_finalmatched
+    outputs:
+      moderately_sensitive:
+        csv: output/comparison/over12/all/postest/*csv
+        png: output/comparison/over12/all/postest/*png
 
- 
-#   data_process_control_potential2:
-#     run: r:latest analysis/data_process_control.R over12 2
-#     needs:
-#     - generate_study_control_potential2
-#     outputs:
-#       highly_sensitive:
-#         rds: output/data/data_control_potential2.rds
- 
-#   matching2:
-#     run: r:latest analysis/matching.R over12 2
-#     needs:
-#     - data_matching_filter1
-#     - data_process_treated
-#     - data_process_control_potential2
-#     outputs:
-#       highly_sensitive:
-#         rds1: output/match/data_potential_matchstatus2.rds
-#         rds2: output/match/data_potential_matched2.rds
-#         csv: output/match/potential_matched_controls2.csv.gz
- 
- 
-#   generate_study_match_control2:
-#     run: cohortextractor:latest generate_cohort --study-definition study_definition_control_match2 --output-format feather
-#     needs:
-#     - matching2
-#     outputs:
-#       highly_sensitive:
-#         cohort: output/input_control_match2.feather 
-  
-#   matching_filter2:
-#     run: r:latest analysis/matching_filter.R over12 2
-#     needs:
-#     - matching_filter1
-#     - matching2
-#     - generate_study_match_control2
-#     outputs:
-#       highly_sensitive:
-#         rds1: output/match/data_matchstatus_allrounds2.rds
-#         rds2: output/match/data_match_actual2.rds
-
-
-# ## combine together
-
-#   matching_combine:
-#     run: r:latest analysis/matching_combine.R over12
-#     needs:
-#     - matching_filter1
-#     - matching_filter2
-#     outputs:
-#       highly_sensitive:
-#         rds: output/match/data_match_all.rds
