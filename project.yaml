@@ -63,18 +63,18 @@ actions:
     - data_process_control_potential1
     outputs:
       highly_sensitive:
-        rds1: output/match/data_potential_matchstatus1.rds
-        rds2: output/match/data_potential_matched1.rds
-        csv: output/match/potential_matched_controls1.csv.gz
+        rds: output/match/data_potential_matchstatus1.rds
+        #rds: output/match/data_potential_matched1.rds
+        csv: output/match/potential_matchedcontrols1.csv.gz
  
-  skim_potential_matched1:
-    run: r:latest analysis/data_skim.R output/match/data_potential_matched1.rds output/data_properties
-    needs: [matching1]
-    outputs: 
-      moderately_sensitive:
-        txt1: output/data_properties/data_potential_matched1_skim.txt
-        txt2: output/data_properties/data_potential_matched1_coltypes.txt
-        txt3: output/data_properties/data_potential_matched1_tabulate.txt
+  # skim_control_potential1:
+  #   run: r:latest analysis/data_skim.R output/match/data_potential_matched1.rds output/data_properties
+  #   needs: [matching1]
+  #   outputs: 
+  #     moderately_sensitive:
+  #       txt1: output/data_properties/data_potential_matched1_skim.txt
+  #       txt2: output/data_properties/data_potential_matched1_coltypes.txt
+  #       txt3: output/data_properties/data_potential_matched1_tabulate.txt
  
   extract_control_match1:
     run: cohortextractor:latest generate_cohort 
@@ -112,6 +112,17 @@ actions:
     outputs:
       highly_sensitive:
         cohort: output/input_finalmatched.feather 
+        
+  data_process_finalmatched:
+    run: r:latest analysis/data_process_finalmatched.R over12
+    needs:
+    - data_process_treated
+    - extract_finalmatched
+    - matching_filter1
+    #- matching_filter2
+    outputs:
+      highly_sensitive:
+        rds: output/data/data_finalmatched.rds
         
         
 
