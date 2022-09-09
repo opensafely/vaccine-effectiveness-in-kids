@@ -55,11 +55,30 @@ study = StudyDefinition(
   # This line defines the study population
   # FIXME this line needs to be matching_round specific -- currently it's only using data from matching_round=1
   # might be necessary to have round-specific study definitions which is a pain, but metaprogrammable.
-  population = patients.which_exist_in_file(f_path="output/match/potential_matched_controls1.csv.gz"),
-
-  trial_date = patients.with_value_from_file(f_path="output/match/potential_matched_controls1.csv.gz", returning="trial_date", returning_type="date", date_format='YYYY-MM-DD'),
   
-  match_id = patients.with_value_from_file(f_path="output/match/potential_matched_controls1.csv.gz", returning="match_id", returning_type="int"),
+  
+  population = patients.satisfying(
+    
+    """
+      registered
+      AND
+      age_aug21 >= 12
+      AND
+      age_aug21 <= 15
+      AND
+      (NOT has_died)
+      AND
+      NOT wchild
+      AND
+      prematched
+    """,
+    
+    prematched = patients.which_exist_in_file(f_path="output/match/potential_matchedcontrols1.csv.gz"),
+    
+  ),
+  trial_date = patients.with_value_from_file(f_path="output/match/potential_matchedcontrols1.csv.gz", returning="trial_date", returning_type="date", date_format='YYYY-MM-DD'),
+  
+  match_id = patients.with_value_from_file(f_path="output/match/potential_matchedcontrols1.csv.gz", returning="match_id", returning_type="int"),
   
   **vaccination_date_X(
     name = "covid_vax_any",

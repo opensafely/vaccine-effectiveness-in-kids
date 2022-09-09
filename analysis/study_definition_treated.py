@@ -16,7 +16,10 @@ inclusion_variables = generate_inclusion_variables(index_date="covid_vax_any_1_d
 from variables_matching import generate_matching_variables 
 matching_variables = generate_matching_variables(index_date="covid_vax_any_1_date")
 ############################################################
-
+## matching variables
+from variables_outcome import generate_outcome_variables 
+outcome_variables = generate_outcome_variables(index_date="covid_vax_any_1_date")
+############################################################
 
 
 from cohortextractor import (
@@ -64,13 +67,11 @@ study = StudyDefinition(
     f"""
       registered
       AND
-      age >= 12
+      age_aug21 >= 12
       AND
-      age <= 15
+      age_aug21 <= 15
       AND
-      (
-      NOT has_died
-      )
+      (NOT has_died)
       AND
       NOT wchild
       AND 
@@ -121,5 +122,10 @@ study = StudyDefinition(
   # matching
   ##############################################################################
   **matching_variables,      
+  
+    ###############################################################################
+  # outcomes
+  ##############################################################################
+  **outcome_variables,      
   
 )

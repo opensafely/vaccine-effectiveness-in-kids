@@ -16,8 +16,12 @@ def generate_inclusion_variables(index_date):
       returning="binary_flag",
     ),
 
-    age=patients.age_as_of( 
-        "2021-09-01",
+    age_aug21=patients.age_as_of( 
+        "2021-08-31",
+    ),
+    
+    age = patients.age_as_of( 
+        "index_date - 1 day",
     ),
     
     wchild = patients.satisfying(
