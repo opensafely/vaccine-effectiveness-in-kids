@@ -37,40 +37,57 @@ events_lookup <- tribble(
 
   # other
   "test", "covid_test_date", "SARS-CoV-2 test",
-
+  "dereg", "dereg_date", "Deregistration",
+  "primary_care_covid_case", "primary_care_covid_case_date", "Primary care COVID-19",
+  
   # effectiveness
-  "postest", "positive_test_date", "Positive SARS-CoV-2 test",
+  "postest", "postest_date", "Positive SARS-CoV-2 test",
   "covidemergency", "covidemergency_date", "COVID-19 A&E attendance",
+  "covidemergencyhosp", "covidemergencyhosp_date", "Admission from COVID-19 A&E",
   "covidadmitted", "covidadmitted_date", "COVID-19 hospitalisation",
   "noncovidadmitted", "noncovidadmitted_date", "Non-COVID-19 hospitalisation",
+  
   "covidadmittedproxy1", "covidadmittedproxy1_date", "COVID-19 hospitalisation (A&E proxy)",
   "covidadmittedproxy2", "covidadmittedproxy2_date", "COVID-19 hospitalisation (A&E proxy v2)",
-  "covidcc", "covidcc_date", "COVID-19 critical care",
+  "covidcritcare", "covidcritcare_date", "COVID-19 critical care",
   "coviddeath", "coviddeath_date", "COVID-19 death",
   "noncoviddeath", "noncoviddeath_date", "Non-COVID-19 death",
   "death", "death_date", "Any death",
 
   # safety
-  "admitted", "admitted_unplanned_1_date", "Unplanned hospitalisation",
+  "emergencyhosp", "emergencyhosp_date", "Admission from A&E",
+  "admitted", "admitted_unplanned_date", "Unplanned hospitalisation",
   "emergency", "emergency_date", "A&E attendance",
 )
 
+## follow-up time ----
 
 postbaselinedays<-14
 # where to split follow-up time after recruitment
-postbaselinecuts <- c(postbaselinedays*0,postbaselinedays*1,postbaselinedays*2,postbaselinedays*3,postbaselinedays*4,postbaselinedays*5,postbaselinedays*6,postbaselinedays*7)
+postbaselinecuts <- (0:7)*postbaselinedays
+maxfup <- max(postbaselinecuts)
 
-# what matching variables
+# matching variables ----
+
+# exact variables
 exact_variables <- c(
 
-  "age",
+  "age_aug21",
   "region",
   "sex",
   "prior_covid_infection",
   NULL
 )
+
+# caliper variables
 caliper_variables <- c(
-  age = 1,
+  #age = 1,
   NULL
 )
 matching_variables <- c(exact_variables, names(caliper_variables))
+
+## matching rounds ----
+
+# number of matching rounds to perform
+
+n_matching_rounds <- 1
