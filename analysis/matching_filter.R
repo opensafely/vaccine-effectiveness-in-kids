@@ -345,6 +345,8 @@ if(matching_round>1){
 write_rds(data_matchstatus_allrounds, fs::path(output_dir, glue("data_matchstatus_allrounds{matching_round}.rds")), compress="gz")
 
 
+
+
 # output all control patient ids for finalmatched study definition
 data_matchstatus_allrounds %>%
   mutate(
@@ -353,6 +355,24 @@ data_matchstatus_allrounds %>%
   filter(treated==0L) %>% #only interested in controls as all
   write_csv(fs::path(output_dir, glue("cumulative_matchedcontrols{matching_round}.csv.gz")))
 
+## size of dataset
+print("data_matchstatus_allrounds treated/untreated numbers")
+table(treated = data_matchstatus_allrounds$treated)
+
+
+
+## duplicate IDs
+data_matchstatus_allrounds %>% group_by(treated, patient_id) %>%
+  summarise(n=n()) %>% group_by(treated) %>% summarise(ndups = sum(n>1)) %>%
+  print()
+
 
 write_rds(data_successful_match %>% filter(treated==0L), fs::path(output_dir, glue("data_successful_matchedcontrols{matching_round}.rds")), compress="gz")
+
+## size of dataset
+print("data_successful_match treated/untreated numbers")
+table(treated = data_successful_match$treated)
+
+
+
 
