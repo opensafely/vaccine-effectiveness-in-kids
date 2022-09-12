@@ -82,7 +82,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), ~ as.Date(.))) %>%
     # because of a bug in cohort extractor -- remove once pulled new version
-    mutate(patient_id = as.integer(patient_id))
+    mutate(patient_id = as.integer(patient_id)) 
   
   # just reuse previous extraction for dummy run, dummy_control_potential1.feather
   # and change a few variables to simulate new index dates
@@ -93,8 +93,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
     )  %>%
     select(
       -covid_vax_pfizerA_1_date, -covid_vax_pfizerA_2_date, -covid_vax_pfizerC_1_date, -covid_vax_pfizerC_2_date, -covid_vax_any_2_date
-    )
-  
+    ) 
   
   not_in_studydef <- names(data_custom_dummy)[!( names(data_custom_dummy) %in% names(data_studydef_dummy) )]
   not_in_custom  <- names(data_studydef_dummy)[!( names(data_studydef_dummy) %in% names(data_custom_dummy) )]
@@ -130,17 +129,26 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
     apply(unmatched_types, 1, function(row) paste(paste(row, collapse=" : "), "\n"))
   )
 
+  data_extract <- data_custom_dummy %>%
   # these variables are not included in the dummy data so join them on here
   # they're joined in the study def using `with_values_from_file`
-  data_extract <- data_custom_dummy %>% left_join(data_potential_matchstatus %>% filter(treated==0L), by=c("patient_id"))
+  left_join(data_potential_matchstatus %>% filter(treated==0L), by=c("patient_id"))
+  
+
 
 } else {
   data_extract <- read_feather(fs::path("output", glue("input_control_match{matching_round}.feather"))) %>%
     #because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"),  as.Date)) %>% 
-    mutate(treated=0L)
+    mutate(treated=0L) %>%
+    # these variables are not included in the dummy data so join them on here
+    # they're joined in the study def using `with_values_from_file`
+    left_join(data_potential_matchstatus %>% filter(treated==0L), by=c("patient_id", "treated", "trial_date", "match_id"))
+    
 }
 
+# trial_date, match_id, matched, control
+# 
 
 data_processed <- 
   data_extract %>%
@@ -317,6 +325,11 @@ data_successful_matchstatus <-
   data_successful_match %>% 
   select(patient_id, match_id, trial_date, matching_round, treated, controlistreated_date)
 
+## size of dataset
+print("data_successful_match treated/untreated numbers")
+table(treated = data_successful_match$treated, useNA="ifany")
+
+
 ## how many matches are lost?
 
 print(glue("{sum(data_successful_matchstatus$treated)} matched-pairs kept out of {sum(data_potential_matchstatus$treated)} 
@@ -357,7 +370,7 @@ data_matchstatus_allrounds %>%
 
 ## size of dataset
 print("data_matchstatus_allrounds treated/untreated numbers")
-table(treated = data_matchstatus_allrounds$treated)
+table(treated = data_matchstatus_allrounds$treated, useNA="ifany")
 
 
 
@@ -371,7 +384,7 @@ write_rds(data_successful_match %>% filter(treated==0L), fs::path(output_dir, gl
 
 ## size of dataset
 print("data_successful_match treated/untreated numbers")
-table(treated = data_successful_match$treated)
+table(treated = data_successful_match$treated, useNA="ifany")
 
 
 
