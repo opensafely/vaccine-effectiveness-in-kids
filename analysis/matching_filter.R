@@ -353,6 +353,15 @@ data_matchstatus_allrounds %>%
   filter(treated==0L) %>% #only interested in controls as all
   write_csv(fs::path(output_dir, glue("cumulative_matchedcontrols{matching_round}.csv.gz")))
 
+## size of dataset
+print("data_matchstatus_allrounds treated/untreated numbers")
+table(treated = data_matchstatus_allrounds$treated)
+
 
 write_rds(data_successful_match %>% filter(treated==0L), fs::path(output_dir, glue("data_successful_matchedcontrols{matching_round}.rds")), compress="gz")
+
+## size of dataset
+print("data_successful_match treated/untreated numbers")
+table(treated = data_successful_match$treated)
+
 
