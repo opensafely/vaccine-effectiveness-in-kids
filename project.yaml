@@ -125,6 +125,14 @@ actions:
       highly_sensitive:
         rds: output/data/data_finalmatched.rds
         
+  model_km_over12_all_postest:
+    run: r:latest analysis/km.R over12 all postest
+    needs:
+    - data_process_finalmatched
+    outputs:
+      moderately_sensitive:
+        csv: output/comparison/over12/all/postest/*csv
+        png: output/comparison/over12/all/postest/*png
         
   model_km_over12_all_emergency:
     run: r:latest analysis/km.R over12 all emergency
