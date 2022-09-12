@@ -134,15 +134,6 @@ actions:
         csv: output/comparison/over12/all/postest/*csv
         png: output/comparison/over12/all/postest/*png
         
-  model_km_over12_all_emergency:
-    run: r:latest analysis/km.R over12 all emergency
-    needs:
-    - data_process_finalmatched
-    outputs:
-      moderately_sensitive:
-        csv: output/comparison/over12/all/emergency/*csv
-        png: output/comparison/over12/all/emergency/*png
-        
   model_km_over12_all_covidemergency:
     run: r:latest analysis/km.R over12 all covidemergency
     needs:
