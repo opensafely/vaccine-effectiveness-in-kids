@@ -8,6 +8,23 @@
 # organises vaccination date data to "vax X type", "vax X date" (rather than "pfizer X date", "az X date", ...)
 ######################################
 
+# Preliminaries ----
+
+
+## Import libraries ----
+library('tidyverse')
+library('lubridate')
+library('here')
+library('glue')
+library('arrow')
+
+## import local functions and parameters ---
+
+source(here("analysis", "design.R"))
+
+source(here("lib", "functions", "utility.R"))
+
+
 
 # import command-line arguments ----
 
@@ -17,49 +34,35 @@ args <- commandArgs(trailingOnly=TRUE)
 if(length(args)==0){
   # use for interactive testing
   removeobjects <- FALSE
-  agegroup <- "over12"
+  cohort <- "over12"
 } else {
   #FIXME replace with actual eventual action variables
   removeobjects <- TRUE
-  agegroup <- args[[1]]
+  cohort <- args[[1]]
 }
 
-# define vaccination of interest
-if(agegroup=="under12") treatment <- "pfizerC"
-if(agegroup=="over12") treatment <- "pfizerA"
 
-# Import libraries ----
-library('tidyverse')
-library('lubridate')
-library('arrow')
-library('here')
-library('glue')
+## get cohort-specific parameters study dates and parameters ----
 
-source(here("lib", "functions", "utility.R"))
-
-source(here("analysis","design.R"))
-
-# import globally defined study dates and convert to "Date"
-study_dates <-
-  jsonlite::read_json(path=here("lib", "design", "study-dates.json")) %>%
-  map(as.Date)
-
-# output processed data to rds ----
-
-fs::dir_create(here("output", "data"))
+dates <- map(study_dates[[cohort]], as.Date)
+params <- study_params[[cohort]]
 
 
-# process ----
+## create output directory ----
+fs::dir_create(ghere("output", cohort, "match"))
+
+
+# import ----
 
 # use externally created dummy data if not running in the server
 # check variables are as they should be
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
-
-  data_studydef_dummy <- read_feather(here("output", "input_finalmatched.feather")) %>%
+  
+  data_studydef_dummy <- read_feather(ghere("output", cohort, "extract", "input_controlfinal.feather")) %>%
     #because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"),  as.Date))
   
-  data_custom_dummy <- read_feather(fs::path("lib", "dummydata", glue("dummy_finalmatched.feather")))
+  data_custom_dummy <- read_feather(fs::path("lib", "dummydata", glue("dummy_controlfinal.feather")))
   
   
   not_in_studydef <- names(data_custom_dummy)[!( names(data_custom_dummy) %in% names(data_studydef_dummy) )]
@@ -106,23 +109,24 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 }
 
 
-data_matchstatus <- read_rds(here("output", "match", glue("data_matchstatus_allrounds{n_matching_rounds}.rds"))) 
+data_matchstatus <- read_rds(ghere("output", cohort, "matchround{n_matching_rounds}", "actual", "data_matchstatus_allrounds.rds"))
 
 # import data for treated group and select those who were successfully matched
 
 data_treated <- 
   left_join(
     data_matchstatus %>% filter(treated==1L),
-    read_rds(here("output", "data", "data_treated_eligible.rds")),
+    read_rds(ghere("output", cohort, "treated", "data_treatedeligible.rds")),
     by="patient_id"
   ) 
 
 
 # import final dataset of matched controls, including matching variables
+# alternative to this is re-extracting everything in the study definition
 data_control <- 
   map_dfr(
     seq_len(n_matching_rounds), 
-    ~read_rds(here("output", "match", glue("data_successful_matchedcontrols{.x}.rds"))),
+    ~{read_rds(ghere("output", cohort, glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))},
     .id="matching_round_id"
   ) %>%
   # merge with outcomes data
@@ -144,7 +148,6 @@ all(data_control$matching_round_id == as.character(data_control$matching_round))
 
 
 # merge treated and control groups
-# FIXME there are more variables in the treated dataset than in the control datset. see -"matching_candidates" in `matching_filter1.R`
 data_matched <-
   bind_rows(
     data_treated,
@@ -167,7 +170,7 @@ data_matched <-
   )
 
 
-write_rds(data_matched, here("output", "data", glue("data_finalmatched.rds")), compress="gz")
+write_rds(data_matched, here("output", cohort, "match", glue("data_matched.rds")), compress="gz")
 
 
 ## Flowchart ----

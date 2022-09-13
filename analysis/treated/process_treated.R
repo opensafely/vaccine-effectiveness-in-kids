@@ -8,8 +8,23 @@
 # organises vaccination date data to "vax X type", "vax X date" (rather than "pfizer X date", "az X date", ...)
 ######################################
 
+# Preliminaries ----
 
-# import command-line arguments ----
+## Import libraries ----
+library('tidyverse')
+library('lubridate')
+library('arrow')
+library('here')
+library('glue')
+
+## import local functions and parameters ---
+
+source(here("analysis", "design.R"))
+
+source(here("lib", "functions", "utility.R"))
+
+
+## import command-line arguments ----
 
 args <- commandArgs(trailingOnly=TRUE)
 
@@ -17,39 +32,23 @@ args <- commandArgs(trailingOnly=TRUE)
 if(length(args)==0){
   # use for interactive testing
   removeobjects <- FALSE
-  agegroup <- "over12"
+  cohort <- "over12"
 } else {
   #FIXME replace with actual eventual action variables
   removeobjects <- TRUE
-  agegroup <- args[[1]]
+  cohort <- args[[1]]
 }
 
-# define vaccination of interest
-if(agegroup=="under12") treatment <- "pfizerC"
-if(agegroup=="over12") treatment <- "pfizerA"
+## get cohort-specific parameters study dates and parameters ----
+
+dates <- map(study_dates[[cohort]], as.Date)
+params <- study_params[[cohort]]
+
+## create output directory ----
+fs::dir_create(here("output", cohort, "treated"))
 
 
-
-# Import libraries ----
-library('tidyverse')
-library('lubridate')
-library('arrow')
-library('here')
-library('glue')
-
-source(here("lib", "functions", "utility.R"))
-
-# import globally defined study dates and convert to "Date"
-study_dates <-
-  jsonlite::read_json(path=here("lib", "design", "study-dates.json")) %>%
-  map(as.Date)
-
-# output processed data to rds ----
-
-fs::dir_create(here("output", "data"))
-
-
-# process ----
+# import data ----
 
 # use externally created dummy data if not running in the server
 # check variables are as they should be
@@ -58,13 +57,13 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
 
-  data_studydef_dummy <- read_feather(here("output", "input_treated.feather")) %>%
+  data_studydef_dummy <- read_feather(ghere("output", cohort, "extract", "input_treated.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), ~ as.Date(.))) %>%
     # because of a bug in cohort extractor -- remove once pulled new version
     mutate(patient_id = as.integer(patient_id))
 
-  data_custom_dummy <- read_feather(here("lib", "dummydata", "dummy_treated.feather")) %>%
+  data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_treated_{cohort}.feather")) %>%
     mutate(
       msoa = sample(factor(c("1", "2")), size=n(), replace=TRUE) # override msoa so matching success more likely
     )
@@ -106,11 +105,15 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 
   data_extract <- data_custom_dummy 
 } else {
-  data_extract <- read_feather(here("output", "input_treated.feather")) %>%
+  data_extract <- read_feather(ghere("output", cohort, "extract", "input_treated.feather")) %>%
     #because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"),  as.Date))
 }
 
+
+# process data -----
+
+## patient-level info ----
 
 data_processed <- data_extract %>%
   mutate(
@@ -167,7 +170,7 @@ data_processed <- data_extract %>%
 
   )
 
-# reshape vaccination data ----
+## reshape vaccination data ----
 
 data_vax <- local({
 
@@ -264,13 +267,10 @@ select(
 )
 
 
-#write_rds(data_processed, here("output", "data", "data_processed_treated.rds"), compress="gz")
 
+# apply eligibility criteria ----
 
-
-## select eligible patients and create flowchart ----
-
-
+## define criteria ----
 
 # Define selection criteria ----
 data_criteria <- data_processed %>%
@@ -282,9 +282,9 @@ data_criteria <- data_processed %>%
     #has_ethnicity = !is.na(ethnicity_combined),
     has_region = !is.na(region),
     vax1_betweenentrydates = case_when(
-      (vax1_type==treatment) & 
-        (vax1_date >= study_dates[[glue("first{agegroup}_date")]]) & 
-        (vax1_date <= study_dates[[glue("{agegroup}end_date")]]) ~ TRUE,
+      (vax1_type==params$treatment) & 
+        (vax1_date >= dates$start_date) & 
+        (vax1_date <= dates$end_date) ~ TRUE,
       TRUE ~ FALSE
     ),
     has_vaxgap12 = vax2_date >= (vax1_date+17) | is.na(vax2_date), # at least 17 days between first two vaccinations
@@ -298,6 +298,8 @@ data_criteria <- data_processed %>%
     ),
   )
 
+## filter and export ----
+
 data_treated_eligible <- 
   data_criteria %>%
   filter(include) %>%
@@ -305,10 +307,10 @@ data_treated_eligible <-
   left_join(data_processed, by="patient_id") %>%
   droplevels()
 
-write_rds(data_treated_eligible, here("output", "data", "data_treated_eligible.rds"), compress="gz")
+write_rds(data_treated_eligible, ghere("output", cohort, "treated", "data_treatedeligible.rds"), compress="gz")
 
 
-## Flowchart ----
+# create flowchart ----
 
 
 data_flowchart <- data_criteria %>%
@@ -338,6 +340,6 @@ data_flowchart <- data_criteria %>%
       TRUE ~ NA_character_
     )
   )
-write_csv(data_flowchart, here("output", "data", "flowchart_treated_eligible.csv"))
+write_rds(data_flowchart, ghere("output", cohort, "treated", "flowchart_treatedeligible.rds"))
 
 

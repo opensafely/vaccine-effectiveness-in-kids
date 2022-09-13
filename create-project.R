@@ -1,12 +1,15 @@
-library('tidyverse')
-library('yaml')
-library('here')
-library('glue')
+library("tidyverse")
+library("yaml")
+library("here")
+library("glue")
+#library("rlang")
+ 
+source(here("analysis", "design.R"))
 
 # create action functions ----
 
 ## create comment function ----
-comment <- function(...){
+comment <- function(...) {
   list_comments <- list(...)
   comments <- map(list_comments, ~paste0("## ", ., " ##"))
   comments
@@ -14,7 +17,7 @@ comment <- function(...){
 
 
 ## create function to convert comment "actions" in a yaml string into proper comments
-convert_comment_actions <-function(yaml.txt){
+convert_comment_actions <-function(yaml.txt) {
   yaml.txt %>%
     str_replace_all("\\\n(\\s*)\\'\\'\\:(\\s*)\\'", "\n\\1")  %>%
     #str_replace_all("\\\n(\\s*)\\'", "\n\\1") %>%
@@ -32,7 +35,7 @@ action <- function(
   highly_sensitive=NULL,
   moderately_sensitive=NULL,
   ... # other arguments / options for special action types
-){
+) {
 
   outputs <- list(
     highly_sensitive = highly_sensitive,
@@ -54,99 +57,209 @@ action <- function(
   action_list
 }
 
+namelesslst <- function(...){
+  unname(lst(...))
+}
 
-## match action function ----
+## actions for a single matching round ----
 
-action_match <- function(treatment){
 
+
+
+action_1matchround <- function(cohort, matching_round){
+  
+  control_extract_date <- study_dates[[cohort]][[glue("control_extract_dates")]][matching_round]
+  
   splice(
-
     action(
-      name = glue("match_seqtrialcox_{treatment}"),
-      run = glue("r:latest analysis/match_seqtrialcox.R"),
-      arguments = c(treatment),
-      needs = list("data_selection", "data_process_long"),
-      highly_sensitive = lst(
-        rds = glue("output/match/{treatment}/match_*.rds")
+      name = glue("extract_controlpotential_{cohort}_{matching_round}"),
+      run = glue(
+        "cohortextractor:latest generate_cohort", 
+        " --study-definition study_definition_controlpotential", 
+        " --output-file output/{cohort}/matchround{matching_round}/extract/input_controlpotential.feather", 
+        " --param cohort={cohort}",
+        " --param matching_round={matching_round}",
+        " --param index_date={control_extract_date}"
       ),
-      moderately_sensitive = lst(
-        txt = glue("output/match/{treatment}/match_*.txt"),
-        #csv = glue("output/match/{treatment}/match_*.csv"),
+      needs = c(
+        if(matching_round>1) {glue("process_controlactual_{cohort}_{matching_round-1}")} else {NULL}
+      ) %>% as.list,
+      highly_sensitive = lst(
+        cohort = glue("output/{cohort}/matchround{matching_round}/extract/input_controlpotential.feather")
       )
     ),
-
+    
     action(
-      name = glue("merge_seqtrialcox_{treatment}"),
-      run = glue("r:latest analysis/merge_seqtrialcox.R"),
-      arguments = c(treatment),
-      needs = list("data_process", "data_process_long", "data_selection",  glue("match_seqtrialcox_{treatment}")),
-      moderately_sensitive = lst(
-        txt = glue("output/match/{treatment}/merge_*.txt"),
-        csv = glue("output/match/{treatment}/merge_*.csv"),
-        #svg = glue("output/match/{treatment}/merge_*.svg"),
-        png = glue("output/match/{treatment}/merge_*.png"),
-        pdf = glue("output/match/{treatment}/merge_*.pdf"),
-        html = glue("output/match/{treatment}/merge_*.html")
+      name = glue("process_controlpotential_{cohort}_{matching_round}"),
+      run = glue("r:latest analysis/matching/process_controlpotential.R"),
+      arguments = c(cohort, matching_round),
+      needs = namelesslst(
+        glue("extract_controlpotential_{cohort}_{matching_round}"),
+      ),
+      highly_sensitive = lst(
+        rds = glue("output/{cohort}/matchround{matching_round}/process/*.rds")
+      )
+    ),
+    
+    action(
+      name = glue("match_potential_{cohort}_{matching_round}"),
+      run = glue("r:latest analysis/matching/match_potential.R"),
+      arguments = c(cohort, matching_round),
+      needs = c(
+        glue("process_treated_{cohort}"), 
+        glue("process_controlpotential_{cohort}_{matching_round}"),
+        if(matching_round>1) {glue("process_controlactual_{cohort}_{matching_round-1}")} else {NULL}
+      ) %>% as.list,
+      highly_sensitive = lst(
+        rds = glue("output/{cohort}/matchround{matching_round}/potential/*.rds"),
+        csv = glue("output/{cohort}/matchround{matching_round}/potential/*.csv.gz"),
+      )
+    ),
+    
+    action(
+      name = glue("extract_controlactual_{cohort}_{matching_round}"),
+      run = glue(
+        "cohortextractor:latest generate_cohort", 
+        " --study-definition study_definition_controlactual", 
+        " --output-file output/{cohort}/matchround{matching_round}/extract/input_controlactual.feather", 
+        " --param cohort={cohort}",
+        " --param matching_round={matching_round}",
+      ),
+      needs = namelesslst(
+        glue("match_potential_{cohort}_{matching_round}"), 
+      ),
+      highly_sensitive = lst(
+        cohort = glue("output/{cohort}/matchround{matching_round}/extract/input_controlactual.feather")
+      )
+    ),
+    
+    
+    action(
+      name = glue("process_controlactual_{cohort}_{matching_round}"),
+      run = glue("r:latest analysis/matching/process_controlactual.R"),
+      arguments = c(cohort, matching_round),
+      needs = c(
+        glue("process_treated_{cohort}"),
+        glue("match_potential_{cohort}_{matching_round}"), 
+        glue("extract_controlpotential_{cohort}_{matching_round}"),  # this is only necessary for the dummy data
+        glue("extract_controlactual_{cohort}_{matching_round}"),
+        if(matching_round>1){glue("process_controlactual_{cohort}_{matching_round-1}")} else {NULL}
+      ) %>% as.list,
+      highly_sensitive = lst(
+        rds = glue("output/{cohort}/matchround{matching_round}/actual/*.rds"),
+        csv = glue("output/{cohort}/matchround{matching_round}/actual/*.csv.gz"),
       )
     )
+
   )
+}
+
+# test function
+#action_1matchround("over12", 2)
+
+# create all necessary actions for n matching rounds
+action_extract_and_match <- function(cohort, n_matching_rounds){
+  
+  allrounds <- map(seq_len(n_matching_rounds), ~action_1matchround(cohort, .x)) %>% flatten
+  
+  splice(
+    
+    # all treated people
+    action(
+      name = glue("extract_treated_{cohort}"),
+      run = glue(
+        "cohortextractor:latest generate_cohort", 
+        " --study-definition study_definition_treated", 
+        " --output-file output/{cohort}/extract/input_treated.feather",
+        " --param cohort={cohort}",
+      ),
+      highly_sensitive = lst(
+        extract = glue("output/{cohort}/extract/input_treated.feather")
+      ),
+    ),
+    
+    # all treated people
+    action(
+      name = glue("process_treated_{cohort}"),
+      run = glue("r:latest analysis/treated/process_treated.R"),
+      arguments = c(cohort),
+      needs = namelesslst(
+        glue("extract_treated_{cohort}")
+      ),
+      highly_sensitive = lst(
+        rds = glue("output/{cohort}/treated/*.rds")
+      ),
+    ),
+    
+    allrounds,
+    
+    
+    action(
+      name = glue("extract_controlfinal_{cohort}"),
+      run = glue(
+        "cohortextractor:latest generate_cohort", 
+        " --study-definition study_definition_controlfinal", 
+        " --output-file output/{cohort}/extract/input_controlfinal.feather",
+        " --param cohort={cohort}",
+        " --param n_matching_rounds={n_matching_rounds}",
+      ),
+      needs = namelesslst(
+        glue("process_controlactual_{cohort}_{n_matching_rounds}")
+      ),
+      highly_sensitive = lst(
+        extract = glue("output/{cohort}/extract/input_controlfinal.feather")
+      ),
+    ),
+    
+    action(
+      name = glue("process_controlfinal_{cohort}"),
+      run = glue("r:latest analysis/matching/process_controlfinal.R"),
+      arguments = c(cohort),
+      needs = c(
+        map(
+          seq_len(n_matching_rounds),
+          ~glue("process_controlactual_{cohort}_",.x)
+        ),
+        glue("extract_controlfinal_{cohort}"),
+        glue("process_treated_{cohort}")
+      ),
+      highly_sensitive = lst(
+        extract = glue("output/{cohort}/match/*.rds")
+      ),
+    )
+  )
+  
+}
+
+# test action
+# action_extract_and_match("over12", 2)
 
 
+action_km <- function(cohort, subgroup, outcome){
+  action(
+    name = glue("km_{cohort}_{subgroup}_{outcome}"),
+    run = glue("r:latest analysis/km.R"),
+    arguments = c(cohort, subgroup, outcome),
+    needs = namelesslst(
+      glue("process_controlfinal_{cohort}"),
+    ),
+    moderately_sensitive= lst(
+      csv= glue("output/{cohort}/models/km/{subgroup}/{outcome}/*.csv"),
+      rds= glue("output/{cohort}/models/km/{subgroup}/{outcome}/*.rds"),
+      png= glue("output/{cohort}/models/km/{subgroup}/{outcome}/*.png"),
+    )
+  )
 }
 
 ## model action function ----
-action_model <- function(
-  treatment, outcome, subgroup
-){
-
-  splice(
-
-    action(
-      name = glue("model_seqtrialcox_{treatment}_{outcome}_{subgroup}"),
-      run = glue("r:latest analysis/model_seqtrialcox.R"),
-      arguments = c(treatment, outcome, subgroup),
-      needs = list(
-        glue("match_seqtrialcox_{treatment}"),
-        "data_selection",
-        "data_process_long"
-      ),
-      highly_sensitive = lst(
-        rds = glue("output/models/seqtrialcox/{treatment}/{outcome}/{subgroup}/model_*.rds")
-      ),
-      moderately_sensitive = lst(
-        txt = glue("output/models/seqtrialcox/{treatment}/{outcome}/{subgroup}/model_*.txt"),
-        csv = glue("output/models/seqtrialcox/{treatment}/{outcome}/{subgroup}/model_*.csv")
-      )
-    ),
-
-    action(
-      name = glue("report_seqtrialcox_{treatment}_{outcome}_{subgroup}"),
-      run = glue("r:latest analysis/report_seqtrialcox.R"),
-      arguments = c(treatment, outcome, subgroup),
-      needs = list(
-        "data_selection",
-        glue("model_seqtrialcox_{treatment}_{outcome}_{subgroup}"),
-        glue("match_seqtrialcox_{treatment}")
-
-      ),
-      moderately_sensitive = lst(
-        csv = glue("output/models/seqtrialcox/{treatment}/{outcome}/{subgroup}/report_*.csv"),
-        svg = glue("output/models/seqtrialcox/{treatment}/{outcome}/{subgroup}/report_*.svg"),
-        png = glue("output/models/seqtrialcox/{treatment}/{outcome}/{subgroup}/report_*.png")
-      )
-    )
-  )
-}
-
-## model action function ----
-action_combine_model <- function(
-    subgroup, subgroup_levels
+action_km_combine <- function(
+    cohort, subgroup, outcome
 ){
   dash <- if(paste0(subgroup_levels, collapse="")=="") "" else "-"
   action(
-    name = glue("combine_model_{subgroup}"),
-    run = glue("r:latest analysis/combine_model.R"),
-    arguments = c(subgroup),
+    name = glue("combine_km_{cohort}_{subgroup}_{outcome}"),
+    run = glue("r:latest analysis/km_combine.R"),
+    arguments = c(cohort, subgroup, outcome),
     needs = splice(
       as.list(
         glue_data(
@@ -172,9 +285,7 @@ action_combine_model <- function(
     moderately_sensitive = lst(
       csv = glue("output/models/seqtrialcox/combined/{subgroup}/*.csv"),
       png = glue("output/models/seqtrialcox/combined/{subgroup}/*.png"),
-      pdf = glue("output/models/seqtrialcox/combined/{subgroup}/*.pdf"),
       svg = glue("output/models/seqtrialcox/combined/{subgroup}/*.svg"),
-      html = glue("output/models/seqtrialcox/combined/{subgroup}/*.html"),
     )
   )
 }
@@ -194,384 +305,39 @@ actions_list <- splice(
           "DO NOT EDIT project.yaml DIRECTLY",
           "This file is created by create-project.R",
           "Edit and run create-project.R to update the project.yaml",
-          "# # # # # # # # # # # # # # # # # # #"
+          "# # # # # # # # # # # # # # # # # # #",
+           " "
           ),
 
+  
+  comment("# # # # # # # # # # # # # # # # # # #", 
+          "Over 12s cohort", 
+          "# # # # # # # # # # # # # # # # # # #"),
+  
+  comment("# # # # # # # # # # # # # # # # # # #", 
+          "Extract and match", 
+          "# # # # # # # # # # # # # # # # # # #"),
+  
+  action_extract_and_match("over12", n_matching_rounds),
+  
+  comment("# # # # # # # # # # # # # # # # # # #", 
+          "Model", 
+          "# # # # # # # # # # # # # # # # # # #"),
 
-  comment("# # # # # # # # # # # # # # # # # # #", "Pre-server scripts", "# # # # # # # # # # # # # # # # # # #"),
-
-  # do not incorporate into project for now -- just run locally
-
-  # action(
-  #   name = "checkyaml",
-  #   run = "r:latest create-project.R",
-  #   moderately_sensitive = lst(
-  #     project = "project.yaml"
-  #   )
-  # ),
-
-  # action(
-  #   name = "dummydata",
-  #   run = "r:latest analysis/dummydata.R",
-  #   moderately_sensitive = lst(
-  #     metadata = "output/design/*"
-  #   )
-  # ),
-
-
-  comment("# # # # # # # # # # # # # # # # # # #", "Extract and tidy", "# # # # # # # # # # # # # # # # # # #"),
-
-  action(
-    name = "extract",
-    run = "cohortextractor:latest generate_cohort --study-definition study_definition --output-format feather",
-    needs = list(),
-    highly_sensitive = lst(
-      cohort = "output/input.feather"
-    )
-  ),
-
-  action(
-    name = "extract_report",
-    run = "cohort-report:v3.0.0 output/input.feather",
-    needs = list("extract"),
-    config = list(output_path = "output/data/reports/extract/"),
-    moderately_sensitive = lst(
-      html = "output/data/reports/extract/*.html",
-      png = "output/data/reports/extract/*.png",
-    )
-  ),
-
-
-  action(
-    name = "data_process",
-    run = "r:latest analysis/data_process.R",
-    needs = list("extract"),
-    highly_sensitive = lst(
-      rds = "output/data/data_processed.rds",
-      vaxlong = "output/data/data_vaxlong.rds"
-    )
-  ),
-
-  action(
-    name = "skim_process",
-    run = "r:latest analysis/data_skim.R",
-    arguments = c("output/data/data_processed.rds", "output/data_properties"),
-    needs = list("data_process"),
-    moderately_sensitive = lst(
-      cohort = "output/data_properties/data_processed*.txt"
-    )
-  ),
-
-  action(
-    name = "data_process_long",
-    run = "r:latest analysis/data_process_long.R",
-    needs = list("data_process"),
-    highly_sensitive = lst(
-      processed = "output/data/data_long*.rds",
-    )
-  ),
-
-  action(
-    name = "data_selection",
-    run = "r:latest analysis/data_selection.R",
-    needs = list("data_process"),
-    highly_sensitive = lst(
-      data = "output/data/data_cohort.rds",
-      feather = "output/data/data_cohort.feather"
-    ),
-    moderately_sensitive = lst(
-      flow = "output/data/flowchart.csv"
-    )
-  ),
-
-  action(
-    name = "skim_selection",
-    run = "r:latest analysis/data_skim.R",
-    arguments = c("output/data/data_cohort.rds", "output/data_properties"),
-    needs = list("data_selection"),
-    moderately_sensitive = lst(
-      cohort = "output/data_properties/data_cohort*.txt"
-    )
-  ),
-
-
-  action(
-    name = "cohort_report",
-    run = "cohort-report:v3.0.0 output/data/data_cohort.feather",
-    needs = list("data_selection"),
-    config = list(output_path = "output/data/reports/cohort/"),
-    moderately_sensitive = lst(
-      html = "output/data/reports/cohort/*.html",
-      png = "output/data/reports/cohort/*.png",
-    )
-  ),
-
-  comment("# # # # # # # # # # # # # # # # # # #", "Descriptive stats", "# # # # # # # # # # # # # # # # # # #"),
-
-  action(
-    name = "descriptive_table1",
-    run = "r:latest analysis/table1.R",
-    needs = list("data_selection"),
-    moderately_sensitive = lst(
-      html = "output/descriptive/table1/*.html",
-      csv = "output/descriptive/table1/*.csv"
-    )
-  ),
-
-  action(
-    name = "descriptive_vaxdate",
-    run = "r:latest analysis/vax_date.R",
-    needs = list("data_selection"),
-    moderately_sensitive = lst(
-      png = "output/descriptive/vaxdate/*.png",
-      pdf = "output/descriptive/vaxdate/*.pdf",
-      svg = "output/descriptive/vaxdate/*.svg"
-    )
-  ),
-
-
-  comment("# # # # # # # # # # # # # # # # # # #", "Matching", "# # # # # # # # # # # # # # # # # # #"),
-
-  action_match("pfizer"),
-  action_match("moderna"),
-
-  action(
-    name = "combine_match",
-    run = "r:latest analysis/combine_match.R",
-    needs = splice(
-      as.list(
-        glue_data(
-          .x=expand_grid(
-            script = c("match", "merge"),
-            treatment=c("pfizer", "moderna")
-          ),
-          "{script}_seqtrialcox_{treatment}",
-        )
-      )
-    ),
-    moderately_sensitive = lst(
-      csv = "output/match/combined/*.csv",
-      # png = "output/match/combined/*.png",
-      # pdf = "output/match/combined/*.pdf",
-      # svg = "output/match/combined/*.svg"
-    )
-  ),
-
-
-  comment("# # # # # # # # # # # # # # # # # # #", "Pfizer models", "# # # # # # # # # # # # # # # # # # #"),
-
-
-  comment("### Overall models ('none')"),
-
-  action_model("pfizer", "postest", "none"),
-  action_model("pfizer", "covidemergency", "none"),
-  action_model("pfizer", "covidadmittedproxy1", "none"),
-  action_model("pfizer", "covidadmitted", "none"),
-  action_model("pfizer", "noncovidadmitted", "none"),
-  action_model("pfizer", "covidcc", "none"),
-  action_model("pfizer", "coviddeath", "none"),
-  action_model("pfizer", "noncoviddeath", "none"),
-
-  comment("### Models by primary course ('vax12_type')"),
-
-  action_model("pfizer", "postest", "vax12_type-az-az"),
-  action_model("pfizer", "postest", "vax12_type-pfizer-pfizer"),
-  action_model("pfizer", "covidemergency", "vax12_type-az-az"),
-  action_model("pfizer", "covidemergency", "vax12_type-pfizer-pfizer"),
-  action_model("pfizer", "covidadmittedproxy1", "vax12_type-az-az"),
-  action_model("pfizer", "covidadmittedproxy1", "vax12_type-pfizer-pfizer"),
-  action_model("pfizer", "covidadmitted", "vax12_type-az-az"),
-  action_model("pfizer", "covidadmitted", "vax12_type-pfizer-pfizer"),
-  action_model("pfizer", "noncovidadmitted", "vax12_type-az-az"),
-  action_model("pfizer", "noncovidadmitted", "vax12_type-pfizer-pfizer"),
-  action_model("pfizer", "covidcc", "vax12_type-az-az"),
-  action_model("pfizer", "covidcc", "vax12_type-pfizer-pfizer"),
-  action_model("pfizer", "coviddeath", "vax12_type-az-az"),
-  action_model("pfizer", "coviddeath", "vax12_type-pfizer-pfizer"),
-  action_model("pfizer", "noncoviddeath", "vax12_type-az-az"),
-  action_model("pfizer", "noncoviddeath", "vax12_type-pfizer-pfizer"),
-
-
-  comment("### Models by clinical extremely vulnerable ('cev')"),
-
-  action_model("pfizer", "postest", "cev-FALSE"),
-  action_model("pfizer", "postest", "cev-TRUE"),
-  action_model("pfizer", "covidemergency", "cev-FALSE"),
-  action_model("pfizer", "covidemergency", "cev-TRUE"),
-  action_model("pfizer", "covidadmittedproxy1", "cev-FALSE"),
-  action_model("pfizer", "covidadmittedproxy1", "cev-TRUE"),
-  action_model("pfizer", "covidadmitted", "cev-FALSE"),
-  action_model("pfizer", "covidadmitted", "cev-TRUE"),
-  action_model("pfizer", "noncovidadmitted", "cev-FALSE"),
-  action_model("pfizer", "noncovidadmitted", "cev-TRUE"),
-  action_model("pfizer", "covidcc", "cev-FALSE"),
-  action_model("pfizer", "covidcc", "cev-TRUE"),
-  action_model("pfizer", "coviddeath", "cev-FALSE"),
-  action_model("pfizer", "coviddeath", "cev-TRUE"),
-  action_model("pfizer", "noncoviddeath", "cev-FALSE"),
-  action_model("pfizer", "noncoviddeath", "cev-TRUE"),
-
-  comment("### Models by prior infection ('prior_covid_infection')"),
-
-  action_model("pfizer", "postest", "prior_covid_infection-FALSE"),
-  action_model("pfizer", "postest", "prior_covid_infection-TRUE"),
-  action_model("pfizer", "covidemergency", "prior_covid_infection-FALSE"),
-  action_model("pfizer", "covidemergency", "prior_covid_infection-TRUE"),
-  action_model("pfizer", "covidadmittedproxy1", "prior_covid_infection-FALSE"),
-  action_model("pfizer", "covidadmittedproxy1", "prior_covid_infection-TRUE"),
-  action_model("pfizer", "covidadmitted", "prior_covid_infection-FALSE"),
-  action_model("pfizer", "covidadmitted", "prior_covid_infection-TRUE"),
-  action_model("pfizer", "noncovidadmitted", "prior_covid_infection-FALSE"),
-  action_model("pfizer", "noncovidadmitted", "prior_covid_infection-TRUE"),
-  action_model("pfizer", "covidcc", "prior_covid_infection-FALSE"),
-  action_model("pfizer", "covidcc", "prior_covid_infection-TRUE"),
-  action_model("pfizer", "coviddeath", "prior_covid_infection-FALSE"),
-  action_model("pfizer", "coviddeath", "prior_covid_infection-TRUE"),
-  action_model("pfizer", "noncoviddeath", "prior_covid_infection-FALSE"),
-  action_model("pfizer", "noncoviddeath", "prior_covid_infection-TRUE"),
-
-  comment("### Models by age ('age65plus')"),
-
-  action_model("pfizer", "postest", "age65plus-FALSE"),
-  action_model("pfizer", "postest", "age65plus-TRUE"),
-  action_model("pfizer", "covidemergency", "age65plus-FALSE"),
-  action_model("pfizer", "covidemergency", "age65plus-TRUE"),
-  action_model("pfizer", "covidadmittedproxy1", "age65plus-FALSE"),
-  action_model("pfizer", "covidadmittedproxy1", "age65plus-TRUE"),
-  action_model("pfizer", "covidadmitted", "age65plus-FALSE"),
-  action_model("pfizer", "covidadmitted", "age65plus-TRUE"),
-  action_model("pfizer", "noncovidadmitted", "age65plus-FALSE"),
-  action_model("pfizer", "noncovidadmitted", "age65plus-TRUE"),
-  action_model("pfizer", "covidcc", "age65plus-FALSE"),
-  action_model("pfizer", "covidcc", "age65plus-TRUE"),
-  action_model("pfizer", "coviddeath", "age65plus-FALSE"),
-  action_model("pfizer", "coviddeath", "age65plus-TRUE"),
-  action_model("pfizer", "noncoviddeath", "age65plus-FALSE"),
-  action_model("pfizer", "noncoviddeath", "age65plus-TRUE"),
-
-  comment("# # # # # # # # # # # # # # # # # # #", "Moderna models", "# # # # # # # # # # # # # # # # # # #"),
-
-  comment("### Overall models ('none')"),
-
-  action_model("moderna", "postest", "none"),
-  action_model("moderna", "covidemergency", "none"),
-  action_model("moderna", "covidadmittedproxy1", "none"),
-  action_model("moderna", "covidadmitted", "none"),
-  action_model("moderna", "noncovidadmitted", "none"),
-  action_model("moderna", "covidcc", "none"),
-  action_model("moderna", "coviddeath", "none"),
-  action_model("moderna", "noncoviddeath", "none"),
-
-  comment("### Models by primary course ('vax12_type')"),
-
-  action_model("moderna", "postest", "vax12_type-az-az"),
-  action_model("moderna", "postest", "vax12_type-pfizer-pfizer"),
-  action_model("moderna", "covidemergency", "vax12_type-az-az"),
-  action_model("moderna", "covidemergency", "vax12_type-pfizer-pfizer"),
-  action_model("moderna", "covidadmittedproxy1", "vax12_type-az-az"),
-  action_model("moderna", "covidadmittedproxy1", "vax12_type-pfizer-pfizer"),
-  action_model("moderna", "covidadmitted", "vax12_type-az-az"),
-  action_model("moderna", "covidadmitted", "vax12_type-pfizer-pfizer"),
-  action_model("moderna", "noncovidadmitted", "vax12_type-az-az"),
-  action_model("moderna", "noncovidadmitted", "vax12_type-pfizer-pfizer"),
-  action_model("moderna", "covidcc", "vax12_type-az-az"),
-  action_model("moderna", "covidcc", "vax12_type-pfizer-pfizer"),
-  action_model("moderna", "coviddeath", "vax12_type-az-az"),
-  action_model("moderna", "coviddeath", "vax12_type-pfizer-pfizer"),
-  action_model("moderna", "noncoviddeath", "vax12_type-az-az"),
-  action_model("moderna", "noncoviddeath", "vax12_type-pfizer-pfizer"),
-
-
-  comment("### Models by clinical extremely vulnerable ('cev')"),
-
-  action_model("moderna", "postest", "cev-FALSE"),
-  action_model("moderna", "postest", "cev-TRUE"),
-  action_model("moderna", "covidemergency", "cev-FALSE"),
-  action_model("moderna", "covidemergency", "cev-TRUE"),
-  action_model("moderna", "covidadmittedproxy1", "cev-FALSE"),
-  action_model("moderna", "covidadmittedproxy1", "cev-TRUE"),
-  action_model("moderna", "covidadmitted", "cev-FALSE"),
-  action_model("moderna", "covidadmitted", "cev-TRUE"),
-  action_model("moderna", "noncovidadmitted", "cev-FALSE"),
-  action_model("moderna", "noncovidadmitted", "cev-TRUE"),
-  action_model("moderna", "covidcc", "cev-FALSE"),
-  action_model("moderna", "covidcc", "cev-TRUE"),
-  action_model("moderna", "coviddeath", "cev-FALSE"),
-  action_model("moderna", "coviddeath", "cev-TRUE"),
-  action_model("moderna", "noncoviddeath", "cev-FALSE"),
-  action_model("moderna", "noncoviddeath", "cev-TRUE"),
-
-  comment("### Models by prior infection ('prior_covid_infection')"),
-
-  action_model("moderna", "postest", "prior_covid_infection-FALSE"),
-  action_model("moderna", "postest", "prior_covid_infection-TRUE"),
-  action_model("moderna", "covidemergency", "prior_covid_infection-FALSE"),
-  action_model("moderna", "covidemergency", "prior_covid_infection-TRUE"),
-  action_model("moderna", "covidadmittedproxy1", "prior_covid_infection-FALSE"),
-  action_model("moderna", "covidadmittedproxy1", "prior_covid_infection-TRUE"),
-  action_model("moderna", "covidadmitted", "prior_covid_infection-FALSE"),
-  action_model("moderna", "covidadmitted", "prior_covid_infection-TRUE"),
-  action_model("moderna", "noncovidadmitted", "prior_covid_infection-FALSE"),
-  action_model("moderna", "noncovidadmitted", "prior_covid_infection-TRUE"),
-  action_model("moderna", "covidcc", "prior_covid_infection-FALSE"),
-  action_model("moderna", "covidcc", "prior_covid_infection-TRUE"),
-  action_model("moderna", "coviddeath", "prior_covid_infection-FALSE"),
-  action_model("moderna", "coviddeath", "prior_covid_infection-TRUE"),
-  action_model("moderna", "noncoviddeath", "prior_covid_infection-FALSE"),
-  action_model("moderna", "noncoviddeath", "prior_covid_infection-TRUE"),
-
-  comment("### Models by age ('age65plus')"),
-
-  action_model("moderna", "postest", "age65plus-FALSE"),
-  action_model("moderna", "postest", "age65plus-TRUE"),
-  action_model("moderna", "covidemergency", "age65plus-FALSE"),
-  action_model("moderna", "covidemergency", "age65plus-TRUE"),
-  action_model("moderna", "covidadmittedproxy1", "age65plus-FALSE"),
-  action_model("moderna", "covidadmittedproxy1", "age65plus-TRUE"),
-  action_model("moderna", "covidadmitted", "age65plus-FALSE"),
-  action_model("moderna", "covidadmitted", "age65plus-TRUE"),
-  action_model("moderna", "noncovidadmitted", "age65plus-FALSE"),
-  action_model("moderna", "noncovidadmitted", "age65plus-TRUE"),
-  action_model("moderna", "covidcc", "age65plus-FALSE"),
-  action_model("moderna", "covidcc", "age65plus-TRUE"),
-  action_model("moderna", "coviddeath", "age65plus-FALSE"),
-  action_model("moderna", "coviddeath", "age65plus-TRUE"),
-  action_model("moderna", "noncoviddeath", "age65plus-FALSE"),
-  action_model("moderna", "noncoviddeath", "age65plus-TRUE"),
-
-
-  comment("# # # # # # # # # # # # # # # # # # #", "Combine models across treatments and outcomes", "# # # # # # # # # # # # # # # # # # #"),
-
-  action_combine_model("none", ""),
-  action_combine_model("vax12_type", c("pfizer-pfizer", "az-az")),
-  action_combine_model("cev", c("FALSE", "TRUE")),
-  action_combine_model("age65plus", c("FALSE", "TRUE")),
-  action_combine_model("prior_covid_infection", c("FALSE", "TRUE")),
-
-  comment("# # # # # # # # # # # # # # # # # # #", "Manuscript", "# # # # # # # # # # # # # # # # # # #"),
-
-  action(
-    name = "release_objects",
-    run = "r:latest analysis/release_objects.R",
-    needs = list(
-      "data_selection",
-#      "match_seqtrialcox_pfizer",
-#      "match_seqtrialcox_moderna",
-      "combine_match",
-      "combine_model_none",
-      "combine_model_vax12_type",
-      "combine_model_cev",
-      "combine_model_age65plus",
-      "combine_model_prior_covid_infection"
-    ),
-    moderately_sensitive = lst(
-      csv = "output/release-objects/*.csv",
-      #png = "output/manuscript-objects/*.png",
-      txt = "output/files-for-release.txt",
-      csvsubgroup = "output/release-objects/*/*.csv",
-    )
-  )
-
+  action_km("over12", "all", "postest"),
+  action_km("over12", "all", "emergency"),
+  action_km("over12", "all", "covidemergency"),
+  action_km("over12", "all", "covidadmitted"),
+  action_km("over12", "all", "covidcritcare"),
+  action_km("over12", "all", "coviddeath"),
+  action_km("over12", "all", "noncoviddeath"),
+  
+  #action_km_combine("over12"),
+  
+  #action_release("over12"),
+  
+  comment("#### End ####")
+  
 )
 
 

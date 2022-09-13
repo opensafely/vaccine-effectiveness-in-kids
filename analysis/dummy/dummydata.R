@@ -1,16 +1,10 @@
-#install required versions
-#library('devtools')
-#install_version("tidyr", version = "1.1.2",lib="C:/Program Files/R/R-4.1.3/library")
-#install_version("tidyverse", version = "1.3.0",lib="C:/Program Files/R/R-4.1.3/library")
+# create dummy data for treated and potential control population ----
 
-library('tidyr')#, lib.loc = "C:/Program Files/R/R-4.1.3/library")
-library('tidyverse')#, lib.loc = "C:/Program Files/R/R-4.1.3/library")
-#library('tidyverse')
+
+library('tidyverse')
 library('arrow')
 library('here')
 library('glue')
-
-#source(here("analysis", "lib", "utility_functions.R"))
 
 # remotes::install_github("https://github.com/wjchulme/dd4d")
 library('dd4d')
@@ -23,32 +17,37 @@ nthmax <- function(x, n=1){
   dplyr::nth(sort(x, decreasing=TRUE), n)
 }
 
-source(here("lib", "design", "design.R"))
+source(here("analysis", "design.R"))
+
+cohort <- "over12"
+
+dates <- map(study_dates[[cohort]], as.Date)
+params <- study_params[[cohort]]
 
 
-studystart_date <- as.Date(study_dates$over12start_date)
-studyend_date <- as.Date(study_dates$over12end_date)
-followupend_date <- as.Date(study_dates$over12followupend_date)
-index_date <- as.Date(study_dates$over12start_date)
+start_date <- as.Date(dates$start_date)
+end_date <- as.Date(dates$end_date)
+followupend_date <- as.Date(dates$followupend_date)
+index_date <- as.Date(dates$start_date)
 
-first_pfizerA_date <- as.Date(study_dates$over12start_date)
-first_pfizerC_date <- as.Date(study_dates$under12start_date)
+first_pfizerA_date <- as.Date(dates$start_date)
+first_pfizerC_date <- as.Date(dates$start_date)
 
 index_day <- 0L
-studystart_day <- as.integer(studystart_date - index_date)
-studyend_day <- as.integer(studyend_date - index_date)
+start_day <- as.integer(start_date - index_date)
+end_day <- as.integer(end_date - index_date)
 first_pfizerA_day <- as.integer(first_pfizerA_date - index_date)
 first_pfizerC_day <- as.integer(first_pfizerC_date - index_date)
 
 known_variables <- c(
-  "index_date", "studystart_date", "studyend_date", "first_pfizerA_date", "first_pfizerC_date",
-  "index_day",  "studystart_day", "studyend_day", "first_pfizerA_day", "first_pfizerC_day"
+  "index_date", "start_date", "end_date", "first_pfizerA_date", "first_pfizerC_date",
+  "index_day",  "start_day", "end_day", "first_pfizerA_day", "first_pfizerC_day"
 )
 
 sim_list_pre = lst(
   
   # dereg_day = bn_node(
-  #   ~as.integer(runif(n=..n, studystart_day, studystart_day+120)),
+  #   ~as.integer(runif(n=..n, start_day, start_day+120)),
   #   missing_rate = ~0.99
   # ),
   # 
@@ -200,28 +199,28 @@ sim_list_pre = lst(
   ## pre-baseline events where event date is relevant
   # 
   primary_care_covid_case_0_day = bn_node(
-    ~as.integer(runif(n=..n, studystart_day-100, studystart_day-1)),
+    ~as.integer(runif(n=..n, start_day-100, start_day-1)),
     missing_rate = ~0.7
   ),
   # 
   # covid_test_0_day = bn_node(
-  #   ~as.integer(runif(n=..n, studystart_day-100, studystart_day-1)),
+  #   ~as.integer(runif(n=..n, start_day-100, start_day-1)),
   #   missing_rate = ~0.7
   # ),
   # 
   postest_0_day = bn_node(
-    ~as.integer(runif(n=..n, studystart_day-100, studystart_day-1)),
+    ~as.integer(runif(n=..n, start_day-100, start_day-1)),
     missing_rate = ~0.9
   ),
 
   covidemergency_0_day = bn_node(
-    ~as.integer(runif(n=..n, studystart_day-100, studystart_day-1)),
+    ~as.integer(runif(n=..n, start_day-100, start_day-1)),
     missing_rate = ~0.99
   ),
 
 
   covidadmitted_0_day = bn_node(
-    ~as.integer(runif(n=..n, studystart_day-100, studystart_day-1)),
+    ~as.integer(runif(n=..n, start_day-100, start_day-1)),
     missing_rate = ~0.99
   ),
   # 
@@ -343,7 +342,12 @@ dummydata_processed <- dummydata %>%
 
 
 fs::dir_create(here("lib", "dummydata"))
-write_feather(dummydata_processed, sink = here("lib", "dummydata", "dummyinput.feather"))
 
-write_feather(dummydata_processed %>% filter(treated) %>% select(-treated), sink = here("lib", "dummydata", "dummy_treated.feather"))
-write_feather(dummydata_processed %>% select(-treated) %>% select(-all_of(str_replace(names(sim_list_post), "_day", "_date"))), sink = here("lib", "dummydata", "dummy_control_potential1.feather"))
+dummydata_processed %>% filter(treated) %>% select(-treated) %>%
+  write_feather(sink = ghere("lib", "dummydata", "dummy_treated_{cohort}.feather"))
+
+dummydata_processed %>% 
+  select(-treated) %>% 
+  select(-all_of(str_replace(names(sim_list_post), "_day", "_date"))) %>%
+  select(-covid_vax_pfizerA_1_date, -covid_vax_pfizerA_2_date, -covid_vax_pfizerC_1_date, -covid_vax_pfizerC_2_date, -covid_vax_any_2_date) %>%
+  write_feather(sink = ghere("lib", "dummydata", "dummy_control_potential1_{cohort}.feather"))
