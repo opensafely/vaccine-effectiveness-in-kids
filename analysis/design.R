@@ -8,27 +8,59 @@
 ## Import libraries ----
 library('tidyverse')
 library('here')
+
 ## create output directories ----
 fs::dir_create(here("lib", "design"))
+
+
+
+# number of matching rounds to perform
+
+n_matching_rounds <- 2
+
 
 # define key dates ----
 
 study_dates <- lst(
-  index_date = "2021-09-20", # index date for dates as "time since index date" format
-  over12start_date = "2021-09-20", #start of recruitment monday 20 september pfizer licensed for for over 12yo in england
-  over12end_date = "2021-12-19", # end of recruitment (13 weeks later)
-  over12followupend_date = "2022-01-02", # end of follow-up
-  
-  under12start_date = "2022-04-04", #start of recruitment monday 4 april moderna licensed for for under 12yo in england
-  under12end_date = "2022-07-03", # end of recruitment (13 weeks later)
-  under12followupend_date = "2022-07-10", # end of follow-up
-
-  firstover12_date = "2021-09-20", # first pfizer vaccination in national roll-out
-  firsunder12_date = "2022-04-04", # first az vaccination in national roll-out
+  over12 = lst(
+   start_date = "2021-09-20", #start of recruitment monday 20 september pfizer licensed for for over 12yo in england
+   end_date = "2021-12-19", # end of recruitment (13 weeks later)
+   followupend_date = "2022-01-02", # end of follow-up
+  ),
+  under12 = lst(
+    start_date = "2022-04-04", #start of recruitment monday 4 april moderna licensed for for under 12yo in england
+    end_date = "2022-07-03", # end of recruitment (13 weeks later)
+    followupend_date = "2022-07-10" # end of follow-up
+  )
 )
 
+extract_increment <- 14
+
+study_dates$over12$control_extract_dates = as.Date(study_dates$over12$start_date) + (0:26)*extract_increment
+study_dates$under12$control_extract_dates = as.Date(study_dates$under12$start_date) + (0:26)*extract_increment
 
 jsonlite::write_json(study_dates, path = here("lib", "design", "study-dates.json"), auto_unbox=TRUE, pretty =TRUE)
+
+study_params <- lst(
+  
+  # over 12 params
+  over12 = lst(
+   minage = 12,
+   maxage= 15,
+  
+   treatment = "pfizerA",
+  ),
+  
+  # under 12 params
+  under12 = lst(
+    minage = 5,
+    maxage= 11,
+    treatment = "pfizerC",
+  )
+  
+)
+
+jsonlite::write_json(study_params, path = here("lib", "design", "study-params.json"), auto_unbox=TRUE, pretty =TRUE)
 
 # define outcomes ----
 
@@ -62,16 +94,19 @@ events_lookup <- tribble(
 
 ## follow-up time ----
 
-postbaselinedays<-14
+# period width
+postbaselinedays <- 14
+
 # where to split follow-up time after recruitment
-postbaselinecuts <- (0:7)*postbaselinedays
+postbaselinecuts <- (0:10)*postbaselinedays
+
+# maximum follow-up
 maxfup <- max(postbaselinecuts)
 
 # matching variables ----
 
 # exact variables
 exact_variables <- c(
-
   "age_aug21",
   "region",
   "sex",
@@ -86,8 +121,4 @@ caliper_variables <- c(
 )
 matching_variables <- c(exact_variables, names(caliper_variables))
 
-## matching rounds ----
 
-# number of matching rounds to perform
-
-n_matching_rounds <- 1

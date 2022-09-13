@@ -18,7 +18,9 @@ from cohortextractor import (
 from variables_outcome import vaccination_date_X 
 
 cohort = params["cohort"]
-
+matching_round = params["matching_round"]
+previousmatching_round = int(matching_round)-1
+index_date = params["index_date"]
 
 # import study dates defined in "./analysis/design.R" script
 with open("./lib/design/study-dates.json") as f:
@@ -42,17 +44,12 @@ treatment = study_params[cohort]["treatment"]
 ############################################################
 ## inclusion variables
 from variables_inclusion import generate_inclusion_variables 
-inclusion_variables = generate_inclusion_variables(index_date="covid_vax_any_1_date")
+inclusion_variables = generate_inclusion_variables(index_date="index_date")
 ############################################################
 ## matching variables
 from variables_matching import generate_matching_variables 
-matching_variables = generate_matching_variables(index_date="covid_vax_any_1_date")
+matching_variables = generate_matching_variables(index_date="index_date")
 ############################################################
-## matching variables
-from variables_outcome import generate_outcome_variables 
-outcome_variables = generate_outcome_variables(index_date="covid_vax_any_1_date")
-############################################################
-
 
 
 # Specify study defeinition
@@ -67,7 +64,7 @@ study = StudyDefinition(
     "float": {"distribution": "normal", "mean": 25, "stddev": 5},
   },
   
-  index_date = start_date,
+  index_date = index_date,
   
   # This line defines the study population
   population=patients.satisfying(
@@ -80,57 +77,18 @@ study = StudyDefinition(
       AND
       (NOT has_died)
       AND
-      NOT wchild
-      AND 
-      (covid_vax_any_1_date >= start_date)
-      AND
-      (covid_vax_any_1_date <= end_date)
-      AND 
-      (covid_vax_any_1_date = covid_vax_{treatment}_1_date)
+      (NOT wchild)
     """,
-  start_date = patients.fixed_value(start_date),
-  end_date = patients.fixed_value(end_date),  
+    #NOT (covid_vax_any_1_date <= index_date) # doesn't work for some reason `unknown colunm : index_date`
+    #previouslymatched = patients.which_exist_in_file(f_path="output/match/cumulative_matchedcontrols{matching_round}.csv.gz"),
   ),
   
   **vaccination_date_X(
     name = "covid_vax_any",
     index_date = "1900-01-01",
-    n = 2,
+    n = 1,
     target_disease_matches="SARS-2 CORONAVIRUS"
   ),
-
-  # pfizer
-  **vaccination_date_X(
-    name = "covid_vax_pfizerA",
-    # use 1900 to capture all possible recorded covid vaccinations, including date errors
-    # any vaccines occurring before national rollout are later excluded
-    index_date = "1900-01-01", 
-    n = 2,
-    product_name_matches="COVID-19 mRNA Vaccine Comirnaty 30micrograms/0.3ml dose conc for susp for inj MDV (Pfizer)"
-  ),
-  
-  # pfizer approved for use in children (5-11)
-  **vaccination_date_X(
-    name = "covid_vax_pfizerC",
-    index_date = "1900-01-01",
-    n = 2,
-    product_name_matches="COVID-19 mRNA Vaccine Comirnaty Children 5-11yrs 10mcg/0.2ml dose conc for disp for inj MDV (Pfizer)"
-  ),
-
-
-  ##############################################################################
-  # inclusion
-  ##############################################################################
   **inclusion_variables,    
-  
-  ###############################################################################
-  # matching
-  ##############################################################################
   **matching_variables,      
-  
-    ###############################################################################
-  # outcomes
-  ##############################################################################
-  **outcome_variables,      
-  
 )

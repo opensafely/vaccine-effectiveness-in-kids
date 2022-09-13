@@ -1,137 +1,234 @@
 version: '3.0'
 
 expectations:
-  population_size: 1000
+
+  population_size: 100000
 
 actions:
 
-  extract_treated:
-    run: cohortextractor:latest generate_cohort 
-      --study-definition study_definition_treated
-      --output-file output/input_treated.feather
-    outputs:
-      highly_sensitive:
-        cohort: output/input_treated.feather
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## DO NOT EDIT project.yaml DIRECTLY 
+  ## This file is created by create-project.R 
+  ## Edit and run create-project.R to update the project.yaml 
+  ## # # # # # # # # # # # # # # # # # # # 
+  ##   
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## Over 12s cohort 
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## Extract and match 
+  ## # # # # # # # # # # # # # # # # # # # 
 
-  data_process_treated:
-    run: r:latest analysis/data_process_treated.R over12
-    needs:
-    - extract_treated
+  extract_treated_over12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_treated
+      --output-file output/over12/extract/input_treated.feather --param cohort=over12
     outputs:
       highly_sensitive:
-        rds: output/data/data_treated_eligible.rds
-      moderately_sensitive:
-        flowchart: output/data/flowchart_treated_eligible.csv
+        extract: output/over12/extract/input_treated.feather
 
-# Skim data
-  skim_data_treated:
-    run: r:latest analysis/data_skim.R output/data/data_treated_eligible.rds output/data_properties
-    needs: [data_process_treated]
-    outputs: 
-      moderately_sensitive:
-        txt1: output/data_properties/data_treated_eligible_skim.txt
-        txt2: output/data_properties/data_treated_eligible_coltypes.txt
-        txt3: output/data_properties/data_treated_eligible_tabulate.txt
+  process_treated_over12:
+    run: r:latest analysis/treated/process_treated.R over12
+    needs:
+    - extract_treated_over12
+    outputs:
+      highly_sensitive:
+        rds: output/over12/treated/*.rds
 
-  ## matching round 1
-  
-  extract_control_potential1:
-    run: cohortextractor:latest generate_cohort
-      --study-definition study_definition_control_potential
-      --output-file output/input_control_potential1.feather
-      --output-format feather
-      --param agegroup=over12
-      --param matching_round=1
-      --param index_date='2021-09-20'
+  extract_controlpotential_over12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/over12/matchround1/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=1 --param index_date=2021-09-20
+    needs: []
     outputs:
       highly_sensitive:
-        cohort: output/input_control_potential1.feather
+        cohort: output/over12/matchround1/extract/input_controlpotential.feather
 
- 
-  data_process_control_potential1:
-    run: r:latest analysis/data_process_control.R over12 1
+  process_controlpotential_over12_1:
+    run: r:latest analysis/matching/process_controlpotential.R over12 1
     needs:
-    - extract_control_potential1
+    - extract_controlpotential_over12_1
     outputs:
       highly_sensitive:
-        rds: output/data/data_control_potential1.rds
- 
-  matching1:
-    run: r:latest analysis/matching.R over12 1
-    needs:
-    - data_process_treated
-    - data_process_control_potential1
-    outputs:
-      highly_sensitive:
-        rds: output/match/data_potential_matchstatus1.rds
-        #rds: output/match/data_potential_matched1.rds
-        csv: output/match/potential_matchedcontrols1.csv.gz
- 
-  # skim_control_potential1:
-  #   run: r:latest analysis/data_skim.R output/match/data_potential_matched1.rds output/data_properties
-  #   needs: [matching1]
-  #   outputs: 
-  #     moderately_sensitive:
-  #       txt1: output/data_properties/data_potential_matched1_skim.txt
-  #       txt2: output/data_properties/data_potential_matched1_coltypes.txt
-  #       txt3: output/data_properties/data_potential_matched1_tabulate.txt
- 
-  extract_control_match1:
-    run: cohortextractor:latest generate_cohort 
-      --study-definition study_definition_control_match
-      --output-file output/input_control_match1.feather 
-      --param agegroup=over12
-      --param matching_round=1
-      --param index_date='2021-09-20'
-    needs:
-    - matching1
-    outputs:
-      highly_sensitive:
-        cohort: output/input_control_match1.feather 
+        rds: output/over12/matchround1/process/*.rds
 
-  matching_filter1:
-    run: r:latest analysis/matching_filter.R over12 1
+  match_potential_over12_1:
+    run: r:latest analysis/matching/match_potential.R over12 1
     needs:
-    - matching1
-    - data_process_treated
-    - extract_control_match1
-    - extract_control_potential1 # this is only necessary for the dummy data
+    - process_treated_over12
+    - process_controlpotential_over12_1
     outputs:
       highly_sensitive:
-        rds1: output/match/data_matchstatus_allrounds1.rds
-        rds2: output/match/data_successful_matchedcontrols1.rds
-        csv: output/match/cumulative_matchedcontrols1.csv.gz
-        
+        rds: output/over12/matchround1/potential/*.rds
+        csv: output/over12/matchround1/potential/*.csv.gz
 
-  extract_finalmatched:
-    run: cohortextractor:latest generate_cohort 
-      --study-definition study_definition_finalmatched 
-      --output-file output/input_finalmatched.feather
+  extract_controlactual_over12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/over12/matchround1/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=1
     needs:
-    - matching_filter1
-    #- matching_filter2
+    - match_potential_over12_1
     outputs:
       highly_sensitive:
-        cohort: output/input_finalmatched.feather 
-        
-  data_process_finalmatched:
-    run: r:latest analysis/data_process_finalmatched.R over12
+        cohort: output/over12/matchround1/extract/input_controlactual.feather
+
+  process_controlactual_over12_1:
+    run: r:latest analysis/matching/process_controlactual.R over12 1
     needs:
-    - data_process_treated
-    - extract_finalmatched
-    - matching_filter1
-    #- matching_filter2
+    - process_treated_over12
+    - match_potential_over12_1
+    - extract_controlpotential_over12_1
+    - extract_controlactual_over12_1
     outputs:
       highly_sensitive:
-        rds: output/data/data_finalmatched.rds
-        
-        
-  model_km_over12_all_postest:
+        rds: output/over12/matchround1/actual/*.rds
+        csv: output/over12/matchround1/actual/*.csv.gz
+
+  extract_controlpotential_over12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/over12/matchround2/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=2 --param index_date=2021-10-04
+    needs:
+    - process_controlactual_over12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/over12/matchround2/extract/input_controlpotential.feather
+
+  process_controlpotential_over12_2:
+    run: r:latest analysis/matching/process_controlpotential.R over12 2
+    needs:
+    - extract_controlpotential_over12_2
+    outputs:
+      highly_sensitive:
+        rds: output/over12/matchround2/process/*.rds
+
+  match_potential_over12_2:
+    run: r:latest analysis/matching/match_potential.R over12 2
+    needs:
+    - process_treated_over12
+    - process_controlpotential_over12_2
+    - process_controlactual_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/over12/matchround2/potential/*.rds
+        csv: output/over12/matchround2/potential/*.csv.gz
+
+  extract_controlactual_over12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/over12/matchround2/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=2
+    needs:
+    - match_potential_over12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/over12/matchround2/extract/input_controlactual.feather
+
+  process_controlactual_over12_2:
+    run: r:latest analysis/matching/process_controlactual.R over12 2
+    needs:
+    - process_treated_over12
+    - match_potential_over12_2
+    - extract_controlpotential_over12_2
+    - extract_controlactual_over12_2
+    - process_controlactual_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/over12/matchround2/actual/*.rds
+        csv: output/over12/matchround2/actual/*.csv.gz
+
+  extract_controlfinal_over12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
+      --output-file output/over12/extract/input_controlfinal.feather --param cohort=over12
+      --param n_matching_rounds=2
+    needs:
+    - process_controlactual_over12_2
+    outputs:
+      highly_sensitive:
+        extract: output/over12/extract/input_controlfinal.feather
+
+  process_controlfinal_over12:
+    run: r:latest analysis/matching/process_controlfinal.R over12
+    needs:
+    - process_controlactual_over12_1
+    - process_controlactual_over12_2
+    - extract_controlfinal_over12
+    - process_treated_over12
+    outputs:
+      highly_sensitive:
+        extract: output/over12/match/*.rds
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## Model 
+  ## # # # # # # # # # # # # # # # # # # # 
+
+  km_over12_all_postest:
     run: r:latest analysis/km.R over12 all postest
     needs:
-    - data_process_finalmatched
+    - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/comparison/over12/all/postest/*csv
-        png: output/comparison/over12/all/postest/*png
+        csv: output/over12/models/km/all/postest/*.csv
+        rds: output/over12/models/km/all/postest/*.rds
+        png: output/over12/models/km/all/postest/*.png
+
+  km_over12_all_emergency:
+    run: r:latest analysis/km.R over12 all emergency
+    needs:
+    - process_controlfinal_over12
+    outputs:
+      moderately_sensitive:
+        csv: output/over12/models/km/all/emergency/*.csv
+        rds: output/over12/models/km/all/emergency/*.rds
+        png: output/over12/models/km/all/emergency/*.png
+
+  km_over12_all_covidemergency:
+    run: r:latest analysis/km.R over12 all covidemergency
+    needs:
+    - process_controlfinal_over12
+    outputs:
+      moderately_sensitive:
+        csv: output/over12/models/km/all/covidemergency/*.csv
+        rds: output/over12/models/km/all/covidemergency/*.rds
+        png: output/over12/models/km/all/covidemergency/*.png
+
+  km_over12_all_covidadmitted:
+    run: r:latest analysis/km.R over12 all covidadmitted
+    needs:
+    - process_controlfinal_over12
+    outputs:
+      moderately_sensitive:
+        csv: output/over12/models/km/all/covidadmitted/*.csv
+        rds: output/over12/models/km/all/covidadmitted/*.rds
+        png: output/over12/models/km/all/covidadmitted/*.png
+
+  km_over12_all_covidcritcare:
+    run: r:latest analysis/km.R over12 all covidcritcare
+    needs:
+    - process_controlfinal_over12
+    outputs:
+      moderately_sensitive:
+        csv: output/over12/models/km/all/covidcritcare/*.csv
+        rds: output/over12/models/km/all/covidcritcare/*.rds
+        png: output/over12/models/km/all/covidcritcare/*.png
+
+  km_over12_all_coviddeath:
+    run: r:latest analysis/km.R over12 all coviddeath
+    needs:
+    - process_controlfinal_over12
+    outputs:
+      moderately_sensitive:
+        csv: output/over12/models/km/all/coviddeath/*.csv
+        rds: output/over12/models/km/all/coviddeath/*.rds
+        png: output/over12/models/km/all/coviddeath/*.png
+
+  km_over12_all_noncoviddeath:
+    run: r:latest analysis/km.R over12 all noncoviddeath
+    needs:
+    - process_controlfinal_over12
+    outputs:
+      moderately_sensitive:
+        csv: output/over12/models/km/all/noncoviddeath/*.csv
+        rds: output/over12/models/km/all/noncoviddeath/*.rds
+        png: output/over12/models/km/all/noncoviddeath/*.png
+
+  ## #### End #### 
 

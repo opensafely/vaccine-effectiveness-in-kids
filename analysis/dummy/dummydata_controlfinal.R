@@ -21,39 +21,45 @@ nthmax <- function(x, n=1){
 
 source(here("analysis", "design.R"))
 
+cohort <- "over12"
+n_matching_rounds <- 2
 
-studystart_date <- as.Date(study_dates$over12start_date)
-studyend_date <- as.Date(study_dates$over12end_date)
-followupend_date <- as.Date(study_dates$over12followupend_date)
-index_date <- as.Date(study_dates$over12start_date)
+dates <- map(study_dates[[cohort]], as.Date)
+params <- study_params[[cohort]]
 
-first_pfizerA_date <- as.Date(study_dates$over12start_date)
-first_pfizerC_date <- as.Date(study_dates$under12start_date)
+
+start_date <- as.Date(dates$start_date)
+end_date <- as.Date(dates$end_date)
+followupend_date <- as.Date(dates$followupend_date)
+index_date <- as.Date(dates$start_date)
+
+first_pfizerA_date <- as.Date(dates$start_date)
+first_pfizerC_date <- as.Date(dates$start_date)
 
 index_day <- 0L
-studystart_day <- as.integer(studystart_date - index_date)
-studyend_day <- as.integer(studyend_date - index_date)
+start_day <- as.integer(start_date - index_date)
+end_day <- as.integer(end_date - index_date)
 first_pfizerA_day <- as.integer(first_pfizerA_date - index_date)
 first_pfizerC_day <- as.integer(first_pfizerC_date - index_date)
 
 known_variables <- c(
-  "index_date", "studystart_date", "studyend_date", "first_pfizerA_date", "first_pfizerC_date",
-  "index_day",  "studystart_day", "studyend_day", "first_pfizerA_day", "first_pfizerC_day"
+  "index_date", "start_date", "end_date", "first_pfizerA_date", "first_pfizerC_date",
+  "index_day",  "start_day", "end_day", "first_pfizerA_day", "first_pfizerC_day"
 )
 
 
-data_matchstatus <- read_rds(here("output", "match", "data_matchstatus_allrounds1.rds")) %>% filter(treated==0L)
+data_matchstatus <- read_rds(ghere("output", cohort, "matchround{n_matching_rounds}", "actual", "data_matchstatus_allrounds.rds")) %>% filter(treated==0L)
 
 
 # import all datasets of matched controls, including matching variables
 data_matchedcontrols <- 
   map_dfr(
     seq_len(n_matching_rounds), 
-    ~read_rds(here("output", "match", glue("data_successful_matchedcontrols{.x}.rds"))),
+    ~{read_rds(ghere("output", cohort, glue("matchround", .x), "actual", glue("data_successful_matchedcontrols.rds")))},
     .id="matching_round"
   ) %>%
   mutate(
-    trial_day = as.integer(trial_date - studystart_date)
+    trial_day = as.integer(trial_date - start_date)
   ) %>%
   select(
     # see study_definition_finalmatched.py for variables to include
@@ -183,4 +189,4 @@ dummydata_processed <- dummydata %>%
 
 
 fs::dir_create(here("lib", "dummydata"))
-write_feather(dummydata_processed, sink = here("lib", "dummydata", "dummy_finalmatched.feather"))
+write_feather(dummydata_processed, sink = here("lib", "dummydata", "dummy_controlfinal.feather"))

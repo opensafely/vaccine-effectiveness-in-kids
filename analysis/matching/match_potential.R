@@ -14,6 +14,20 @@
 # Preliminaries ----
 
 
+## Import libraries ----
+library('tidyverse')
+library('lubridate')
+library('here')
+library('glue')
+library('MatchIt')
+
+## import local functions and parameters ---
+
+source(here("analysis", "design.R"))
+
+source(here("lib", "functions", "utility.R"))
+
+
 # import command-line arguments ----
 
 args <- commandArgs(trailingOnly=TRUE)
@@ -22,76 +36,55 @@ args <- commandArgs(trailingOnly=TRUE)
 if(length(args)==0){
   # use for interactive testing
   removeobjects <- FALSE
-  agegroup <- "over12"
-  matching_round <- as.integer("1")
+  cohort <- "over12"
+  matching_round <- as.integer("2")
 } else {
   #FIXME replace with actual eventual action variables
   removeobjects <- TRUE
-  agegroup <- args[[1]]
+  cohort <- args[[1]]
   matching_round <- as.integer(args[[2]])
 }
 
-# define vaccination of interest
-if(agegroup=="under12") treatment <- "pfizerC"
-if(agegroup=="over12") treatment <- "pfizerA"
 
+## get cohort-specific parameters study dates and parameters ----
 
-## Import libraries ----
-library('tidyverse')
-library('here')
-library('glue')
-library('MatchIt')
+dates <- map(study_dates[[cohort]], as.Date)
+params <- study_params[[cohort]]
 
-## Import custom user functions from lib
-
-source(here("lib", "functions", "utility.R"))
-
-# create output directories ----
-
-output_dir <- here("output", "match")
-fs::dir_create(output_dir)
-
-## Import design elements
-source(here("analysis", "design.R"))
-
-## import globally defined study dates and convert to "Date"
-study_dates <-
-  jsonlite::read_json(path=here("lib", "design", "study-dates.json")) %>%
-  map(as.Date)
-
-
-matching_round_date <- study_dates[[glue("{agegroup}start_date")]] + (matching_round-1)*14
+matching_round_date <- dates$control_extract_dates[matching_round]
 
 
 
+## create output directory ----
+fs::dir_create(ghere("output", cohort, "matchround{matching_round}", "potential"))
+
+# Import datasets ----
 
 ## import treated populations ----
-data_alltreated <- read_rds(here("output", "data", "data_treated_eligible.rds")) %>% mutate(treated=1L)
+data_alltreated <- read_rds(ghere("output", cohort, "treated", "data_treatedeligible.rds")) %>% mutate(treated=1L)
 
 ## import control populations ----
-data_control <- read_rds(here("output", "data", glue("data_control_potential{matching_round}.rds"))) %>% mutate(treated=0L)
+data_control <- read_rds(ghere("output", cohort, "matchround{matching_round}", "process", "data_controlpotential.rds")) %>% mutate(treated=0L)
 
 # remove already-matched people from previous matching rounds
 if(matching_round>1){
   
-  previous_round <- as.integer(matching_round)-1L
-  
-  data_matchstatusprevious <- read_rds(fs::path(output_dir, glue("data_matchstatus_allrounds{previous_round}.rds"))) %>%
-    filter(matched) %>%
+  data_matchstatusprevious <- read_rds(ghere("output", cohort, "matchround{matching_round-1L}", "actual", "data_matchstatus_allrounds.rds")) %>%
     select(patient_id, treated)
   
+  # do not select treated people who have already been matched
   data_alltreated <- 
     data_alltreated %>%
     anti_join(
       data_matchstatusprevious, by=c("patient_id", "treated")
     )
   
+  # do not select untreated people who have already been matched
   data_control <- 
     data_control %>%
     anti_join(
       data_matchstatusprevious, by=c("patient_id", "treated")
     )
-  
 }
 
 
@@ -100,56 +93,16 @@ if(matching_round>1){
 data_eligible <-
   bind_rows(data_alltreated, data_control) %>%
   mutate(
-    
-    treatment_date = if_else(vax1_type %in% treatment, vax1_date, as.Date(NA)),
-
-    # person-time is up to and including censor date #FIXME to include dereg and death dates
-    censor_date = pmin(
-      #dereg_date,
-      #competingtreatment_date-1, # -1 because we assume vax occurs at the start of the day
-      vax2_date-1, # -1 because we assume vax occurs at the start of the day
-      #death_date,
-      study_dates[[glue("{agegroup}followupend_date")]],
-      na.rm=TRUE
-    ),
-
-    #FIXME to include dereg and death dates
-    noncompetingcensor_date = pmin(
-      #dereg_date,
-      #competingtreatment_date-1, # -1 because we assume vax occurs at the start of the day
-      vax2_date-1, # -1 because we assume vax occurs at the start of the day
-      study_dates[[glue("{agegroup}followupend_date")]],
-      na.rm=TRUE
-    ),
-
-    # assume vaccination occurs at the start of the day, and all other events occur at the end of the day.
-
-    
-    ## FIXME kept these comments, as the code can be reused once the final cohort is chosen
-    ## tte = time-to-event, and always indicates time from study start date
-    ## remember to deduct 1 day from treatment date, as this is no longer done above
-    # day0_date = study_dates$index_date-1, # day before the first trial date
-    ## possible competing events
-    # tte_coviddeath = tte(day0_date, coviddeath_date, noncompetingcensor_date, na.censor=TRUE),
-    # tte_noncoviddeath = tte(day0_date, noncoviddeath_date, noncompetingcensor_date, na.censor=TRUE),
-    # tte_death = tte(day0_date, death_date, noncompetingcensor_date, na.censor=TRUE),
-    # 
-    # tte_censor = tte(day0_date, censor_date, censor_date, na.censor=TRUE),
-    # 
-    # tte_treatment = tte(day0_date, treatment_date-1, censor_date, na.censor=TRUE),
-    # tte_competingtreament = tte(day0_date, competingtreatment_date-1, censor_date, na.censor=TRUE),
-    # tte_vax1 = tte(day0_date, vax1_date-1, censor_date, na.censor=TRUE)
-
-  ) 
+    treatment_date = if_else(vax1_type %in% params$treatment, vax1_date, as.Date(NA)),
+  )
 
 
 local({
 
   ## sequential trial matching routine is as follows:
   # each daily trial includes all n people who were vaccinated on that day (treated=1) and
-  # a random sample of n controls (treated=0) who:
+  # a sample of n controls (treated=0) who:
   # - had not been vaccinated on or before that day (still at risk of treatment);
-  # - had not experienced covid recently (within 90 days); TODO; FIXME
   # - still at risk of an outcome (not deregistered or dead); 
   # - had not already been selected as a control in a previous trial
 
@@ -158,7 +111,7 @@ local({
   # time index is relative to "start date"
   # trial index start at one, not zero. i.e., study start date is "day 1" (but the _time_ at the start of study start date is zero)
   start_trial_time <- 0
-  end_trial_time <- as.integer(study_dates[[glue("{agegroup}end_date")]] + 1 - study_dates[[glue("{agegroup}start_date")]])
+  end_trial_time <- as.integer(dates$end_date + 1 - dates$start_date)
   trials <- seq(start_trial_time+1, end_trial_time, 1) 
   
   # initialise list of candidate controls
@@ -175,7 +128,7 @@ local({
 
     cat("matching trial ", trial, "\n")
     trial_time <- trial-1
-    trial_date <- study_dates[[glue("{agegroup}start_date")]] + trial_time
+    trial_date <- dates$start_date + trial_time
 
     
     # set of people vaccinated on trial day
@@ -183,8 +136,7 @@ local({
       data_eligible %>%
       filter(
         # select treated
-        treated==1L,
-        (censor_date >= trial_date) | is.na(censor_date), # equality here as we censor at the end of the day but assume treatment is at the start of the day
+        treated == 1L,
         # select people vaccinated on trial day i
         treatment_date == trial_date
         ) %>% 
@@ -204,8 +156,6 @@ local({
       filter(
         # select controls
         treated==0L,
-        # remove anyone already censored
-        (censor_date >= trial_date) | is.na(censor_date), # equality here as we censor at the end of the day but assume treatment is at the start of the day
         # remove anyone already vaccinated
         (vax1_date > trial_date) | is.na(vax1_date),
         # select only people not already selected as a control
@@ -256,7 +206,7 @@ local({
        # caliper = caliper_variables, std.caliper=FALSE,
         m.order = "data", # data is sorted on (effectively random) patient ID
         #verbose = TRUE,
-        ratio = 1L 
+        ratio = 1L # 1:1 matching
       )[[1]]
 
     
@@ -304,7 +254,7 @@ local({
       filter(!is.na(match_id)) %>% # remove unmatched people. equivalent to weight != 0
       arrange(match_id, desc(treated)) %>%
       left_join(
-        data_eligible %>% select(patient_id, treated, censor_date, vax1_date),
+        data_eligible %>% select(patient_id, treated, vax1_date),
         by = c("patient_id", "treated")
       ) %>%
       group_by(match_id) %>%
@@ -357,7 +307,7 @@ local({
 })
  
 # output matching status ----
-write_rds(data_matchstatus, fs::path(output_dir, glue("data_potential_matchstatus{matching_round}.rds")), compress="gz")
+write_rds(data_matchstatus, ghere("output", cohort, "matchround{matching_round}", "potential", "data_potential_matchstatus.rds"), compress="gz")
 
 # number of treated/controls per trial
 with(data_matchstatus %>% filter(matched==1), table(trial_time, treated))
@@ -376,7 +326,7 @@ data_matchstatus %>%
   mutate(
     trial_date=as.character(trial_date)
   ) %>%
-  write_csv(fs::path(output_dir, glue("potential_matchedcontrols{matching_round}.csv.gz")))
+  write_csv(ghere("output", cohort, "matchround{matching_round}", "potential", glue("potential_matchedcontrols.csv.gz")))
 
 
 print(paste0("number of duplicate control IDs is ", data_matchstatus %>% filter(control==1L, matched==1L) %>% group_by(patient_id) %>% summarise(n=n()) %>% filter(n>1) %>% nrow() ))

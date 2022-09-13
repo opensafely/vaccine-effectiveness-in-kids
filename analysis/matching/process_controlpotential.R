@@ -9,6 +9,7 @@
 ######################################
 
 
+
 # Preliminaries ----
 
 ## Import libraries ----
@@ -18,6 +19,13 @@ library('arrow')
 library('here')
 library('glue')
 
+## import local functions and parameters ---
+
+source(here("analysis", "design.R"))
+
+source(here("lib", "functions", "utility.R"))
+
+
 ## import command-line arguments ----
 
 args <- commandArgs(trailingOnly=TRUE)
@@ -25,45 +33,25 @@ args <- commandArgs(trailingOnly=TRUE)
 
 if(length(args)==0){
   # use for interactive testing
-  removeobjects <- FALSE
-  agegroup <- "over12"
-  matching_round <- as.integer("1")
+  cohort <- "over12"
+  matching_round <- as.integer("2")
 } else {
   #FIXME replace with actual eventual action variables
-  removeobjects <- TRUE
-  agegroup <- args[[1]]
+  cohort <- args[[1]]
   matching_round <- as.integer(args[[2]])
 }
 
+## get cohort-specific parameters study dates and parameters ----
+
+dates <- map(study_dates[[cohort]], as.Date)
+params <- study_params[[cohort]]
+
+matching_round_date <- dates$control_extract_dates[matching_round]
 
 
+## create output directory ----
+fs::dir_create(ghere("output", cohort, "matchround{matching_round}", "process"))
 
-
-source(here("lib", "functions", "utility.R"))
-
-## Import design elements
-source(here("analysis", "design.R"))
-
-# import globally defined study dates and convert to "Date"
-study_dates <-
-  jsonlite::read_json(path=here("lib", "design", "study-dates.json")) %>%
-  map(as.Date)
-
-
-
-start_date <- study_dates[[glue("{agegroup}start_date")]]
-matching_round_date <- study_dates[[glue("{agegroup}start_date")]] + (matching_round-1)*14
-
-
-# define vaccination of interest
-if(agegroup=="under12") {
-  treatment <- "pfizerC"
-}
-if(agegroup=="over12") {
-  treatment <- "pfizerA"
-}
-
-fs::dir_create(here("output", "data"))
 
 
 # process ----
@@ -74,20 +62,16 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
-
-  data_studydef_dummy <- read_feather(here("output", glue("input_control_potential{matching_round}.feather"))) %>%
+  data_studydef_dummy <- read_feather(ghere("output", cohort, "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), ~ as.Date(.))) %>%
     # because of a bug in cohort extractor -- remove once pulled new version
     mutate(patient_id = as.integer(patient_id))
 
-  data_custom_dummy <- read_feather(here("lib", "dummydata", "dummy_control_potential1.feather")) %>%
+  data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}.feather")) %>%
     mutate(
       msoa = sample(factor(c("1", "2")), size=n(), replace=TRUE) # override msoa so matching success more likely
-    ) %>%
-    select(
-      -covid_vax_pfizerA_1_date, -covid_vax_pfizerA_2_date, -covid_vax_pfizerC_1_date, -covid_vax_pfizerC_2_date, -covid_vax_any_2_date
-    )
+    ) 
 
 
   not_in_studydef <- names(data_custom_dummy)[!( names(data_custom_dummy) %in% names(data_studydef_dummy) )]
@@ -202,11 +186,11 @@ data_criteria <- data_processed %>%
   )
 
 
-data_control_potential <- data_criteria %>%
+data_controlpotential <- data_criteria %>%
   filter(include) %>%
   select(patient_id) %>%
   left_join(data_processed, by="patient_id") %>%
   droplevels()
 
-write_rds(data_control_potential, here("output", "data", glue("data_control_potential{matching_round}.rds")), compress="gz")
+write_rds(data_controlpotential, ghere("output", cohort, "matchround{matching_round}", "process", glue("data_controlpotential.rds")), compress="gz")
 

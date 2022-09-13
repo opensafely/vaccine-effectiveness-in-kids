@@ -5,12 +5,26 @@
 #  - adds outcome variable and restricts follow-up
 #  - gets CI estimates, with covid and non covid death as competing risks
 #  - The script must be accompanied by two arguments:
-#    `agegroup` - over12s or under12s
+#    `cohort` - over12s or under12s
 #    `outcome` - the dependent variable
 
 # # # # # # # # # # # # # # # # # # # # #
 
 # Preliminaries ----
+
+
+## Import libraries ----
+library('tidyverse')
+library('here')
+library('glue')
+library('survival')
+
+
+## import local functions and parameters ---
+
+source(here("analysis", "design.R"))
+source(here("lib", "functions", "utility.R"))
+source(here("lib", "functions", "survival.R"))
 
 
 # import command-line arguments ----
@@ -21,45 +35,35 @@ args <- commandArgs(trailingOnly=TRUE)
 if(length(args)==0){
   # use for interactive testing
   removeobjects <- FALSE
-  agegroup <- "over12"
+  cohort <- "over12"
   subgroup <- "all"
   outcome <- "covidadmitted"
   
 } else {
   removeobjects <- TRUE
-  agegroup <- args[[1]]
+  cohort <- args[[1]]
   subgroup <- args[[2]]
   outcome <- args[[3]]
 }
 
 
+## get cohort-specific parameters study dates and parameters ----
 
-## Import libraries ----
-library('tidyverse')
-library('here')
-library('glue')
-library('survival')
-
-## Import custom user functions from lib
-source(here("lib", "functions", "utility.R"))
-source(here("lib", "functions", "survival.R"))
-
-## Import design elements
-source(here("analysis", "design.R"))
-
+dates <- map(study_dates[[cohort]], as.Date)
+params <- study_params[[cohort]]
 
 # derive symbolic arguments for programming with
 
-agegroup_sym <- sym(agegroup)
+cohort_sym <- sym(cohort)
 subgroup_sym <- sym(subgroup)
 
 # create output directories ----
 
-output_dir <- here("output", "comparison", agegroup, subgroup, outcome)
+output_dir <- ghere("output", cohort, "models", "km", subgroup, outcome)
 fs::dir_create(output_dir)
 
 
-data_matched <- read_rds(here("output", "data", glue("data_finalmatched.rds")))
+data_matched <- read_rds(ghere("output", cohort, "match", "data_matched.rds"))
 
 ## import baseline data, restrict to matched individuals and derive time-to-event variables
 data_matched <- 
@@ -83,12 +87,12 @@ data_matched <-
       dereg_date,
       vax2_date-1, # -1 because we assume vax occurs at the start of the day
       death_date,
-      study_dates[[glue("{agegroup}followupend_date")]],
+      dates$followupend_date,
       trial_date + maxfup,
       na.rm=TRUE
     ),
     
-    matchcensor_date = pmin(censor_date, controlistreated_date, na.rm=TRUE), # new censor date based on whether control gets treated or not
+    matchcensor_date = pmin(censor_date, controlistreated_date -1, na.rm=TRUE), # new censor date based on whether control gets treated or not
 
     tte_outcome = tte(trial_date - 1, outcome_date, matchcensor_date, na.censor=FALSE), # -1 because we assume vax occurs at the start of the day, and so outcomes occurring on the same day as treatment are assumed "1 day" long
     ind_outcome = censor_indicator(outcome_date, matchcensor_date),
@@ -391,10 +395,7 @@ contrasts_rounded_cuts <- kmcontrasts(data_surv_rounded, postbaselinecuts)
 contrasts_rounded_overall <- kmcontrasts(data_surv_rounded, c(0,maxfup))
 
 
-write_csv(contrasts_rounded_daily, fs::path(output_dir, "contrasts_daily.csv"))
-write_csv(contrasts_rounded_cuts, fs::path(output_dir, "contrasts_cuts.csv"))
-write_csv(contrasts_rounded_overall, fs::path(output_dir, "contrasts_overall.csv"))
-
-
-
+write_rds(contrasts_rounded_daily, fs::path(output_dir, "contrasts_daily.rds"))
+write_rds(contrasts_rounded_cuts, fs::path(output_dir, "contrasts_cuts.rds"))
+write_rds(contrasts_rounded_overall, fs::path(output_dir, "contrasts_overall.rds"))
 
