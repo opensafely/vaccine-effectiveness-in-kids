@@ -315,14 +315,12 @@ actions_list <- splice(
           "# # # # # # # # # # # # # # # # # # #"),
   
   comment("# # # # # # # # # # # # # # # # # # #", 
-          "Extract and match", 
-          "# # # # # # # # # # # # # # # # # # #"),
+          "Extract and match"),
   
   action_extract_and_match("over12", n_matching_rounds),
   
   comment("# # # # # # # # # # # # # # # # # # #", 
-          "Model", 
-          "# # # # # # # # # # # # # # # # # # #"),
+          "Model"),
 
   action_km("over12", "all", "postest"),
   action_km("over12", "all", "emergency"),
@@ -331,6 +329,31 @@ actions_list <- splice(
   action_km("over12", "all", "covidcritcare"),
   action_km("over12", "all", "coviddeath"),
   action_km("over12", "all", "noncoviddeath"),
+  
+  #action_km_combine("over12"),
+  
+  #action_release("over12"),
+  
+  
+  comment("# # # # # # # # # # # # # # # # # # #", 
+          "Under 12s cohort", 
+          "# # # # # # # # # # # # # # # # # # #"),
+  
+  comment("# # # # # # # # # # # # # # # # # # #", 
+          "Extract and match"),
+  
+  action_extract_and_match("under12", n_matching_rounds),
+  
+  comment("# # # # # # # # # # # # # # # # # # #", 
+          "Model"),
+  
+  action_km("under12", "all", "postest"),
+  action_km("under12", "all", "emergency"),
+  action_km("under12", "all", "covidemergency"),
+  action_km("under12", "all", "covidadmitted"),
+  action_km("under12", "all", "covidcritcare"),
+  action_km("under12", "all", "coviddeath"),
+  action_km("under12", "all", "noncoviddeath"),
   
   #action_km_combine("over12"),
   
