@@ -27,11 +27,10 @@ args <- commandArgs(trailingOnly=TRUE)
 
 if(length(args)==0){
   # use for interactive testing
-  cohort <- "over12s"
+  cohort <- "over12"
 } else {
   cohort <- args[[1]]
 }
-
 
 
 
@@ -42,19 +41,22 @@ fs::dir_create(output_dir)
 
 metaparams <-
   expand_grid(
-    outcome = factor(c("postest", "emergency", "covidemergency", "covidadmitted", "covidcritcare", "coviddeath", "noncoviddeath")),
+    #outcome = factor(c("postest", "emergency", "covidemergency", "covidadmitted", "covidcritcare", "coviddeath", "noncoviddeath")),
+    outcome = factor(c("postest", "covidadmitted")),
     subgroup = factor(recoder$subgroups),
   ) %>%
   mutate(
+    #subgroup_level = map(as.character(subgroup), ~unname(recoder[[.x]])),
     outcome_descr = fct_recoderelevel(outcome,  recoder$outcome),
     subgroup_descr = fct_recoderelevel(subgroup,  recoder$subgroups),
-  ) 
+    #subgroup_level_descr = map(as.character(subgroup), ~names(recoder[[.x]])),
+  )
 
 km_estimates <- metaparams %>%
   mutate(
     data = pmap(list(cohort, subgroup, outcome), function(cohort, subgroup, outcome) {
       subgroup <- as.character(subgroup)
-      dat <- read_rds(here("output", "cohort", "model", "km", subgroup, outcome, "km_estimates.rds"))
+      dat <- read_rds(here("output", cohort, "models", "km", subgroup, outcome, "km_estimates_rounded.rds"))
       dat %>%
       add_column(
         subgroup_level = as.character(.[[subgroup]]),
@@ -66,14 +68,14 @@ km_estimates <- metaparams %>%
   ) %>%
   unnest(data)
 
-write_csv(km_estimates, fs::path(output_dir, "km_estimates.csv"))
+write_csv(km_estimates, fs::path(output_dir, "km_estimates_rounded.csv"))
 
 
 contrasts_daily <- metaparams %>%
   mutate(
     data = pmap(list(cohort, subgroup, outcome), function(cohort, subgroup, outcome){
       subgroup <- as.character(subgroup)
-      dat <- read_rds(here("output", "cohort", "model", "km", subgroup, outcome, "contrasts_daily.rds"))
+      dat <- read_rds(here("output", cohort, "models", "km", subgroup, outcome, "contrasts_daily_rounded.rds"))
       dat %>%
         add_column(
           subgroup_level = as.character(.[[subgroup]]),
@@ -86,14 +88,14 @@ contrasts_daily <- metaparams %>%
   ) %>%
   unnest(data)
 
-write_csv(contrasts_daily, fs::path(output_dir, "contrasts_daily.csv"))
+write_csv(contrasts_daily, fs::path(output_dir, "contrasts_daily_rounded.csv"))
 
 
 contrasts_cuts <- metaparams %>%
   mutate(
     data = pmap(list(cohort, subgroup, outcome), function(cohort, subgroup, outcome){
       subgroup <- as.character(subgroup)
-      dat <- read_rds(here("output", "cohort", "model", "km", subgroup, outcome, "contrasts_cuts.rds"))
+      dat <- read_rds(here("output", cohort, "models", "km", subgroup, outcome, "contrasts_cuts_rounded.rds"))
       dat %>%
         add_column(
           subgroup_level = as.character(.[[subgroup]]),
@@ -106,14 +108,14 @@ contrasts_cuts <- metaparams %>%
   ) %>%
   unnest(data)
 
-write_csv(contrasts_cuts, fs::path(output_dir, "contrasts_cuts.csv"))
+write_csv(contrasts_cuts, fs::path(output_dir, "contrasts_cuts_rounded.csv"))
 
 
 contrasts_overall <- metaparams %>%
   mutate(
     data = pmap(list(cohort, subgroup, outcome), function(cohort, subgroup, outcome){
       subgroup <- as.character(subgroup)
-      dat <- read_rds(here("output", "cohort", "model", "km", subgroup, outcome, "contrasts_overall.rds"))
+      dat <- read_rds(here("output", cohort, "models", "km", subgroup, outcome, "contrasts_overall_rounded.rds"))
       dat %>%
         add_column(
           subgroup_level = as.character(.[[subgroup]]),
@@ -126,20 +128,25 @@ contrasts_overall <- metaparams %>%
   ) %>%
   unnest(data)
 
-write_csv(contrasts_overall, fs::path(output_dir, "contrasts_overall.csv"))
+write_csv(contrasts_overall, fs::path(output_dir, "contrasts_overall_rounded.csv"))
 
 
-## move ci plots to single folder ----
-fs::dir_create(here("output", cohort, "model", "km", "combined", "plots"))
+## move km plots to single folder ----
+fs::dir_create(here("output", cohort, "models", "km", "combined", "plots"))
 
 metaparams %>%
   mutate(
-    plotdir = here("output", cohort, "model", "km", subgroup, outcome, "km_plot.png"),
-    plotnewdir = ghere("output", cohort, "model", "km", "combined", "plots", "km_plot_{subgroup}_{outcome}.png"),
+    plotdir = here("output", cohort, "models", "km", subgroup, outcome, "km_plot_rounded.png"),
+    plotnewdir = glue("output", cohort, "models", "km", "combined", "plots", "km_plot_rounded_{subgroup}_{outcome}.png", .sep="/"),
   ) %>%
   {walk2(.$plotdir, .$plotnewdir, ~fs::file_copy(.x, .y, overwrite = TRUE))}
 
-
+metaparams %>%
+  mutate(
+    plotdir = here("output", cohort, "models", "km", subgroup, outcome, "km_plot_unrounded.png"),
+    plotnewdir = glue("output", cohort, "models", "km", "combined", "plots", "km_plot_unrounded_{subgroup}_{outcome}.png", .sep="/"),
+  ) %>%
+  {walk2(.$plotdir, .$plotnewdir, ~fs::file_copy(.x, .y, overwrite = TRUE))}
 
 ## plot overall estimates for inspection ----
 
@@ -178,9 +185,7 @@ plot_estimates <- function(estimate, estimate.ll, estimate.ul, name){
 
 
   ggsave(
-    filename=fs::path(
-      here("output", "match", matchset, "ci", "combined", "plots", glue("overall_plot_rounded_{name}.png"))
-    ),
+    filename=glue("output", cohort, "models", "km", "combined", "plots", "overall_plot_rounded_{name}.png", .sep="/"),
     plot_temp,
     width=20, height=15, units="cm"
   )
