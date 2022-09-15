@@ -1,0 +1,11 @@
+{
+  "index_date": "2021-09-20",
+  "over12start_date": "2021-09-20",
+  "over12end_date": "2021-12-19",
+  "over12followupend_date": "2022-01-02",
+  "under12start_date": "2022-04-04",
+  "under12end_date": "2022-07-03",
+  "under12followupend_date": "2022-07-10",
+  "firstover12_date": "2021-09-20",
+  "firsunder12_date": "2022-04-04"
+}
