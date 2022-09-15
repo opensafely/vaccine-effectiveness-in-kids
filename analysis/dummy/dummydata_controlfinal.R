@@ -11,6 +11,7 @@ library('glue')
 # remotes::install_github("https://github.com/wjchulme/dd4d")
 library('dd4d')
 
+source(here("lib", "functions", "utility.R"))
 
 population_size <- 20000
 

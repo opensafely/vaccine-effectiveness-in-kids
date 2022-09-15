@@ -9,6 +9,7 @@ library('glue')
 # remotes::install_github("https://github.com/wjchulme/dd4d")
 library('dd4d')
 
+source(here("lib", "functions", "utility.R"))
 
 population_size <- 20000
 
@@ -165,7 +166,11 @@ sim_list_pre = lst(
   ),
   
   vax1_day = bn_node(
-    ~pmin(covid_vax_pfizerA_1_day, covid_vax_pfizerC_1_day, na.rm=TRUE),
+    ~pmin(
+      if_else(first_vax_type=="pfizerC", covid_vax_pfizerC_1_day, NA_integer_), 
+      if_else(first_vax_type=="pfizerA", covid_vax_pfizerA_1_day, NA_integer_), 
+      na.rm=TRUE
+    ),
     keep=FALSE
   ),
   
@@ -199,28 +204,28 @@ sim_list_pre = lst(
   ## pre-baseline events where event date is relevant
   # 
   primary_care_covid_case_0_day = bn_node(
-    ~as.integer(runif(n=..n, start_day-100, start_day-1)),
+    ~as.integer(runif(n=..n, vax1_day-100, vax1_day-1)),
     missing_rate = ~0.7
   ),
   # 
   # covid_test_0_day = bn_node(
-  #   ~as.integer(runif(n=..n, start_day-100, start_day-1)),
+  #   ~as.integer(runif(n=..n, vax1_day-100, vax1_day-1)),
   #   missing_rate = ~0.7
   # ),
   # 
   postest_0_day = bn_node(
-    ~as.integer(runif(n=..n, start_day-100, start_day-1)),
+    ~as.integer(runif(n=..n, vax1_day-100, vax1_day-1)),
     missing_rate = ~0.9
   ),
 
   covidemergency_0_day = bn_node(
-    ~as.integer(runif(n=..n, start_day-100, start_day-1)),
+    ~as.integer(runif(n=..n, vax1_day-100, vax1_day-1)),
     missing_rate = ~0.99
   ),
 
 
   covidadmitted_0_day = bn_node(
-    ~as.integer(runif(n=..n, start_day-100, start_day-1)),
+    ~as.integer(runif(n=..n, vax1_day-100, vax1_day-1)),
     missing_rate = ~0.99
   ),
   # 
