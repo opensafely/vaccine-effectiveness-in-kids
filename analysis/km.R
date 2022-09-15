@@ -3,7 +3,7 @@
 # Purpose: Get cumulative incidence(kaplan meier) estimates for specified outcome, and derive risk differences
 #  - import matched data
 #  - adds outcome variable and restricts follow-up
-#  - gets CI estimates, with covid and non covid death as competing risks
+#  - gets KM estimates, with covid and non covid death as competing risks
 #  - The script must be accompanied by two arguments:
 #    `cohort` - over12s or under12s
 #    `outcome` - the dependent variable
@@ -36,8 +36,8 @@ if(length(args)==0){
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
-  subgroup <- "all"
-  outcome <- "covidadmitted"
+  subgroup <- "prior_covid_infection"
+  outcome <- "postest"
   
 } else {
   removeobjects <- TRUE
@@ -68,13 +68,14 @@ data_matched <- read_rds(ghere("output", cohort, "match", "data_matched.rds"))
 ## import baseline data, restrict to matched individuals and derive time-to-event variables
 data_matched <- 
   data_matched %>%
+  mutate(all="all") %>%
   select(
     # select only variables needed for models to save space
     patient_id, treated, trial_date, match_id, 
     controlistreated_date,
     vax1_date,
     death_date, dereg_date, coviddeath_date, noncoviddeath_date, vax2_date,
-    all_of(c(glue("{outcome}_date")))
+    all_of(c(glue("{outcome}_date"), subgroup))
   ) %>%
   
   mutate(
@@ -97,18 +98,27 @@ data_matched <-
     tte_outcome = tte(trial_date - 1, outcome_date, matchcensor_date, na.censor=FALSE), # -1 because we assume vax occurs at the start of the day, and so outcomes occurring on the same day as treatment are assumed "1 day" long
     ind_outcome = censor_indicator(outcome_date, matchcensor_date),
     
-    all="all"
+    
   )
 
 # outcome frequency
 outcomes_per_treated <- table(outcome=data_matched$ind_outcome, treated=data_matched$treated)
 
+cut((-2):4, c(-Inf, 0, 1, Inf), right=FALSE, labels= c("<0", "0", ">0"))
+
+
+table(
+  cut(data_matched$tte_outcome, c(-Inf, 0, 1, Inf), right=FALSE, labels= c("<0", "0", ">0"))
+)
+# should be c(0, 0, nrow(data_matched))
 
 ## redaction threshold ----
 
 threshold <- 6
 
 ## competing risks cumulative risk differences ----
+
+# no applicable method for 'complete' applied to an object of class "c('integer', 'numeric')"
 
 data_surv <-
   data_matched %>%
@@ -121,108 +131,121 @@ data_surv <-
     surv_obj_tidy = map(surv_obj, ~{
       broom::tidy(.x) %>%
       complete(
-        time = seq_len(max(.x$time)), # fill in 1 row for each day of follow up
-        fill = list(n.event = 0, n.censor = 0)
+        time = seq_len(maxfup), # fill in 1 row for each day of follow up
+        fill = list(n.event = 0, n.censor = 0) # fill in zero events on those days
       ) %>%
-      fill(n.risk, .direction = c("up"))
+      fill(n.risk, .direction = c("up")) # fill in n.risk on each zero-event day
     }), # return survival table for each day of follow up
   ) %>%
   select(!!subgroup_sym, treated, surv_obj_tidy) %>%
   unnest(surv_obj_tidy)
 
-data_surv_rounded <-
-  data_surv %>%
-  mutate(
-    # Round cumulative counts up to `threshold`, then deduct half of threshold to remove bias
-    
-    lagtime = lag(time,1,0),
-    leadtime = lead(time, 1,0),
-    interval = time - lagtime,
 
+ km_process <- function(.data, round_by){
+   
+  .data %>% mutate(
+    
+    lagtime = lag(time, 1, 0),
+    leadtime = lead(time, 1, max(time)+1),
+    interval = time - lagtime,
+     
     N = max(n.risk, na.rm=TRUE),
     
-    cml.event = roundmid_any(cumsum(n.event), threshold),
-    cml.censor = roundmid_any(cumsum(n.censor), threshold),
-    
+    cml.event = roundmid_any(cumsum(n.event), round_by),
+    cml.censor = roundmid_any(cumsum(n.censor), round_by),
+       
     n.event = diff(c(0, cml.event)),
     n.censor = diff(c(0, cml.censor)),
-    n.risk = roundmid_any(N, threshold) - lag(cml.event + cml.censor, 1, 0),
-
-
-    ## calculate surv based on rounded event counts
-
+    n.risk = roundmid_any(N, round_by) - lag(cml.event + cml.censor, 1, 0), 
+    
     # KM estimate for event of interest, combining censored and competing events as censored
     summand = (1/(n.risk-n.event)) - (1/n.risk), # = n.event / ((n.risk - n.event) * n.risk) but re-written to prevent integer overflow
     surv = cumprod(1 - n.event / n.risk),
     surv.se = surv * sqrt(cumsum(summand)), #greenwood's formula
     surv.ln.se = surv.se/surv,
-    surv.ll = exp(log(surv) + qnorm(0.025)*surv.ln.se),
-    surv.ul = exp(log(surv) + qnorm(0.975)*surv.ln.se),
+    
+    ## standard errors on log scale
+    #surv.ll = exp(log(surv) + qnorm(0.025)*surv.ln.se),
+    #surv.ul = exp(log(surv) + qnorm(0.975)*surv.ln.se),
+    
+    llsurv = log(-log(surv)),
+    llsurv.se = sqrt((1 / log(surv)^2) * cumsum(summand)),
+    
+    ## standard errors on complementary log-log scale
+    surv.ll = exp(-exp(llsurv + qnorm(0.025)*llsurv.se)),
+    surv.ul = exp(-exp(llsurv + qnorm(0.025)*llsurv.se)),
     
     risk = 1 - surv,
     risk.se = surv.se,
     risk.ln.se = surv.ln.se,
     risk.ll = 1 - surv.ul,
     risk.ul = 1 - surv.ll
-
-  ) %>%
-  select(
+  ) %>% select(
     !!subgroup_sym, treated, time, lagtime, leadtime, interval,
     n.risk,n.event, n.censor,
     surv, surv.se, surv.ll, surv.ul,
     risk, risk.se, risk.ll, risk.ul
   ) 
+ }
+ 
+data_surv_unrounded <- km_process(data_surv, 1)
+data_surv_rounded <- km_process(data_surv, threshold)
 
-write_csv(data_surv_rounded, fs::path(output_dir, "km_estimates.csv"))
+write_rds(data_surv_unrounded, fs::path(output_dir, "km_estimates_unrounded.rds"))
+write_rds(data_surv_rounded, fs::path(output_dir, "km_estimates_rounded.rds"))
 
-plot_km <- data_surv_rounded %>%
-  group_modify(
-    ~add_row(
-      .x,
-      time=0,
-      lagtime=0,
-      leadtime=1,
-      #interval=1,
-      surv=1,
-      surv.ll=1,
-      surv.ul=1,
-      risk=0,
-      risk.ll=0,
-      risk.ul=0,
-      .before=0
-    ) #%>%
-    #fill(treated_descr, .direction="up")
-  ) %>%
-  mutate(
-    treated_descr = if_else(treated==1L, "Vaccinated", "Unvaccinated"),
-  ) %>%
-  ggplot(aes(group=treated_descr, colour=treated_descr, fill=treated_descr)) +
-  geom_step(aes(x=time, y=risk), direction="vh")+
-  geom_step(aes(x=time, y=risk), direction="vh", linetype="dashed", alpha=0.5)+
-  geom_rect(aes(xmin=lagtime, xmax=time, ymin=risk.ll, ymax=risk.ul), alpha=0.1, colour="transparent")+
-  facet_grid(rows=vars(!!subgroup_sym))+
-  scale_color_brewer(type="qual", palette="Set1", na.value="grey") +
-  scale_fill_brewer(type="qual", palette="Set1", guide="none", na.value="grey") +
-  scale_x_continuous(breaks = seq(0,600,14))+
-  scale_y_continuous(expand = expansion(mult=c(0,0.01)))+
-  coord_cartesian(xlim=c(0, NA))+
-  labs(
-    x="Days",
-    y="Cumulative incidence",
-    colour=NULL,
-    title=NULL
-  )+
-  theme_minimal()+
-  theme(
-    axis.line.x = element_line(colour = "black"),
-    panel.grid.minor.x = element_blank(),
-    legend.position=c(.05,.95),
-    legend.justification = c(0,1),
-  )
 
-plot_km
+km_plot <- function(.data) {
+  .data %>%
+    group_modify(
+      ~add_row(
+        .x,
+        time=0,
+        lagtime=0,
+        leadtime=1,
+        #interval=1,
+        surv=1,
+        surv.ll=1,
+        surv.ul=1,
+        risk=0,
+        risk.ll=0,
+        risk.ul=0,
+        .before=0
+      )
+    ) %>%
+    mutate(
+      treated_descr = fct_recoderelevel(treated, recoder$treated),
+    ) %>%
+    ggplot(aes(group=treated_descr, colour=treated_descr, fill=treated_descr)) +
+    geom_step(aes(x=time, y=risk), direction="vh")+
+    geom_step(aes(x=time, y=risk), direction="vh", linetype="dashed", alpha=0.5)+
+    geom_rect(aes(xmin=lagtime, xmax=time, ymin=risk.ll, ymax=risk.ul), alpha=0.1, colour="transparent")+
+    facet_grid(rows=vars(!!subgroup_sym))+
+    scale_color_brewer(type="qual", palette="Set1", na.value="grey") +
+    scale_fill_brewer(type="qual", palette="Set1", guide="none", na.value="grey") +
+    scale_x_continuous(breaks = seq(0,600,14))+
+    scale_y_continuous(expand = expansion(mult=c(0,0.01)))+
+    coord_cartesian(xlim=c(0, NA))+
+    labs(
+      x="Days",
+      y="Cumulative incidence",
+      colour=NULL,
+      title=NULL
+    )+
+    theme_minimal()+
+    theme(
+      axis.line.x = element_line(colour = "black"),
+      panel.grid.minor.x = element_blank(),
+      legend.position=c(.05,.95),
+      legend.justification = c(0,1),
+    )
+}
 
-ggsave(filename=fs::path(output_dir, "km.png"), plot_km, width=20, height=15, units="cm")
+km_plot_unrounded <- km_plot(data_surv_unrounded)
+km_plot_rounded <- km_plot(data_surv_rounded)
+
+ggsave(filename=fs::path(output_dir, "km_plot_unrounded.png"), km_plot_unrounded, width=20, height=15, units="cm")
+ggsave(filename=fs::path(output_dir, "km_plot_rounded.png"), km_plot_rounded, width=20, height=15, units="cm")
 
 
 ## calculate quantities relating to cumulative incidence curve and their ratio / difference / etc
@@ -328,8 +351,6 @@ kmcontrasts <- function(data, cuts=NULL){
 
       ## time-period-specific quantities
 
-      # hazard ratio, standard error and confidence limits
-
       # incidence rate ratio
       irr = inc_1 / inc_0,
       irr.ln.se = sqrt((1/n.event_0) + (1/n.event_1)),
@@ -337,13 +358,7 @@ kmcontrasts <- function(data, cuts=NULL){
       irr.ul = exp(log(irr) + qnorm(0.975)*irr.ln.se),
 
 
-      # incidence rate ratio
-      irr = inc_1 / inc_0,
-      irr.ln.se = sqrt((1/n.event_0) + (1/n.event_1)),
-      irr.ll = exp(log(irr) + qnorm(0.025)*irr.ln.se),
-      irr.ul = exp(log(irr) + qnorm(0.975)*irr.ln.se),
-
-      # incidence rate ratio, v2
+    # incidence rate ratio, v2
       irr2 = inc2_1 / inc2_0,
       irr2.ln.se = sqrt((1/n.event_0) + (1/n.event_1)),
       irr2.ll = exp(log(irr2) + qnorm(0.025)*irr2.ln.se),
@@ -362,21 +377,21 @@ kmcontrasts <- function(data, cuts=NULL){
       cmlirr.ll = exp(log(cmlirr) + qnorm(0.025)*cmlirr.ln.se),
       cmlirr.ul = exp(log(cmlirr) + qnorm(0.975)*cmlirr.ln.se),
 
-      # survival ratio, standard error, and confidence limits, treating cause-specific death as a competing event
+      # survival ratio, standard error, and confidence limits
       sr = surv_1 / surv_0,
       #cisr.ln = log(cisr),
       sr.ln.se = (surv.se_0/surv_0) + (surv.se_1/surv_1), #because cmlhaz = -log(surv) and cmlhaz.se = surv.se/surv
       sr.ll = exp(log(sr) + qnorm(0.025)*sr.ln.se),
       sr.ul = exp(log(sr) + qnorm(0.975)*sr.ln.se),
 
-      # risk ratio, standard error, and confidence limits, using delta method, , treating cause-specific death as a competing event
+      # risk ratio, standard error, and confidence limits, using delta method
       rr = risk_1 / risk_0,
       #cirr.ln = log(cirr),
       rr.ln.se = sqrt((risk.se_1/risk_1)^2 + (risk.se_0/risk_0)^2),
       rr.ll = exp(log(rr) + qnorm(0.025)*rr.ln.se),
       rr.ul = exp(log(rr) + qnorm(0.975)*rr.ln.se),
 
-      # risk difference, standard error and confidence limits, , treating cause-specific death as a competing event
+      # risk difference, standard error and confidence limits, using delta method
       rd = risk_1 - risk_0,
       rd.se = sqrt( (risk.se_0^2) + (risk.se_1^2) ),
       rd.ll = rd + qnorm(0.025)*rd.se,
@@ -395,7 +410,6 @@ contrasts_rounded_cuts <- kmcontrasts(data_surv_rounded, postbaselinecuts)
 contrasts_rounded_overall <- kmcontrasts(data_surv_rounded, c(0,maxfup))
 
 
-write_rds(contrasts_rounded_daily, fs::path(output_dir, "contrasts_daily.rds"))
-write_rds(contrasts_rounded_cuts, fs::path(output_dir, "contrasts_cuts.rds"))
-write_rds(contrasts_rounded_overall, fs::path(output_dir, "contrasts_overall.rds"))
-
+write_rds(contrasts_rounded_daily, fs::path(output_dir, "contrasts_daily_rounded.rds"))
+write_rds(contrasts_rounded_cuts, fs::path(output_dir, "contrasts_cuts_rounded.rds"))
+write_rds(contrasts_rounded_overall, fs::path(output_dir, "contrasts_overall_rounded.rds"))
