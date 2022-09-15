@@ -330,6 +330,15 @@ actions_list <- splice(
   action_km("over12", "all", "coviddeath"),
   action_km("over12", "all", "noncoviddeath"),
   
+  action_km("over12", "prior_covid_infection", "postest"),
+  action_km("over12", "prior_covid_infection", "emergency"),
+  action_km("over12", "prior_covid_infection", "covidemergency"),
+  action_km("over12", "prior_covid_infection", "covidadmitted"),
+  action_km("over12", "prior_covid_infection", "covidcritcare"),
+  action_km("over12", "prior_covid_infection", "coviddeath"),
+  action_km("over12", "prior_covid_infection", "noncoviddeath"),
+  
+  
   #action_km_combine("over12"),
   
   #action_release("over12"),
@@ -354,6 +363,15 @@ actions_list <- splice(
   action_km("under12", "all", "covidcritcare"),
   action_km("under12", "all", "coviddeath"),
   action_km("under12", "all", "noncoviddeath"),
+  
+  action_km("under12", "prior_covid_infection", "postest"),
+  action_km("under12", "prior_covid_infection", "emergency"),
+  action_km("under12", "prior_covid_infection", "covidemergency"),
+  action_km("under12", "prior_covid_infection", "covidadmitted"),
+  action_km("under12", "prior_covid_infection", "covidcritcare"),
+  action_km("under12", "prior_covid_infection", "coviddeath"),
+  action_km("under12", "prior_covid_infection", "noncoviddeath"),
+  
   
   #action_km_combine("over12"),
   
