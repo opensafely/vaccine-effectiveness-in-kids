@@ -23,3 +23,12 @@ fct_case_when <- function(...) {
   levels <- levels[!is.na(levels)]
   factor(dplyr::case_when(...), levels=levels)
 }
+
+# for relabelling variables
+# use like this:
+# fct_recoderelevel(variable_coded,  c(`code1`="full name 1", `code2` = "full name 2"))
+fct_recoderelevel <- function(x, lookup){
+  stopifnot(!is.na(names(lookup)))
+  factor(x, levels=lookup, labels=names(lookup))
+}
+
