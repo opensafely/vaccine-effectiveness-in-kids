@@ -92,6 +92,32 @@ events_lookup <- tribble(
   "emergency", "emergency_date", "A&E attendance",
 )
 
+
+## lookups to convert coded variables to full, descriptive variables ----
+
+recoder <-
+  lst(
+    subgroups = c(
+      `Main` = "all",
+      `Prior SARS-CoV-2 infection` = "prior_covid_infection"
+    ),
+    status = c(
+      `Unmatched`= "unmatched",
+      `Matched` = "matched"
+    ),
+    treated = c(
+      `Unvaccinated` = "0",
+      `Vaccinated` = "1"
+    ),
+    outcome = set_names(events_lookup$event, events_lookup$event_descr),
+    all = c(` ` = "all"),
+    prior_covid_infection = c(
+      `No prior SARS-CoV-2 infection` = "FALSE",
+      `Prior SARS-CoV-2 infection` = "TRUE"
+    ),
+  )
+
+
 ## follow-up time ----
 
 # period width
