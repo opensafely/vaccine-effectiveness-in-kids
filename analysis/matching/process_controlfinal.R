@@ -124,10 +124,13 @@ data_treated <-
 # import final dataset of matched controls, including matching variables
 # alternative to this is re-extracting everything in the study definition
 data_control <- 
-  map_dfr(
-    seq_len(n_matching_rounds), 
-    ~{read_rds(ghere("output", cohort, glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))},
-    .id="matching_round_id"
+  data_matchstatus %>% filter(treated==0L) %>%
+  left_join(
+    map_dfr(
+      seq_len(n_matching_rounds), 
+      ~{read_rds(ghere("output", cohort, glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))}
+    ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date), # remove to avoid clash with already-stored variables
+    by=c("patient_id")
   ) %>%
   # merge with outcomes data
   left_join(
@@ -142,9 +145,6 @@ data_control <-
 
 all(data_control$patient_id %in% (data_matchstatus %>% filter(treated==0L) %>% pull(patient_id)))
 all((data_matchstatus %>% filter(treated==0L) %>% pull(patient_id)) %in% data_control$patient_id)
-
-# check matching round IDs agree
-all(data_control$matching_round_id == as.character(data_control$matching_round))
 
 
 # merge treated and control groups
@@ -167,7 +167,7 @@ data_matched <-
       TRUE ~ NA_character_
     ),
     
-  )
+  ) 
 
 
 write_rds(data_matched, here("output", cohort, "match", glue("data_matched.rds")), compress="gz")
