@@ -238,7 +238,7 @@ action_extract_and_match <- function(cohort, n_matching_rounds){
 action_km <- function(cohort, subgroup, outcome){
   action(
     name = glue("km_{cohort}_{subgroup}_{outcome}"),
-    run = glue("r:latest analysis/km.R"),
+    run = glue("r:latest analysis/model/km.R"),
     arguments = c(cohort, subgroup, outcome),
     needs = namelesslst(
       glue("process_controlfinal_{cohort}"),
@@ -258,7 +258,7 @@ action_km_combine <- function(
   dash <- if(paste0(subgroup_levels, collapse="")=="") "" else "-"
   action(
     name = glue("combine_km_{cohort}_{subgroup}_{outcome}"),
-    run = glue("r:latest analysis/km_combine.R"),
+    run = glue("r:latest analysis/model/km_combine.R"),
     arguments = c(cohort, subgroup, outcome),
     needs = splice(
       as.list(
