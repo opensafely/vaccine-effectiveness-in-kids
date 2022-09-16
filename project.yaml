@@ -155,6 +155,15 @@ actions:
       highly_sensitive:
         extract: output/over12/match/*.rds
 
+  table1_over12:
+    run: r:latest analysis/table1.R over12
+    needs:
+    - process_controlfinal_over12
+    outputs:
+      moderately_sensitive:
+        csv: output/over12/table1/*.csv
+        png: output/over12/table1/*.png
+
   ## # # # # # # # # # # # # # # # # # # # 
   ## Model 
 
@@ -460,6 +469,15 @@ actions:
     outputs:
       highly_sensitive:
         extract: output/under12/match/*.rds
+
+  table1_under12:
+    run: r:latest analysis/table1.R under12
+    needs:
+    - process_controlfinal_under12
+    outputs:
+      moderately_sensitive:
+        csv: output/under12/table1/*.csv
+        png: output/under12/table1/*.png
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Model 

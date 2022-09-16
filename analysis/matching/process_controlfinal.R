@@ -113,10 +113,12 @@ data_matchstatus <- read_rds(ghere("output", cohort, "matchround{n_matching_roun
 
 # import data for treated group and select those who were successfully matched
 
+data_treatedeligible <- read_rds(ghere("output", cohort, "treated", "data_treatedeligible.rds"))
+
 data_treated <- 
   left_join(
     data_matchstatus %>% filter(treated==1L),
-    read_rds(ghere("output", cohort, "treated", "data_treatedeligible.rds")),
+    data_treatedeligible,
     by="patient_id"
   ) 
 
@@ -172,8 +174,35 @@ data_matched <-
 
 write_rds(data_matched, here("output", cohort, "match", glue("data_matched.rds")), compress="gz")
 
+# matching status of all treated, eligible people ----
 
-## Flowchart ----
+data_treatedeligible_matchstatus <- 
+  left_join(
+    data_treatedeligible %>% select(patient_id, vax1_date),
+    data_matchstatus %>% filter(treated==1L),
+    by="patient_id"
+  ) %>%
+  mutate(
+    matched = if_else(is.na(match_id), 0L, 1L),
+    treated = if_else(is.na(match_id), 1L, treated),
+  )
+
+print(
+  glue(
+    "all trial dates match vaccination dates for matched, treated people: ",
+    data_treatedeligible_matchstatus %>% 
+    filter(matched==1L) %>%
+    mutate(
+      agree = trial_date==vax1_date
+    ) %>% pull(agree) %>% all()
+  )
+)
+
+write_rds(data_treatedeligible_matchstatus, here("output", cohort, "match", "data_treatedeligible_matchstatus.rds"), compress="gz")
+
+    
+
+# Flowchart ----
 
 ## FIXME -- to add flowchart entry for all treated people who ended up with a matched control, and all treated people who were also used as a control in an earlier trial
 

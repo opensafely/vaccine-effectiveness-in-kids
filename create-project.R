@@ -278,6 +278,21 @@ action_km_combine <- function(
   )
 }
 
+action_table1 <- function(cohort){
+  action(
+    name = glue("table1_{cohort}"),
+    run = glue("r:latest analysis/table1.R"),
+    arguments = c(cohort),
+    needs = namelesslst(
+      glue("process_controlfinal_{cohort}"),
+    ),
+    moderately_sensitive= lst(
+      csv= glue("output/{cohort}/table1/*.csv"),
+      png= glue("output/{cohort}/table1/*.png"),
+    )
+  )
+}
+
 # specify project ----
 
 ## defaults ----
@@ -306,6 +321,8 @@ actions_list <- splice(
           "Extract and match"),
   
   action_extract_and_match("over12", n_matching_rounds),
+  
+  action_table1("over12"),
   
   comment("# # # # # # # # # # # # # # # # # # #", 
           "Model"),
@@ -338,6 +355,8 @@ actions_list <- splice(
           "Extract and match"),
   
   action_extract_and_match("under12", n_matching_rounds),
+  
+  action_table1("under12"),
   
   comment("# # # # # # # # # # # # # # # # # # #", 
           "Model"),

@@ -20,11 +20,11 @@ for(cohort in c("over12", "under12")){
   fs::dir_create(output_dir)
 
 
-  ## matching ----
+  ## table1 ----
 
-  # fs::file_copy(here("output", cohort, "report", "data_coverage.csv"), fs::path(output_dir, "match_coverage.csv"), overwrite = TRUE)
-  # fs::file_copy(here("output", cohort, "report", "data_smd.csv"), fs::path(output_dir, "match_smd.csv"), overwrite = TRUE)
-  # fs::file_copy(here("output", cohort, "report", "flowchart.csv"), fs::path(output_dir, "match_flowchart.csv"), overwrite = TRUE)
+  fs::file_copy(here("output", cohort, "table1", "match_coverage.csv"), fs::path(output_dir, "match_coverage.csv"), overwrite = TRUE)
+  fs::file_copy(here("output", cohort, "table1", "table1.csv"), fs::path(output_dir, "table1.csv"), overwrite = TRUE)
+  # fs::file_copy(here("output", cohort, "table1", "flowchart.csv"), fs::path(output_dir, "match_flowchart.csv"), overwrite = TRUE)
 
   ## KM ----
   fs::file_copy(fs::file_path(input_dir, "km_estimates_rounded.csv"), fs::path(output_dir, "km_estimates_rounded.csv"), overwrite = TRUE)
