@@ -132,19 +132,19 @@ write_csv(contrasts_overall, fs::path(output_dir, "contrasts_overall_rounded.csv
 
 
 ## move km plots to single folder ----
-fs::dir_create(here("output", cohort, "models", "km", "combined", "plots"))
+fs::dir_create(here("output", cohort, "models", "km", "combined"))
 
 metaparams %>%
   mutate(
     plotdir = here("output", cohort, "models", "km", subgroup, outcome, "km_plot_rounded.png"),
-    plotnewdir = glue("output", cohort, "models", "km", "combined", "plots", "km_plot_rounded_{subgroup}_{outcome}.png", .sep="/"),
+    plotnewdir = glue("output", cohort, "models", "km", "combined", "km_plot_rounded_{subgroup}_{outcome}.png", .sep="/"),
   ) %>%
   {walk2(.$plotdir, .$plotnewdir, ~fs::file_copy(.x, .y, overwrite = TRUE))}
 
 metaparams %>%
   mutate(
     plotdir = here("output", cohort, "models", "km", subgroup, outcome, "km_plot_unrounded.png"),
-    plotnewdir = glue("output", cohort, "models", "km", "combined", "plots", "km_plot_unrounded_{subgroup}_{outcome}.png", .sep="/"),
+    plotnewdir = glue("output", cohort, "models", "km", "combined", "km_plot_unrounded_{subgroup}_{outcome}.png", .sep="/"),
   ) %>%
   {walk2(.$plotdir, .$plotnewdir, ~fs::file_copy(.x, .y, overwrite = TRUE))}
 
@@ -185,7 +185,7 @@ plot_estimates <- function(estimate, estimate.ll, estimate.ul, name){
 
 
   ggsave(
-    filename=glue("output", cohort, "models", "km", "combined", "plots", "overall_plot_rounded_{name}.png", .sep="/"),
+    filename=glue("output", cohort, "models", "km", "combined", "overall_plot_rounded_{name}.png", .sep="/"),
     plot_temp,
     width=20, height=15, units="cm"
   )

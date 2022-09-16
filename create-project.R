@@ -253,39 +253,27 @@ action_km <- function(cohort, subgroup, outcome){
 
 ## model action function ----
 action_km_combine <- function(
-    cohort, subgroup, outcome
+    cohort
 ){
-  dash <- if(paste0(subgroup_levels, collapse="")=="") "" else "-"
+
   action(
-    name = glue("combine_km_{cohort}_{subgroup}_{outcome}"),
+    name = glue("combine_km_{cohort}"),
     run = glue("r:latest analysis/model/km_combine.R"),
-    arguments = c(cohort, subgroup, outcome),
+    arguments = c(cohort),
     needs = splice(
       as.list(
         glue_data(
           .x=expand_grid(
-            treatment=c("pfizer", "moderna")
+            subgroup=c("all", "prior_covid_infection"),
+            outcome=c("postest", "emergency", "covidemergency", "covidadmitted", "coviddeath", "noncoviddeath"),
           ),
-          "match_seqtrialcox_{treatment}"
-        )
-      ),
-      as.list(
-        glue_data(
-          .x=expand_grid(
-            subgroups = paste0(subgroup,dash,subgroup_levels),
-            treatment=c("pfizer", "moderna"),
-            outcome=c("postest", "covidemergency", "covidadmittedproxy1", "covidadmitted", "noncovidadmitted", "coviddeath", "noncoviddeath"),
-            script=c("model", "report"),
-
-          ),
-          "{script}_seqtrialcox_{treatment}_{outcome}_{subgroups}"
+          "km_{cohort}_{subgroup}_{outcome}"
         )
       )
     ),
     moderately_sensitive = lst(
-      csv = glue("output/models/seqtrialcox/combined/{subgroup}/*.csv"),
-      png = glue("output/models/seqtrialcox/combined/{subgroup}/*.png"),
-      svg = glue("output/models/seqtrialcox/combined/{subgroup}/*.svg"),
+      rds = glue("output/{cohort}/models/km/combined/*.rds"),
+      png = glue("output/{cohort}/models/km/combined/*.png"),
     )
   )
 }
@@ -339,9 +327,7 @@ actions_list <- splice(
   action_km("over12", "prior_covid_infection", "noncoviddeath"),
   
   
-  #action_km_combine("over12"),
-  
-  #action_release("over12"),
+  action_km_combine("over12"),
   
   
   comment("# # # # # # # # # # # # # # # # # # #", 
@@ -372,15 +358,28 @@ actions_list <- splice(
   action_km("under12", "prior_covid_infection", "coviddeath"),
   action_km("under12", "prior_covid_infection", "noncoviddeath"),
   
+  action_km_combine("under12"),
   
-  #action_km_combine("over12"),
+  comment("# # # # # # # # # # # # # # # # # # #", 
+          "Move files for release", 
+          "# # # # # # # # # # # # # # # # # # #"),
   
-  #action_release("over12"),
-  
-  comment("#### End ####")
-  
-)
+  action(
+    name = "release",
+    run = glue("r:latest analysis/release_objects.R"),
+    arguments = c(cohort),
+    needs = namelesslst(
+      glue("combine_km_over12"),
+      glue("combine_km_under12"),
+    ),
+    highly_sensitive = lst(
+      txt = glue("output/release/*.txt"),
+      csv = glue("output/release/*.csv"),
+    ),
+  ),
 
+  comment("#### End ####")
+)
 
 project_list <- splice(
   defaults_list,
@@ -407,26 +406,26 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("expectations", "tpp")){
 # if running manually, output new project as normal
 } else if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("")){
 
-## output to file ----
+  ## output to file ----
   writeLines(thisproject, here("project.yaml"))
-#yaml::write_yaml(project_list, file =here("project.yaml"))
-
-## grab all action names and send to a txt file
-
-names(actions_list) %>% tibble(action=.) %>%
-  mutate(
-    model = action==""  & lag(action!="", 1, TRUE),
-    model_number = cumsum(model),
-  ) %>%
-  group_by(model_number) %>%
-  summarise(
-    sets = str_trim(paste(action, collapse=" "))
-  ) %>% pull(sets) %>%
-  paste(collapse="\n") %>%
-  writeLines(here("actions.txt"))
+  #yaml::write_yaml(project_list, file =here("project.yaml"))
+  
+  ## grab all action names and send to a txt file
+  
+  names(actions_list) %>% tibble(action=.) %>%
+    mutate(
+      model = action==""  & lag(action!="", 1, TRUE),
+      model_number = cumsum(model),
+    ) %>%
+    group_by(model_number) %>%
+    summarise(
+      sets = str_trim(paste(action, collapse=" "))
+    ) %>% pull(sets) %>%
+    paste(collapse="\n") %>%
+    writeLines(here("actions.txt"))
 
 # fail if backend not recognised
 } else {
-  stop("Backend not recognised")
+  stop("Backend not recognised by create.project.R script")
 }
 
