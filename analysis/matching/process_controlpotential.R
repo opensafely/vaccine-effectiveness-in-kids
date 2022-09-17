@@ -64,7 +64,9 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   # rather than from a cohort-extractor-generated dummy data
   data_studydef_dummy <- read_feather(ghere("output", cohort, "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
     # because date types are not returned consistently by cohort extractor
-    mutate(across(ends_with("_date"), as.Date)) 
+    mutate(across(ends_with("_date"), ~ as.Date(.))) %>%
+    # because of a bug in cohort extractor -- remove once pulled new version
+    mutate(patient_id = as.integer(patient_id))
 
   data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}.feather")) %>%
     mutate(
@@ -108,9 +110,9 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 
   data_extract <- data_custom_dummy 
 } else {
-  data_extract <- read_feather(ghere("output", cohort, "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
-    # because date types are not returned consistently by cohort extractor
-    mutate(across(ends_with("_date"), as.Date))
+  data_extract <- read_feather(here("output", glue("input_control_potential{matching_round}.feather"))) %>%
+    #because date types are not returned consistently by cohort extractor
+    mutate(across(ends_with("_date"),  as.Date))
 }
 
 

@@ -103,7 +103,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   
 
 } else {
-  data_outcomes <- read_feather(ghere("output", cohort, "extract", "input_controlfinal.feather")) %>%
+  data_outcomes <- read_feather(here("output", "input_finalmatched.feather")) %>%
     #because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"),  as.Date))
 }
