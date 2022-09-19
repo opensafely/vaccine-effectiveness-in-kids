@@ -244,7 +244,7 @@ action_km <- function(cohort, subgroup, outcome){
       glue("process_controlfinal_{cohort}"),
     ),
     moderately_sensitive= lst(
-      csv= glue("output/{cohort}/models/km/{subgroup}/{outcome}/*.csv"),
+      #csv= glue("output/{cohort}/models/km/{subgroup}/{outcome}/*.csv"),
       rds= glue("output/{cohort}/models/km/{subgroup}/{outcome}/*.rds"),
       png= glue("output/{cohort}/models/km/{subgroup}/{outcome}/*.png"),
     )
@@ -281,7 +281,7 @@ action_km_combine <- function(
 action_table1 <- function(cohort){
   action(
     name = glue("table1_{cohort}"),
-    run = glue("r:latest analysis/table1.R"),
+    run = glue("r:latest analysis/matching/table1.R"),
     arguments = c(cohort),
     needs = namelesslst(
       glue("process_controlfinal_{cohort}"),

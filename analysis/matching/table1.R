@@ -365,8 +365,8 @@ raw_stats_redacted %>%
   cols_align(
     align = c("left"),
     columns =  c("var_label", "variable_levels")
-  ) %>%
-  tab_options(row_group.as_column = TRUE)
+  )# %>%
+  #tab_options(row_group.as_column = TRUE)
 
 
 

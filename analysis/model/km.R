@@ -104,9 +104,6 @@ data_matched <-
 # outcome frequency
 outcomes_per_treated <- table(outcome=data_matched$ind_outcome, treated=data_matched$treated)
 
-cut((-2):4, c(-Inf, 0, 1, Inf), right=FALSE, labels= c("<0", "0", ">0"))
-
-
 table(
   cut(data_matched$tte_outcome, c(-Inf, 0, 1, Inf), right=FALSE, labels= c("<0", "0", ">0"))
 )

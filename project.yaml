@@ -156,7 +156,7 @@ actions:
         extract: output/over12/match/*.rds
 
   table1_over12:
-    run: r:latest analysis/table1.R over12
+    run: r:latest analysis/matching/table1.R over12
     needs:
     - process_controlfinal_over12
     outputs:
@@ -173,7 +173,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/all/postest/*.csv
         rds: output/over12/models/km/all/postest/*.rds
         png: output/over12/models/km/all/postest/*.png
 
@@ -183,7 +182,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/all/emergency/*.csv
         rds: output/over12/models/km/all/emergency/*.rds
         png: output/over12/models/km/all/emergency/*.png
 
@@ -193,7 +191,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/all/covidemergency/*.csv
         rds: output/over12/models/km/all/covidemergency/*.rds
         png: output/over12/models/km/all/covidemergency/*.png
 
@@ -203,7 +200,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/all/covidadmitted/*.csv
         rds: output/over12/models/km/all/covidadmitted/*.rds
         png: output/over12/models/km/all/covidadmitted/*.png
 
@@ -213,7 +209,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/all/covidcritcare/*.csv
         rds: output/over12/models/km/all/covidcritcare/*.rds
         png: output/over12/models/km/all/covidcritcare/*.png
 
@@ -223,7 +218,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/all/coviddeath/*.csv
         rds: output/over12/models/km/all/coviddeath/*.rds
         png: output/over12/models/km/all/coviddeath/*.png
 
@@ -233,7 +227,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/all/noncoviddeath/*.csv
         rds: output/over12/models/km/all/noncoviddeath/*.rds
         png: output/over12/models/km/all/noncoviddeath/*.png
 
@@ -243,7 +236,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/prior_covid_infection/postest/*.csv
         rds: output/over12/models/km/prior_covid_infection/postest/*.rds
         png: output/over12/models/km/prior_covid_infection/postest/*.png
 
@@ -253,7 +245,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/prior_covid_infection/emergency/*.csv
         rds: output/over12/models/km/prior_covid_infection/emergency/*.rds
         png: output/over12/models/km/prior_covid_infection/emergency/*.png
 
@@ -263,7 +254,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/prior_covid_infection/covidemergency/*.csv
         rds: output/over12/models/km/prior_covid_infection/covidemergency/*.rds
         png: output/over12/models/km/prior_covid_infection/covidemergency/*.png
 
@@ -273,7 +263,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/prior_covid_infection/covidadmitted/*.csv
         rds: output/over12/models/km/prior_covid_infection/covidadmitted/*.rds
         png: output/over12/models/km/prior_covid_infection/covidadmitted/*.png
 
@@ -283,7 +272,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/prior_covid_infection/covidcritcare/*.csv
         rds: output/over12/models/km/prior_covid_infection/covidcritcare/*.rds
         png: output/over12/models/km/prior_covid_infection/covidcritcare/*.png
 
@@ -293,7 +281,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/prior_covid_infection/coviddeath/*.csv
         rds: output/over12/models/km/prior_covid_infection/coviddeath/*.rds
         png: output/over12/models/km/prior_covid_infection/coviddeath/*.png
 
@@ -303,7 +290,6 @@ actions:
     - process_controlfinal_over12
     outputs:
       moderately_sensitive:
-        csv: output/over12/models/km/prior_covid_infection/noncoviddeath/*.csv
         rds: output/over12/models/km/prior_covid_infection/noncoviddeath/*.rds
         png: output/over12/models/km/prior_covid_infection/noncoviddeath/*.png
 
@@ -471,7 +457,7 @@ actions:
         extract: output/under12/match/*.rds
 
   table1_under12:
-    run: r:latest analysis/table1.R under12
+    run: r:latest analysis/matching/table1.R under12
     needs:
     - process_controlfinal_under12
     outputs:
@@ -488,7 +474,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/all/postest/*.csv
         rds: output/under12/models/km/all/postest/*.rds
         png: output/under12/models/km/all/postest/*.png
 
@@ -498,7 +483,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/all/emergency/*.csv
         rds: output/under12/models/km/all/emergency/*.rds
         png: output/under12/models/km/all/emergency/*.png
 
@@ -508,7 +492,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/all/covidemergency/*.csv
         rds: output/under12/models/km/all/covidemergency/*.rds
         png: output/under12/models/km/all/covidemergency/*.png
 
@@ -518,7 +501,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/all/covidadmitted/*.csv
         rds: output/under12/models/km/all/covidadmitted/*.rds
         png: output/under12/models/km/all/covidadmitted/*.png
 
@@ -528,7 +510,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/all/covidcritcare/*.csv
         rds: output/under12/models/km/all/covidcritcare/*.rds
         png: output/under12/models/km/all/covidcritcare/*.png
 
@@ -538,7 +519,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/all/coviddeath/*.csv
         rds: output/under12/models/km/all/coviddeath/*.rds
         png: output/under12/models/km/all/coviddeath/*.png
 
@@ -548,7 +528,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/all/noncoviddeath/*.csv
         rds: output/under12/models/km/all/noncoviddeath/*.rds
         png: output/under12/models/km/all/noncoviddeath/*.png
 
@@ -558,7 +537,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/prior_covid_infection/postest/*.csv
         rds: output/under12/models/km/prior_covid_infection/postest/*.rds
         png: output/under12/models/km/prior_covid_infection/postest/*.png
 
@@ -568,7 +546,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/prior_covid_infection/emergency/*.csv
         rds: output/under12/models/km/prior_covid_infection/emergency/*.rds
         png: output/under12/models/km/prior_covid_infection/emergency/*.png
 
@@ -578,7 +555,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/prior_covid_infection/covidemergency/*.csv
         rds: output/under12/models/km/prior_covid_infection/covidemergency/*.rds
         png: output/under12/models/km/prior_covid_infection/covidemergency/*.png
 
@@ -588,7 +564,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/prior_covid_infection/covidadmitted/*.csv
         rds: output/under12/models/km/prior_covid_infection/covidadmitted/*.rds
         png: output/under12/models/km/prior_covid_infection/covidadmitted/*.png
 
@@ -598,7 +573,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/prior_covid_infection/covidcritcare/*.csv
         rds: output/under12/models/km/prior_covid_infection/covidcritcare/*.rds
         png: output/under12/models/km/prior_covid_infection/covidcritcare/*.png
 
@@ -608,7 +582,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/prior_covid_infection/coviddeath/*.csv
         rds: output/under12/models/km/prior_covid_infection/coviddeath/*.rds
         png: output/under12/models/km/prior_covid_infection/coviddeath/*.png
 
@@ -618,7 +591,6 @@ actions:
     - process_controlfinal_under12
     outputs:
       moderately_sensitive:
-        csv: output/under12/models/km/prior_covid_infection/noncoviddeath/*.csv
         rds: output/under12/models/km/prior_covid_infection/noncoviddeath/*.rds
         png: output/under12/models/km/prior_covid_infection/noncoviddeath/*.png
 
