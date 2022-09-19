@@ -5,19 +5,23 @@ import codelists
 
 
 def generate_inclusion_variables(index_date):
-    inclusion_variables = dict(
+  inclusion_variables = dict(
     
-    registered=patients.registered_as_of(
+    registered = patients.registered_as_of(
         index_date,
     ), 
 
-    has_died=patients.died_from_any_cause(
+    has_died = patients.died_from_any_cause(
       on_or_before=index_date,
       returning="binary_flag",
     ),
 
-    age=patients.age_as_of( 
-        "2021-09-01",
+    age_aug21 = patients.age_as_of( 
+        "2021-08-31",
+    ),
+    
+    age = patients.age_as_of( 
+        f"{index_date} - 1 day",
     ),
     
     wchild = patients.satisfying(
@@ -312,11 +316,12 @@ def generate_inclusion_variables(index_date):
             on_or_before=f"{index_date} - 1 day",
             date_format="YYYY-MM-DD",
           ),
-          ),
-          ),
-          ),
-          ########## end of at risk criteria
-
-    )
-    return inclusion_variables
+        ),
+      ),
+    ),
+    ########## end of at risk criteria
+    
+          
+  )
+  return inclusion_variables
 

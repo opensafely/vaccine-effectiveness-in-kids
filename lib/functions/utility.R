@@ -1,11 +1,18 @@
 
-
+# combine here() and glue() functionality
+ghere <- function(...){
+  here::here(glue::glue(..., .sep=.Platform$file.sep))
+}
 
 ceiling_any <- function(x, to=1){
   # round to nearest 100 millionth to avoid floating point errors
   ceiling(plyr::round_any(x/to, 1/100000000))*to
 }
 
+roundmid_any <- function(x, to=1){
+  # like ceiling_any, but centers on (integer) midpoint of the rounding points
+  ceiling(x/to)*to - (floor(to/2)*(x!=0))
+}
 
 
 fct_case_when <- function(...) {
