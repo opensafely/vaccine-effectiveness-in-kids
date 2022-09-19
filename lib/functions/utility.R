@@ -1,11 +1,18 @@
 
-
+# combine here() and glue() functionality
+ghere <- function(...){
+  here::here(glue::glue(..., .sep=.Platform$file.sep))
+}
 
 ceiling_any <- function(x, to=1){
   # round to nearest 100 millionth to avoid floating point errors
   ceiling(plyr::round_any(x/to, 1/100000000))*to
 }
 
+roundmid_any <- function(x, to=1){
+  # like ceiling_any, but centers on (integer) midpoint of the rounding points
+  ceiling(x/to)*to - (floor(to/2)*(x!=0))
+}
 
 
 fct_case_when <- function(...) {
@@ -17,92 +24,11 @@ fct_case_when <- function(...) {
   factor(dplyr::case_when(...), levels=levels)
 }
 
-#
-# specify_decimal <- function(x, k, trim=FALSE) {
-#
-#   fmtd <- format(round(x, k), nsmall = k)
-#   if (trim) {fmtd <- trimws(fmtd)}
-#   return(fmtd)
-# }
-#
-# print_est1bracket <- function(x, b, round=1){
-#   paste0(specify_decimal(x, round), " (", specify_decimal(b, round), ")")
-# }
-#
-# print_est2bracket <- function(x, b1, b2, round=1){
-#   paste0(specify_decimal(x, round), " (", specify_decimal(b1, round), ", ", specify_decimal(b2, round), ")")
-# }
-#
-# print_2bracket <- function(b1, b2, round=1){
-#   paste0("(", specify_decimal(b1, round), ", ", specify_decimal(b2, round), ")")
-# }
-#
-# print_pval <- function(pval, k=3){
-#   ifelse(pval < 1/(10^k), paste0("p<", 1/(10^k)), paste0("p=", specify_decimal(pval, k = 3)))
-# }
-#
-#
-#
-#
-#
-
-postvax_cut <- function(event_time, time, breaks, prelabel="pre", prefix=""){
-
-  # this function defines post-vaccination time-periods at `time`,
-  # for a vaccination occurring at time `event_time`
-  # delimited by `breaks`
-
-  # note, intervals are open on the left and closed on the right
-  # so at the exact time point the vaccination occurred, it will be classed as "pre-dose".
-
-  event_time <- as.numeric(event_time)
-  event_time <- if_else(!is.na(event_time), event_time, Inf)
-
-  diff <- time - event_time
-  breaks_aug <- unique(c(-Inf, breaks, Inf))
-  labels0 <- cut(c(breaks, Inf), breaks_aug)
-  labels <- paste0(prefix, c(prelabel, as.character(labels0[-1])))
-  period <- cut(diff, breaks=breaks_aug, labels=labels, include.lowest=TRUE)
-
-
-  period
+# for relabelling variables
+# use like this:
+# fct_recoderelevel(variable_coded,  c(`code1`="full name 1", `code2` = "full name 2"))
+fct_recoderelevel <- function(x, lookup){
+  stopifnot(!is.na(names(lookup)))
+  factor(x, levels=lookup, labels=names(lookup))
 }
-#
-#
-#
-#
-#
-# define post-vaccination time periods for piece-wise constant hazards (ie time-varying effects / time-varying coefficients)
-# eg c(0, 10, 21) will create 4 periods
-# pre-vaccination, [0, 10), [10, 21), and [21, inf)
-# can use eg c(3, 10, 21) to treat first 3 days post-vaccination the same as pre-vaccination
-# note that the exact vaccination date is set to the first "pre-vax" period,
-# because in survival analysis, intervals are open-left and closed-right.
 
-
-timesince_cut <- function(time_since, breaks, prefix=""){
-
-  # this function defines post-vaccination time-periods at `time_since`,
-  # delimited by `breaks`
-
-  # note, intervals are open on the left and closed on the right
-  # so at the exact time point the vaccination occurred, it will be classed as "pre-dose".
-
-  stopifnot("time_since should be strictly non-negative" = time_since>=0)
-  time_since <- as.numeric(time_since)
-  time_since <- if_else(!is.na(time_since), time_since, Inf)
-
-  breaks_aug <- unique(c(breaks, Inf))
-
-  lab_left <- breaks+1
-  lab_right <- lead(breaks)
-  label <- paste0(lab_left, "-", lab_right)
-  label <- str_replace(label,"-NA", "+")
-  labels <- paste0(prefix, label)
-
-  #labels0 <- cut(c(breaks, Inf), breaks_aug)
-  #labels <- paste0(prefix, c(prelabel, as.character(labels0[-1])))
-  period <- cut(time_since, breaks=breaks_aug, labels=labels, include.lowest=TRUE)
-
-  period
-}

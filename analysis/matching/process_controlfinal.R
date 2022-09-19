@@ -58,6 +58,8 @@ fs::dir_create(ghere("output", cohort, "match"))
 # check variables are as they should be
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   
+  #source(here("analysis", "dummy", "dummydata_controlfinal.R"))
+  
   data_studydef_dummy <- read_feather(ghere("output", cohort, "extract", "input_controlfinal.feather")) %>%
     #because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"),  as.Date))
@@ -103,7 +105,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   
 
 } else {
-  data_outcomes <- read_feather(here("output", "input_finalmatched.feather")) %>%
+  data_outcomes <- read_feather(ghere("output", cohort, "extract", "input_controlfinal.feather")) %>%
     #because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"),  as.Date))
 }
@@ -113,10 +115,12 @@ data_matchstatus <- read_rds(ghere("output", cohort, "matchround{n_matching_roun
 
 # import data for treated group and select those who were successfully matched
 
+data_treatedeligible <- read_rds(ghere("output", cohort, "treated", "data_treatedeligible.rds"))
+
 data_treated <- 
   left_join(
     data_matchstatus %>% filter(treated==1L),
-    read_rds(ghere("output", cohort, "treated", "data_treatedeligible.rds")),
+    data_treatedeligible,
     by="patient_id"
   ) 
 
@@ -124,10 +128,13 @@ data_treated <-
 # import final dataset of matched controls, including matching variables
 # alternative to this is re-extracting everything in the study definition
 data_control <- 
-  map_dfr(
-    seq_len(n_matching_rounds), 
-    ~{read_rds(ghere("output", cohort, glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))},
-    .id="matching_round_id"
+  data_matchstatus %>% filter(treated==0L) %>%
+  left_join(
+    map_dfr(
+      seq_len(n_matching_rounds), 
+      ~{read_rds(ghere("output", cohort, glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))}
+    ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date), # remove to avoid clash with already-stored variables
+    by=c("patient_id")
   ) %>%
   # merge with outcomes data
   left_join(
@@ -142,9 +149,6 @@ data_control <-
 
 all(data_control$patient_id %in% (data_matchstatus %>% filter(treated==0L) %>% pull(patient_id)))
 all((data_matchstatus %>% filter(treated==0L) %>% pull(patient_id)) %in% data_control$patient_id)
-
-# check matching round IDs agree
-all(data_control$matching_round_id == as.character(data_control$matching_round))
 
 
 # merge treated and control groups
@@ -167,13 +171,40 @@ data_matched <-
       TRUE ~ NA_character_
     ),
     
-  )
+  ) 
 
 
 write_rds(data_matched, here("output", cohort, "match", glue("data_matched.rds")), compress="gz")
 
+# matching status of all treated, eligible people ----
 
-## Flowchart ----
+data_treatedeligible_matchstatus <- 
+  left_join(
+    data_treatedeligible %>% select(patient_id, vax1_date),
+    data_matchstatus %>% filter(treated==1L),
+    by="patient_id"
+  ) %>%
+  mutate(
+    matched = if_else(is.na(match_id), 0L, 1L),
+    treated = if_else(is.na(match_id), 1L, treated),
+  )
+
+print(
+  glue(
+    "all trial dates match vaccination dates for matched, treated people: ",
+    data_treatedeligible_matchstatus %>% 
+    filter(matched==1L) %>%
+    mutate(
+      agree = trial_date==vax1_date
+    ) %>% pull(agree) %>% all()
+  )
+)
+
+write_rds(data_treatedeligible_matchstatus, here("output", cohort, "match", "data_treatedeligible_matchstatus.rds"), compress="gz")
+
+    
+
+# Flowchart ----
 
 ## FIXME -- to add flowchart entry for all treated people who ended up with a matched control, and all treated people who were also used as a control in an earlier trial
 
