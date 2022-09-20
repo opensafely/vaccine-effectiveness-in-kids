@@ -13,7 +13,7 @@ library('survival')
 
 ## post-matching ----
 
-for(cohort in c("over12")){
+for(cohort in c("over12", "under12")){
 
   input_dir <- ghere("output", cohort, "models", "km", "combined")
   output_dir <- here("output", "release-objects", cohort)
