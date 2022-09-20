@@ -170,7 +170,7 @@ data_surv <-
     
     ## standard errors on complementary log-log scale
     surv.ll = exp(-exp(llsurv + qnorm(0.025)*llsurv.se)),
-    surv.ul = exp(-exp(llsurv + qnorm(0.025)*llsurv.se)),
+    surv.ul = exp(-exp(llsurv + qnorm(0.975)*llsurv.se)),
     
     risk = 1 - surv,
     risk.se = surv.se,
