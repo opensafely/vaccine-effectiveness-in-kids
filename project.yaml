@@ -300,12 +300,14 @@ actions:
     - km_over12_all_emergency
     - km_over12_all_covidemergency
     - km_over12_all_covidadmitted
+    - km_over12_all_covidcritcare
     - km_over12_all_coviddeath
     - km_over12_all_noncoviddeath
     - km_over12_prior_covid_infection_postest
     - km_over12_prior_covid_infection_emergency
     - km_over12_prior_covid_infection_covidemergency
     - km_over12_prior_covid_infection_covidadmitted
+    - km_over12_prior_covid_infection_covidcritcare
     - km_over12_prior_covid_infection_coviddeath
     - km_over12_prior_covid_infection_noncoviddeath
     outputs:
@@ -601,12 +603,14 @@ actions:
     - km_under12_all_emergency
     - km_under12_all_covidemergency
     - km_under12_all_covidadmitted
+    - km_under12_all_covidcritcare
     - km_under12_all_coviddeath
     - km_under12_all_noncoviddeath
     - km_under12_prior_covid_infection_postest
     - km_under12_prior_covid_infection_emergency
     - km_under12_prior_covid_infection_covidemergency
     - km_under12_prior_covid_infection_covidadmitted
+    - km_under12_prior_covid_infection_covidcritcare
     - km_under12_prior_covid_infection_coviddeath
     - km_under12_prior_covid_infection_noncoviddeath
     outputs:
