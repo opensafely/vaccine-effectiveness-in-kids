@@ -627,6 +627,8 @@ actions:
     needs:
     - combine_km_over12
     - table1_over12
+    - combine_km_under12
+    - table1_under12
     outputs:
       highly_sensitive:
         txt: output/meta-release/*.txt
