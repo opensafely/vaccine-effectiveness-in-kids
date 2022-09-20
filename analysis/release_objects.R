@@ -22,8 +22,8 @@ source(here("analysis", "design.R"))
 output_dir <- here("output", "release")
 fs::dir_create(output_dir)
 
-#for(cohort in c("over12", "under12")){
-for(cohort in c("over12")){
+for(cohort in c("over12", "under12")){
+#for(cohort in c("over12")){
 
   input_dir <- ghere("output", cohort, "models", "km", "combined")
   
@@ -45,7 +45,7 @@ for(cohort in c("over12")){
 fs::dir_create(here("output", "meta-release"))
 
 ## create text for output review issue ----
-fs::dir_ls(here("output", "release-objects"), type="file", recurse=TRUE) %>%
+fs::dir_ls(output_dir, type="file", recurse=TRUE) %>%
   map_chr(~str_remove(., fixed(here()))) %>%
   map_chr(~paste0("- [ ] ", str_remove(.,fixed("/")))) %>%
   paste(collapse="\n") %>%
@@ -53,7 +53,7 @@ fs::dir_ls(here("output", "release-objects"), type="file", recurse=TRUE) %>%
 
 
 ## create command for releasing using osrelease ----
-fs::dir_ls(here("output", "release-objects"), type="file", recurse=TRUE) %>%
+fs::dir_ls(output_dir, type="file", recurse=TRUE) %>%
   map_chr(~str_remove(., fixed(here()))) %>%
   #map_chr(~paste0("'",. ,"'")) %>%
   paste(., collapse=" ") %>%
