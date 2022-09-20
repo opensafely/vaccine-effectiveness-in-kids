@@ -249,6 +249,10 @@ ggsave(filename=fs::path(output_dir, "km_plot_rounded.png"), km_plot_rounded, wi
 
 kmcontrasts <- function(data, cuts=NULL){
 
+  # if cuts=NULL then fucntion provides daily estimates
+  # if eg c(0,14,28,42,...) then follow u[ is split on these days
+  # c(0, 140)
+  
   if(is.null(cuts)){cuts <- unique(c(0,data$time))}
 
   data %>%

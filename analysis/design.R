@@ -23,12 +23,12 @@ n_matching_rounds <- 2
 
 study_dates <- lst(
   over12 = lst(
-   start_date = "2021-09-20", #start of recruitment monday 20 september pfizer licensed for for over 12yo in england
+   start_date = "2021-09-20", # start of vaccine eligibility for non-high-risk 12-15 year olds monday 20 september 2021, adult pfizer dose licensed 
    end_date = "2021-12-19", # end of recruitment (13 weeks later)
    followupend_date = "2022-01-02", # end of follow-up
   ),
   under12 = lst(
-    start_date = "2022-04-04", #start of recruitment monday 4 april moderna licensed for for under 12yo in england
+    start_date = "2022-04-04", # start of vaccine eligibility for non-high-risk 5-11 year olds monday 4 APril 2022, child pfizer dose licensed
     end_date = "2022-07-03", # end of recruitment (13 weeks later)
     followupend_date = "2022-07-10" # end of follow-up
   )
@@ -39,8 +39,10 @@ extract_increment <- 14
 study_dates$over12$control_extract_dates = as.Date(study_dates$over12$start_date) + (0:26)*extract_increment
 study_dates$under12$control_extract_dates = as.Date(study_dates$under12$start_date) + (0:26)*extract_increment
 
+# write to json so that both R and python (study defs) can easily pick up
 jsonlite::write_json(study_dates, path = here("lib", "design", "study-dates.json"), auto_unbox=TRUE, pretty =TRUE)
 
+# define study parameters used in study definition
 study_params <- lst(
   
   # over 12 params
@@ -60,6 +62,7 @@ study_params <- lst(
   
 )
 
+# write to json so that both R and python (study defs) can easily pick up
 jsonlite::write_json(study_params, path = here("lib", "design", "study-params.json"), auto_unbox=TRUE, pretty =TRUE)
 
 # define outcomes ----
