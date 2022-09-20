@@ -1,10 +1,43 @@
-from variables_outcome import vaccination_date_X 
 from ast import And
 # Import codelists from codelists.py
 import codelists
 
 # import json module
 import json
+
+from cohortextractor import (
+  StudyDefinition,
+  patients,
+  codelist_from_csv,
+  codelist,
+  filter_codes_by_category,
+  combine_codelists,
+  params
+)
+
+from variables_outcome import vaccination_date_X 
+
+cohort = params["cohort"]
+matching_round = params["matching_round"]
+previousmatching_round = int(matching_round)-1
+index_date = params["index_date"]
+
+# import study dates defined in "./analysis/design.R" script
+with open("./lib/design/study-dates.json") as f:
+  study_dates = json.load(f)
+
+# change these in design.R if necessary
+start_date = study_dates[cohort]["start_date"]
+end_date = study_dates[cohort]["end_date"]
+
+
+# import study parameters defined in "./analysis/design.R" script  
+with open("./lib/design/study-params.json") as f:
+  study_params = json.load(f)
+
+minage = study_params[cohort]["minage"]
+maxage = study_params[cohort]["maxage"]
+treatment = study_params[cohort]["treatment"]
 
 
 
@@ -19,55 +52,35 @@ matching_variables = generate_matching_variables(index_date="index_date")
 ############################################################
 
 
-from cohortextractor import (
-  StudyDefinition,
-  patients,
-  codelist_from_csv,
-  codelist,
-  filter_codes_by_category,
-  combine_codelists,
-)
-
-
-# import study dates defined in "./lib/design/study-dates.R" script
-with open("./lib/design/study-dates.json") as f:
-  study_dates = json.load(f)
-
-# change these in design.R if necessary
-studystart_date = study_dates["over12start_date"] 
-studyend_date = study_dates["over12end_date"]
-
-
 # Specify study defeinition
 study = StudyDefinition(
   
   # Configure the expectations framework
   default_expectations={
-    "date": {"earliest": "2020-01-01", "latest": studyend_date},
+    "date": {"earliest": "2020-01-01", "latest": end_date},
     "rate": "uniform",
     "incidence": 0.2,
     "int": {"distribution": "normal", "mean": 1000, "stddev": 100},
     "float": {"distribution": "normal", "mean": 25, "stddev": 5},
   },
   
-  index_date = studystart_date,
+  index_date = index_date,
   
   # This line defines the study population
   population=patients.satisfying(
     f"""
       registered
       AND
-      age >= 12
+      age_aug21 >= {minage}
       AND
-      age <= 15
+      age_aug21 <= {maxage}
       AND
-      (
-      NOT has_died
-      )
+      (NOT has_died)
       AND
-      NOT wchild
+      (NOT child_atrisk)
     """,
-    # we define baseline variables on the day _before_ the study date (start date = day of first possible booster vaccination)
+    #NOT (covid_vax_any_1_date <= index_date) # doesn't work for some reason `unknown colunm : index_date`
+    #previouslymatched = patients.which_exist_in_file(f_path="output/match/cumulative_matchedcontrols{matching_round}.csv.gz"),
   ),
   
   **vaccination_date_X(

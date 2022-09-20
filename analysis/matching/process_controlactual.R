@@ -38,7 +38,7 @@ if(length(args)==0){
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
-  matching_round <- as.integer("1")
+  matching_round <- as.integer("1")version
 } else {
   removeobjects <- TRUE
   cohort <- args[[1]]
@@ -56,13 +56,13 @@ matching_round_date <- dates$control_extract_dates[matching_round]
 
 
 ## create output directory ----
-fs::dir_create(ghere("output", cohort, "matchround{matching_round}", "actual"))
+fs::dir_create(here("output", cohort, "matchround{matching_round}", "actual"))
 
 
 # Import and process data ----
 
 ## trial info for potential matches in round X
-data_potential_matchstatus <- read_rds(ghere("output", cohort, "matchround{matching_round}", "potential", "data_potential_matchstatus.rds")) %>% filter(matched==1L)
+data_potential_matchstatus <- read_rds(here("output", cohort, "matchround{matching_round}", "potential", "data_potential_matchstatus.rds")) %>% filter(matched==1L)
 
 # use externally created dummy data if not running in the server
 if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
@@ -70,7 +70,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
   
-  data_studydef_dummy <- read_feather(ghere("output", cohort,  "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
+  data_studydef_dummy <- read_feather(here("output", cohort,  "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), ~ as.Date(.))) %>%
     # because of a bug in cohort extractor -- remove once pulled new version
@@ -78,7 +78,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
   
   # just reuse previous extraction for dummy run, dummy_control_potential1.feather
   # and change a few variables to simulate new index dates
-  data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}.feather")) %>%
+  data_custom_dummy <- read_feather(here("lib", "dummydata", "dummy_control_potential1_{cohort}.feather")) %>%
     filter(patient_id %in% data_potential_matchstatus[(data_potential_matchstatus$treated==0L),]$patient_id) %>%
     mutate(
       region = if_else(runif(n())<0.05, sample(x=unique(region), size=n(), replace=TRUE), region),
@@ -126,7 +126,7 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")){
 
 
 } else {
-  data_extract <- read_feather(ghere("output", cohort, "matchround{matching_round}", "extract", glue("input_controlactual.feather"))) %>%
+  data_extract <- read_feather(here("output", cohort, "matchround{matching_round}", "extract", glue("input_controlactual.feather"))) %>%
     #because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"),  as.Date)) %>% 
     mutate(treated=0L) %>%
@@ -201,7 +201,7 @@ data_control <- data_criteria %>%
 data_treated <- 
   left_join(
     data_potential_matchstatus %>% filter(treated==1L),
-    read_rds(ghere("output", cohort, "treated", "data_treatedeligible.rds")) %>% select(-any_of(events_lookup$event_var)),
+    read_rds(here("output", cohort, "treated", "data_treatedeligible.rds")) %>% select(-any_of(events_lookup$event_var)),
     by="patient_id"
   )
 
@@ -330,7 +330,7 @@ print(glue("{sum(data_successful_matchstatus$treated)} matched-pairs kept out of
 if(matching_round>1){
   
   data_matchstatusprevious <- 
-    read_rds(ghere("output", cohort, "matchround{matching_round-1}", "actual", "data_matchstatus_allrounds.rds"))
+    read_rds(here("output", cohort, "matchround{matching_round-1}", "actual", "data_matchstatus_allrounds.rds"))
   
   data_matchstatus_allrounds <- 
     data_successful_matchstatus %>% 
@@ -341,7 +341,7 @@ if(matching_round>1){
     data_successful_matchstatus
 }
 
-write_rds(data_matchstatus_allrounds, ghere("output", cohort, "matchround{matching_round}", "actual", "data_matchstatus_allrounds.rds"), compress="gz")
+write_rds(data_matchstatus_allrounds, here("output", cohort, "matchround{matching_round}", "actual", "data_matchstatus_allrounds.rds"), compress="gz")
 
 
 # output all control patient ids for finalmatched study definition
@@ -350,7 +350,7 @@ data_matchstatus_allrounds %>%
     trial_date=as.character(trial_date)
   ) %>%
   filter(treated==0L) %>% #only interested in controls as all
-  write_csv(ghere("output", cohort, "matchround{matching_round}", "actual", "cumulative_matchedcontrols.csv.gz"))
+  write_csv(here("output", cohort, "matchround{matching_round}", "actual", "cumulative_matchedcontrols.csv.gz"))
 
 ## size of dataset
 print("data_matchstatus_allrounds treated/untreated numbers")
@@ -364,7 +364,7 @@ data_matchstatus_allrounds %>% group_by(treated, patient_id) %>%
   print()
 
 
-write_rds(data_successful_match %>% filter(treated==0L), ghere("output", cohort, "matchround{matching_round}", "actual", "data_successful_matchedcontrols.rds"), compress="gz")
+write_rds(data_successful_match %>% filter(treated==0L), here("output", cohort, "matchround{matching_round}", "actual", "data_successful_matchedcontrols.rds"), compress="gz")
 
 ## size of dataset
 print("data_successful_match treated/untreated numbers")

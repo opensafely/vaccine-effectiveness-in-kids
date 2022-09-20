@@ -72,7 +72,7 @@ action_1matchround <- function(cohort, matching_round) {
       name = glue("extract_controlpotential_{cohort}_{matching_round}"),
       run = glue(
         "cohortextractor:latest generate_cohort",
-        " --study-definition study_definition_controlpotential",
+        " --study-definition study_definition_control_potential",
         " --output-file output/{cohort}/matchround{matching_round}/extract/input_controlpotential.feather",
         " --param cohort={cohort}",
         " --param matching_round={matching_round}",
@@ -309,14 +309,12 @@ actions_list <- splice(
   ),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
-    "Extract and match",
-    "# # # # # # # # # # # # # # # # # # #"
+    "Extract and match"
   ),
   action_extract_and_match("over12", n_matching_rounds),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
-    "Model",
-    "# # # # # # # # # # # # # # # # # # #"
+    "Model"
   ),
   action_km("over12", "all", "postest"),
   action_km("over12", "all", "emergency"),
@@ -325,6 +323,33 @@ actions_list <- splice(
   action_km("over12", "all", "covidcritcare"),
   action_km("over12", "all", "coviddeath"),
   action_km("over12", "all", "noncoviddeath"),
+
+  # action_km_combine("over12"),
+
+  # action_release("over12"),
+
+
+  comment(
+    "# # # # # # # # # # # # # # # # # # #",
+    "Under 12s cohort",
+    "# # # # # # # # # # # # # # # # # # #"
+  ),
+  comment(
+    "# # # # # # # # # # # # # # # # # # #",
+    "Extract and match"
+  ),
+  action_extract_and_match("under12", n_matching_rounds),
+  comment(
+    "# # # # # # # # # # # # # # # # # # #",
+    "Model"
+  ),
+  action_km("under12", "all", "postest"),
+  action_km("under12", "all", "emergency"),
+  action_km("under12", "all", "covidemergency"),
+  action_km("under12", "all", "covidadmitted"),
+  action_km("under12", "all", "covidcritcare"),
+  action_km("under12", "all", "coviddeath"),
+  action_km("under12", "all", "noncoviddeath"),
 
   # action_km_combine("over12"),
 
