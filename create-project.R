@@ -390,6 +390,8 @@ actions_list <- splice(
     needs = namelesslst(
       glue("combine_km_over12"),
       glue("combine_km_under12"),
+      glue("table1_over12"),
+      glue("table1_under12"),
     ),
     highly_sensitive = lst(
       txt = glue("output/release/*.txt"),
