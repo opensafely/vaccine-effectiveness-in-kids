@@ -13,7 +13,7 @@ library('survival')
 
 ## post-matching ----
 
-for(cohort in c("over12", "under12")){
+for(cohort in c("over12")){
 
   input_dir <- ghere("output", cohort, "models", "km", "combined")
   output_dir <- here("output", "release-objects", cohort)
@@ -22,7 +22,7 @@ for(cohort in c("over12", "under12")){
 
   ## table1 ----
 
-  fs::file_copy(here("output", cohort, "table1", "match_coverage.csv"), fs::path(output_dir, "match_coverage.csv"), overwrite = TRUE)
+  fs::file_copy(here("output", cohort, "table1", "coverage.csv"), fs::path(output_dir, "coverage.csv"), overwrite = TRUE)
   fs::file_copy(here("output", cohort, "table1", "table1.csv"), fs::path(output_dir, "table1.csv"), overwrite = TRUE)
   # fs::file_copy(here("output", cohort, "table1", "flowchart.csv"), fs::path(output_dir, "match_flowchart.csv"), overwrite = TRUE)
 

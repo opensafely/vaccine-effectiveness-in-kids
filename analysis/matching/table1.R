@@ -109,7 +109,7 @@ data_coverage_rounded <-
     n = diff(c(0,cumuln)),
   )
 
-write_csv(data_coverage_rounded, fs::path(output_dir, "data_coverage.csv"))
+write_csv(data_coverage_rounded, fs::path(output_dir, "coverage.csv"))
 
 
 
