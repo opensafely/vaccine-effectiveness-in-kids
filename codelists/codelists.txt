@@ -44,6 +44,8 @@ primis-covid19-vacc-uptake/ckd35/74366211
 primis-covid19-vacc-uptake/astadm/13d0ae0b
 primis-covid19-vacc-uptake/ast/2ce02140
 primis-covid19-vacc-uptake/astrx/6f2f876e
+primis-covid19-vacc-uptake/astrxm1/v1.5.3
+primis-covid19-vacc-uptake/astrxm2/v1.5.3
 primis-covid19-vacc-uptake/resp_cov/608c6ec8
 primis-covid19-vacc-uptake/diab/6095d7c5
 primis-covid19-vacc-uptake/dmres/64648796

@@ -276,6 +276,18 @@
       "downloaded_at": "2022-07-19 13:23:38.204602Z",
       "sha": "509ff19b1767ae97a845fed67e92a241bc743a7d"
     },
+    "primis-covid19-vacc-uptake-astrxm1.csv": {
+      "id": "primis-covid19-vacc-uptake/astrxm1/v1.5.3",
+      "url": "https://codelists.opensafely.org/codelist/primis-covid19-vacc-uptake/astrxm1/v1.5.3/",
+      "downloaded_at": "2022-09-15 16:26:44.784478Z",
+      "sha": "de273df54d8c80e6457494da8d4f6da1b3600045"
+    },
+    "primis-covid19-vacc-uptake-astrxm2.csv": {
+      "id": "primis-covid19-vacc-uptake/astrxm2/v1.5.3",
+      "url": "https://codelists.opensafely.org/codelist/primis-covid19-vacc-uptake/astrxm2/v1.5.3/",
+      "downloaded_at": "2022-09-15 16:26:45.021288Z",
+      "sha": "fbb45446f0f5be328ffd792eae223ee98673050e"
+    },
     "primis-covid19-vacc-uptake-resp_cov.csv": {
       "id": "primis-covid19-vacc-uptake/resp_cov/608c6ec8",
       "url": "https://codelists.opensafely.org/codelist/primis-covid19-vacc-uptake/resp_cov/608c6ec8/",
