@@ -310,7 +310,7 @@ actions:
     - km_over12_prior_covid_infection_noncoviddeath
     outputs:
       moderately_sensitive:
-        rds: output/over12/models/km/combined/*.rds
+        rds: output/over12/models/km/combined/*.csv
         png: output/over12/models/km/combined/*.png
 
   ## # # # # # # # # # # # # # # # # # # # 
@@ -611,7 +611,7 @@ actions:
     - km_under12_prior_covid_infection_noncoviddeath
     outputs:
       moderately_sensitive:
-        rds: output/under12/models/km/combined/*.rds
+        rds: output/under12/models/km/combined/*.csv
         png: output/under12/models/km/combined/*.png
 
   ## # # # # # # # # # # # # # # # # # # # 
