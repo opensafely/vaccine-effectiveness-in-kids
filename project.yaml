@@ -619,15 +619,13 @@ actions:
   ## # # # # # # # # # # # # # # # # # # # 
 
   release:
-    run: r:latest analysis/release_objects.R over12
+    run: r:latest analysis/release_objects.R
     needs:
     - combine_km_over12
-    - combine_km_under12
     - table1_over12
-    - table1_under12
     outputs:
       highly_sensitive:
-        txt: output/release/*.txt
+        txt: output/meta-release/*.txt
         csv: output/release/*.csv
 
   ## #### End #### 
