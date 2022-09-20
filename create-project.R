@@ -386,15 +386,14 @@ actions_list <- splice(
   action(
     name = "release",
     run = glue("r:latest analysis/release_objects.R"),
-    arguments = c(cohort),
     needs = namelesslst(
       glue("combine_km_over12"),
-      glue("combine_km_under12"),
       glue("table1_over12"),
-      glue("table1_under12"),
+#      glue("combine_km_under12"),
+#      glue("table1_under12"),
     ),
     highly_sensitive = lst(
-      txt = glue("output/release/*.txt"),
+      txt = glue("output/meta-release/*.txt"),
       csv = glue("output/release/*.csv"),
     ),
   ),

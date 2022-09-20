@@ -10,34 +10,46 @@ library('glue')
 library('survival')
 
 
+## Import custom user functions from lib
+source(here("lib", "functions", "utility.R"))
+
+## Import design elements
+source(here("analysis", "design.R"))
+
 
 ## post-matching ----
 
-for(cohort in c("over12", "under12")){
+output_dir <- here("output", "release")
+fs::dir_create(output_dir)
+
+#for(cohort in c("over12", "under12")){
+for(cohort in c("over12")){
 
   input_dir <- ghere("output", cohort, "models", "km", "combined")
-  output_dir <- here("output", "release-objects", cohort)
-  fs::dir_create(output_dir)
+  
 
 
   ## table1 ----
 
-  fs::file_copy(here("output", cohort, "table1", "coverage.csv"), fs::path(output_dir, "coverage.csv"), overwrite = TRUE)
-  fs::file_copy(here("output", cohort, "table1", "table1.csv"), fs::path(output_dir, "table1.csv"), overwrite = TRUE)
-  # fs::file_copy(here("output", cohort, "table1", "flowchart.csv"), fs::path(output_dir, "match_flowchart.csv"), overwrite = TRUE)
+  fs::file_copy(here("output", cohort, "table1", "coverage.csv"), fs::path(output_dir, glue("{cohort}_coverage.csv")), overwrite = TRUE)
+  fs::file_copy(here("output", cohort, "table1", "table1.csv"), fs::path(output_dir, glue("{cohort}_table1.csv")), overwrite = TRUE)
+  # fs::file_copy(here("output", cohort, "table1", "flowchart.csv"), fs::path(output_dir, glue("{cohort}_flowchart.csv")), overwrite = TRUE)
 
   ## KM ----
-  fs::file_copy(fs::file_path(input_dir, "km_estimates_rounded.csv"), fs::path(output_dir, "km_estimates_rounded.csv"), overwrite = TRUE)
-  fs::file_copy(fs::file_path(input_dir, "contrasts_cuts_rounded.csv"), fs::path(output_dir, "contrasts_cuts_rounded.csv"), overwrite = TRUE)
-  fs::file_copy(fs::file_path(input_dir, "contrasts_overall_rounded.csv"), fs::path(output_dir, "contrasts_overall_rounded.csv"), overwrite = TRUE)
+  fs::file_copy(fs::path(input_dir, "km_estimates_rounded.csv"), fs::path(output_dir, glue("{cohort}_km_estimates_rounded.csv")), overwrite = TRUE)
+  fs::file_copy(fs::path(input_dir, "contrasts_cuts_rounded.csv"), fs::path(output_dir, glue("{cohort}_contrasts_cuts_rounded.csv")), overwrite = TRUE)
+  fs::file_copy(fs::path(input_dir, "contrasts_overall_rounded.csv"), fs::path(output_dir, glue("{cohort}_contrasts_overall_rounded.csv")), overwrite = TRUE)
 }
+
+
+fs::dir_create(here("output", "meta-release"))
 
 ## create text for output review issue ----
 fs::dir_ls(here("output", "release-objects"), type="file", recurse=TRUE) %>%
   map_chr(~str_remove(., fixed(here()))) %>%
   map_chr(~paste0("- [ ] ", str_remove(.,fixed("/")))) %>%
   paste(collapse="\n") %>%
-  writeLines(here("output", "files-for-release.txt"))
+  writeLines(here("output", "meta-release", "files-for-release.txt"))
 
 
 ## create command for releasing using osrelease ----
@@ -46,5 +58,5 @@ fs::dir_ls(here("output", "release-objects"), type="file", recurse=TRUE) %>%
   #map_chr(~paste0("'",. ,"'")) %>%
   paste(., collapse=" ") %>%
   paste("osrelease", .) %>%
-  writeLines(here("output", "osrelease-command.txt"))
+  writeLines(here("output", "meta-release", "osrelease-command.txt"))
 
