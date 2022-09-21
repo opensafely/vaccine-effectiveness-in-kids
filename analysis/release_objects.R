@@ -35,6 +35,7 @@ for(cohort in c("over12", "under12")){
 
   ## KM ----
   fs::file_copy(fs::path(input_dir, "km_estimates_rounded.csv"), fs::path(output_dir, glue("{cohort}_km_estimates_rounded.csv")), overwrite = TRUE)
+  fs::file_copy(fs::path(input_dir, "contrasts_daily_rounded.csv"), fs::path(output_dir, glue("{cohort}_contrasts_daily_rounded.csv")), overwrite = TRUE)
   fs::file_copy(fs::path(input_dir, "contrasts_cuts_rounded.csv"), fs::path(output_dir, glue("{cohort}_contrasts_cuts_rounded.csv")), overwrite = TRUE)
   fs::file_copy(fs::path(input_dir, "contrasts_overall_rounded.csv"), fs::path(output_dir, glue("{cohort}_contrasts_overall_rounded.csv")), overwrite = TRUE)
 }
