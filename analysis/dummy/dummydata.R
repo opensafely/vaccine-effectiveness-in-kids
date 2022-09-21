@@ -20,12 +20,13 @@ nthmax <- function(x, n=1){
 
 source(here("analysis", "design.R"))
 
-cohort <- "over12"
+cohort <- "under12"
 
 dates <- map(study_dates[[cohort]], as.Date)
 params <- study_params[[cohort]]
 
-
+minage <- params$minage
+maxage <- params$maxage
 start_date <- as.Date(dates$start_date)
 end_date <- as.Date(dates$end_date)
 followupend_date <- as.Date(dates$followupend_date)
@@ -41,6 +42,7 @@ first_pfizerA_day <- as.integer(first_pfizerA_date - index_date)
 first_pfizerC_day <- as.integer(first_pfizerC_date - index_date)
 
 known_variables <- c(
+  "minage", "maxage",
   "index_date", "start_date", "end_date", "first_pfizerA_date", "first_pfizerC_date",
   "index_day",  "start_day", "end_day", "first_pfizerA_day", "first_pfizerC_day"
 )
@@ -57,7 +59,7 @@ sim_list_pre = lst(
   # ),
   # 
   age = bn_node(
-    ~as.integer(rnorm(n=..n, mean=10, sd=2))
+    ~as.integer(runif(n=..n, minage, maxage))
   ),
   
   age_aug21 = bn_node(
