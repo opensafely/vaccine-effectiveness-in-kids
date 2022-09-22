@@ -182,7 +182,7 @@ data_surv <-
   ) %>% select(
     !!subgroup_sym, treated, time, lagtime, leadtime, interval,
     cml.event, cml.censor,
-    n.risk, n.risk2, n.event, n.censor,
+    n.risk, n.event, n.censor,
     surv, surv.se, surv.ll, surv.ul,
     risk, risk.se, risk.ll, risk.ul
   ) 
