@@ -628,7 +628,7 @@ actions:
     - combine_km_under12
     - table1_under12
     outputs:
-      highly_sensitive:
+      moderately_sensitive:
         txt: output/meta-release/*.txt
         csv: output/release/*.csv
 
