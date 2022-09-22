@@ -85,7 +85,7 @@ actions:
   extract_controlpotential_over12_2:
     run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
       --output-file output/over12/matchround2/extract/input_controlpotential.feather
-      --param cohort=over12 --param matching_round=2 --param index_date=2021-10-04
+      --param cohort=over12 --param matching_round=2 --param index_date=2021-10-11
     needs:
     - process_controlactual_over12_1
     outputs:
@@ -134,12 +134,116 @@ actions:
         rds: output/over12/matchround2/actual/*.rds
         csv: output/over12/matchround2/actual/*.csv.gz
 
+  extract_controlpotential_over12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/over12/matchround3/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=3 --param index_date=2021-11-01
+    needs:
+    - process_controlactual_over12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/over12/matchround3/extract/input_controlpotential.feather
+
+  process_controlpotential_over12_3:
+    run: r:latest analysis/matching/process_controlpotential.R over12 3
+    needs:
+    - extract_controlpotential_over12_3
+    outputs:
+      highly_sensitive:
+        rds: output/over12/matchround3/process/*.rds
+
+  match_potential_over12_3:
+    run: r:latest analysis/matching/match_potential.R over12 3
+    needs:
+    - process_treated_over12
+    - process_controlpotential_over12_3
+    - process_controlactual_over12_2
+    outputs:
+      highly_sensitive:
+        rds: output/over12/matchround3/potential/*.rds
+        csv: output/over12/matchround3/potential/*.csv.gz
+
+  extract_controlactual_over12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/over12/matchround3/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=3
+    needs:
+    - match_potential_over12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/over12/matchround3/extract/input_controlactual.feather
+
+  process_controlactual_over12_3:
+    run: r:latest analysis/matching/process_controlactual.R over12 3
+    needs:
+    - process_treated_over12
+    - match_potential_over12_3
+    - extract_controlpotential_over12_3
+    - extract_controlactual_over12_3
+    - process_controlactual_over12_2
+    outputs:
+      highly_sensitive:
+        rds: output/over12/matchround3/actual/*.rds
+        csv: output/over12/matchround3/actual/*.csv.gz
+
+  extract_controlpotential_over12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/over12/matchround4/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=4 --param index_date=2021-11-22
+    needs:
+    - process_controlactual_over12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/over12/matchround4/extract/input_controlpotential.feather
+
+  process_controlpotential_over12_4:
+    run: r:latest analysis/matching/process_controlpotential.R over12 4
+    needs:
+    - extract_controlpotential_over12_4
+    outputs:
+      highly_sensitive:
+        rds: output/over12/matchround4/process/*.rds
+
+  match_potential_over12_4:
+    run: r:latest analysis/matching/match_potential.R over12 4
+    needs:
+    - process_treated_over12
+    - process_controlpotential_over12_4
+    - process_controlactual_over12_3
+    outputs:
+      highly_sensitive:
+        rds: output/over12/matchround4/potential/*.rds
+        csv: output/over12/matchround4/potential/*.csv.gz
+
+  extract_controlactual_over12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/over12/matchround4/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=4
+    needs:
+    - match_potential_over12_4
+    outputs:
+      highly_sensitive:
+        cohort: output/over12/matchround4/extract/input_controlactual.feather
+
+  process_controlactual_over12_4:
+    run: r:latest analysis/matching/process_controlactual.R over12 4
+    needs:
+    - process_treated_over12
+    - match_potential_over12_4
+    - extract_controlpotential_over12_4
+    - extract_controlactual_over12_4
+    - process_controlactual_over12_3
+    outputs:
+      highly_sensitive:
+        rds: output/over12/matchround4/actual/*.rds
+        csv: output/over12/matchround4/actual/*.csv.gz
+
   extract_controlfinal_over12:
     run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
       --output-file output/over12/extract/input_controlfinal.feather --param cohort=over12
-      --param n_matching_rounds=2
+      --param n_matching_rounds=4
     needs:
-    - process_controlactual_over12_2
+    - process_controlactual_over12_4
     outputs:
       highly_sensitive:
         extract: output/over12/extract/input_controlfinal.feather
@@ -149,6 +253,8 @@ actions:
     needs:
     - process_controlactual_over12_1
     - process_controlactual_over12_2
+    - process_controlactual_over12_3
+    - process_controlactual_over12_4
     - extract_controlfinal_over12
     - process_treated_over12
     outputs:
@@ -387,7 +493,7 @@ actions:
   extract_controlpotential_under12_2:
     run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
       --output-file output/under12/matchround2/extract/input_controlpotential.feather
-      --param cohort=under12 --param matching_round=2 --param index_date=2022-04-18
+      --param cohort=under12 --param matching_round=2 --param index_date=2022-04-25
     needs:
     - process_controlactual_under12_1
     outputs:
@@ -436,12 +542,116 @@ actions:
         rds: output/under12/matchround2/actual/*.rds
         csv: output/under12/matchround2/actual/*.csv.gz
 
+  extract_controlpotential_under12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/under12/matchround3/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=3 --param index_date=2022-05-16
+    needs:
+    - process_controlactual_under12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/under12/matchround3/extract/input_controlpotential.feather
+
+  process_controlpotential_under12_3:
+    run: r:latest analysis/matching/process_controlpotential.R under12 3
+    needs:
+    - extract_controlpotential_under12_3
+    outputs:
+      highly_sensitive:
+        rds: output/under12/matchround3/process/*.rds
+
+  match_potential_under12_3:
+    run: r:latest analysis/matching/match_potential.R under12 3
+    needs:
+    - process_treated_under12
+    - process_controlpotential_under12_3
+    - process_controlactual_under12_2
+    outputs:
+      highly_sensitive:
+        rds: output/under12/matchround3/potential/*.rds
+        csv: output/under12/matchround3/potential/*.csv.gz
+
+  extract_controlactual_under12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/under12/matchround3/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=3
+    needs:
+    - match_potential_under12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/under12/matchround3/extract/input_controlactual.feather
+
+  process_controlactual_under12_3:
+    run: r:latest analysis/matching/process_controlactual.R under12 3
+    needs:
+    - process_treated_under12
+    - match_potential_under12_3
+    - extract_controlpotential_under12_3
+    - extract_controlactual_under12_3
+    - process_controlactual_under12_2
+    outputs:
+      highly_sensitive:
+        rds: output/under12/matchround3/actual/*.rds
+        csv: output/under12/matchround3/actual/*.csv.gz
+
+  extract_controlpotential_under12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/under12/matchround4/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=4 --param index_date=2022-06-06
+    needs:
+    - process_controlactual_under12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/under12/matchround4/extract/input_controlpotential.feather
+
+  process_controlpotential_under12_4:
+    run: r:latest analysis/matching/process_controlpotential.R under12 4
+    needs:
+    - extract_controlpotential_under12_4
+    outputs:
+      highly_sensitive:
+        rds: output/under12/matchround4/process/*.rds
+
+  match_potential_under12_4:
+    run: r:latest analysis/matching/match_potential.R under12 4
+    needs:
+    - process_treated_under12
+    - process_controlpotential_under12_4
+    - process_controlactual_under12_3
+    outputs:
+      highly_sensitive:
+        rds: output/under12/matchround4/potential/*.rds
+        csv: output/under12/matchround4/potential/*.csv.gz
+
+  extract_controlactual_under12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/under12/matchround4/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=4
+    needs:
+    - match_potential_under12_4
+    outputs:
+      highly_sensitive:
+        cohort: output/under12/matchround4/extract/input_controlactual.feather
+
+  process_controlactual_under12_4:
+    run: r:latest analysis/matching/process_controlactual.R under12 4
+    needs:
+    - process_treated_under12
+    - match_potential_under12_4
+    - extract_controlpotential_under12_4
+    - extract_controlactual_under12_4
+    - process_controlactual_under12_3
+    outputs:
+      highly_sensitive:
+        rds: output/under12/matchround4/actual/*.rds
+        csv: output/under12/matchround4/actual/*.csv.gz
+
   extract_controlfinal_under12:
     run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
       --output-file output/under12/extract/input_controlfinal.feather --param cohort=under12
-      --param n_matching_rounds=2
+      --param n_matching_rounds=4
     needs:
-    - process_controlactual_under12_2
+    - process_controlactual_under12_4
     outputs:
       highly_sensitive:
         extract: output/under12/extract/input_controlfinal.feather
@@ -451,6 +661,8 @@ actions:
     needs:
     - process_controlactual_under12_1
     - process_controlactual_under12_2
+    - process_controlactual_under12_3
+    - process_controlactual_under12_4
     - extract_controlfinal_under12
     - process_treated_under12
     outputs:

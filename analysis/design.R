@@ -16,7 +16,7 @@ fs::dir_create(here("lib", "design"))
 
 # number of matching rounds to perform
 
-n_matching_rounds <- 2
+n_matching_rounds <- 4
 
 
 # define key dates ----
@@ -34,7 +34,7 @@ study_dates <- lst(
   )
 )
 
-extract_increment <- 14
+extract_increment <- 21
 
 study_dates$over12$control_extract_dates = as.Date(study_dates$over12$start_date) + (0:26)*extract_increment
 study_dates$under12$control_extract_dates = as.Date(study_dates$under12$start_date) + (0:26)*extract_increment
