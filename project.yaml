@@ -162,7 +162,6 @@ actions:
     outputs:
       moderately_sensitive:
         csv: output/over12/table1/*.csv
-        png: output/over12/table1/*.png
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Model 
@@ -465,7 +464,6 @@ actions:
     outputs:
       moderately_sensitive:
         csv: output/under12/table1/*.csv
-        png: output/under12/table1/*.png
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Model 
