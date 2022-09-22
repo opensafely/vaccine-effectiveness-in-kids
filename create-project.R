@@ -392,7 +392,7 @@ actions_list <- splice(
       glue("combine_km_under12"),
       glue("table1_under12"),
     ),
-    highly_sensitive = lst(
+    moderately_sensitive = lst(
       txt = glue("output/meta-release/*.txt"),
       csv = glue("output/release/*.csv"),
     ),
