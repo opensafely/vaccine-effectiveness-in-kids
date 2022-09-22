@@ -6,13 +6,13 @@ import codelists
 specific_atrisk_date = "2020-07-01"
 
 def generate_inclusion_variables(index_date):
-    inclusion_variables = dict(
+  inclusion_variables = dict(
     
-    registered=patients.registered_as_of(
+    registered = patients.registered_as_of(
         index_date,
     ), 
 
-    has_died=patients.died_from_any_cause(
+    has_died = patients.died_from_any_cause(
       on_or_before=index_date,
       returning="binary_flag",
     ),
@@ -25,326 +25,304 @@ def generate_inclusion_variables(index_date):
         f"{index_date} - 1 day",
     ),
     
-    child_atrisk=patients.satisfying(
-        """
-        ATRISK_GROUP
-        OR
-        HHLD_IMDEF
-        OR
-        PREG1_GROUP
-        """,
-        HHLD_IMDEF=patients.with_these_clinical_events(
-            hhld_imdef_cod,
-            on_or_before="index_date - 1 day",
+    wchild = patients.satisfying(
+      """
+      atrisk_group
+      OR
+      hhld_imdef
+      """,
+        hhld_imdef = patients.with_these_clinical_events(
+            codelists.hhld_imdef_cod,
+            on_or_before=f"{index_date} - 1 day",
         ),
-        nulldate=patients.fixed_value("1902-01-01"),
-        ATRISK_GROUP=patients.satisfying(
+        ########## At risk
+        atrisk_group = patients.satisfying(
+          """
+          immunogroup
+          OR
+          ckd_group
+          OR
+          resp_group
+          OR
+          diab_group 
+          OR
+          cld
+          OR
+          cns_group
+          OR
+          chd_cov
+          OR
+          spln_cov
+          OR
+          learndis_1
+          OR
+          sevment_group
+          OR
+          preg1_group
+          """,
+          ##### patients with immunosuppression
+          immunogroup = patients.satisfying(
+          """
+          immdx_1
+          OR
+          immrx_1
+          OR
+          dxt_chemo
+          """,
+          ###  any immunosuppressant read code is recorded
+          immdx_1=patients.with_these_clinical_events(
+            codelists.immdx_cov_cod,
+            on_or_before=f"{index_date} - 1 day",
+          ),
+          ### any immunosuppression medication codes is recorded
+          # The medication code should be in the last 6 months, however to 
+          # prevent patients from dropping out of the audit as the vaccination 
+          # campaign progresses, we look back for medications from 01/07/2020.  
+          # This ensures that patients whose latest immunosuppressant medication 
+          # issue was originally within the 6 month timescale but then subsequently 
+          # exceeds it are still included in the at-risk group.
+          immrx_1=patients.with_these_clinical_events(
+            codelists.immrx_cod,
+            between=["2020-07-01", f"{index_date} - 1 day"],
+          ),
+          ### receiving chemotherapy or radiotherapy
+          dxt_chemo = patients.with_these_clinical_events(
+            codelists.dxt_chemo_cod ,
+            between=["2020-07-01", f"{index_date} - 1 day"],
+          ),
+          ),
+          # patients with chronic kidney disease
+          ckd_group= patients.satisfying(
+          """
+          ckd_cov
+          OR
+          (
+          ckd15
+          AND
+          ckd35_dat>=ckd15_dat 
+          )
+          """,
+          ### chronic kidney disease diagnostic codes
+          ckd_cov = patients.with_these_clinical_events(
+            codelists.ckd_cov_cod,
+            on_or_before=f"{index_date} - 1 day",
+          ),
+          ### chronic kidney disease codes - all stages
+          ckd15 = patients.with_these_clinical_events(
+            codelists.ckd15_cod,
+            on_or_before=f"{index_date} - 1 day",
+          ),
+          ### date of chronic kidney disease codes-stages 3 – 5  
+          ckd35_dat=patients.with_these_clinical_events(
+            codelists.ckd35_cod,
+          returning="date",
+          date_format="YYYY-MM-DD",
+          on_or_before=f"{index_date} - 1 day",
+          find_last_match_in_period=True,
+          ),
+          ### date of chronic kidney disease codes - all stages
+          ckd15_dat=patients.with_these_clinical_events(
+            codelists.ckd15_cod,
+          returning="date",
+          date_format="YYYY-MM-DD",
+          on_or_before=f"{index_date} - 1 day",
+          find_last_match_in_period=True,
+          ),
+          ),
+          ### patients who have chronic respiratory disease
+          resp_group = patients.satisfying(
+          """
+          ast_group
+          OR
+          resp_cov_1 
+          """,
+            ### patients with asthma 
+            ast_group= patients.satisfying(
             """
-            IMMUNOGROUP
+            astadm_1
             OR
-            CKD_GROUP
-            OR
-            RESP_GROUP
-            OR
-            DIAB_GROUP 
-            OR
-            CLD
-            OR
-            CNS_GROUP
-            OR
-            CHD_COV
-            OR
-            SPLN_COV
-            OR
-            LEARNDIS
-            OR
-            SEVMENT_GROUP
-            """,
-            ##### Patients with Immunosuppression
-            IMMUNOGROUP=patients.satisfying(
-                """
-                IMMDX
-                OR
-                IMMRX
-                OR
-                DXT_CHEMO
-                """,
-                ###  any immunosuppressant Read code is recorded
-                IMMDX=patients.with_these_clinical_events(
-                    immdx_cov_cod,
-                    find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
-                ),
-                ### any Immunosuppression medication codes is recorded
-                IMMRX=patients.with_these_clinical_events(
-                    immrx_cod,
-                    find_last_match_in_period=True,
-                    between=[specific_atrisk_date, "index_date - 1 day"],
-                ),
-                ### Receiving chemotherapy or radiotherapy
-                DXT_CHEMO=patients.with_these_clinical_events(
-                    dxt_chemo_cod,
-                    find_last_match_in_period=True,
-                    between=["index_date - 6 months", "index_date - 1 day"],
-                ),
-            ),
-            # Patients with Chronic Kidney Disease
-            # as per official COVID-19 vaccine reporting specification
-            # IF CKD_COV_DAT > NULL (diagnoses) | Select | Next
-            # IF CKD15_DAT = NULL  (No stages)   | Reject | Next
-            # IF CKD35_DAT>=CKD15_DAT            | Select | Reject
-            # (i.e. any diagnostic code, or most recent stage recorded >=3)
-            CKD_GROUP=patients.satisfying(
-                """
-                CKD_COV
-                OR
-                (
-                CKD15_DAT
-                AND
-                CKD15_DAT > nulldate
-                AND
-                CKD35_DAT
-                AND
-                CKD35_DAT > nulldate
-                AND
-                CKD15
-                AND
-                CKD35_DAT >= CKD15_DAT 
-                )
-                """,
-                ### Chronic kidney disease diagnostic codes
-                CKD_COV=patients.with_these_clinical_events(
-                    ckd_cov_cod,
-                    find_first_match_in_period=True,
-                    on_or_before="index_date - 1 day",
-                ),
-                ### Chronic kidney disease codes - all stages
-                CKD15=patients.with_these_clinical_events(
-                    ckd15_cod,
-                    find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
-                ),
-                ### date of Chronic kidney disease codes-stages 3 – 5
-                CKD35_DAT=patients.with_these_clinical_events(
-                    ckd35_cod,
-                    returning="date",
-                    find_last_match_in_period=True,
-                    date_format="YYYY-MM-DD",
-                    on_or_before="index_date - 1 day",
-                ),
-                ### date of Chronic kidney disease codes - all stages
-                CKD15_DAT=patients.with_these_clinical_events(
-                    ckd15_cod,
-                    returning="date",
-                    date_format="YYYY-MM-DD",
-                    on_or_before="index_date - 1 day",
-                    find_last_match_in_period=True,
-                ),
-            ),
-            ### Patients who have Chronic Respiratory Disease
-            RESP_GROUP=patients.satisfying(
-                """
-                AST_GROUP
-                OR
-                RESP_COV 
-                """,
-                ### Patients with Asthma
-                AST_GROUP=patients.satisfying(
-                    """
-                ASTADM
-                OR
-                (
-                AST
-                AND
-                ASTRXM1
-                AND
-                ASTRXM2 > 1
-                )
-                """,
-                    ### Asthma Admission codes
-                    ASTADM=patients.with_these_clinical_events(
-                        astadm_cod,
-                        find_last_match_in_period=True,
-                        between=["index_date - 730 days", "index_date - 1 day"],
-                    ),
-                    ### Asthma Diagnosis code
-                    AST=patients.with_these_clinical_events(
-                        ast_cod,
-                        find_first_match_in_period=True,
-                        on_or_before="index_date - 1 day",
-                    ),
-                    ### Asthma - inhalers in last 12 months
-                    ASTRXM1=patients.with_these_medications(
-                        astrxm1_cod,
-                        returning="binary_flag",
-                        between=["index_date - 365 days", "index_date - 1 day"],
-                    ),
-                    ### Asthma - systemic oral steroid prescription codes in last 24 months
-                    ASTRXM2=patients.with_these_medications(
-                        astrxm2_cod,
-                        returning="number_of_matches_in_period",
-                        between=["index_date - 730 days", "index_date - 1 day"],
-                    ),
-                ),
-                ### Chronic Respiratory Disease
-                RESP_COV=patients.with_these_clinical_events(
-                    resp_cov_cod,
-                    find_first_match_in_period=True,
-                    returning="binary_flag",
-                    on_or_before="index_date - 1 day",
-                ),
-            ),
-            ### Patients with Diabetes
-            DIAB_GROUP=patients.satisfying(
-                """
-                (
-                    DIAB_DAT
-                    AND
-                    DIAB_DAT > nulldate
-                    AND
-                    DIAB_DAT > DMRES_DAT
-                )
-                OR
-                ADDIS
-                OR
-                GDIAB_GROUP
-                """,
-                ### Date any Diabetes diagnosis Read code is recorded
-                DIAB_DAT=patients.with_these_clinical_events(
-                    diab_cod,
-                    returning="date",
-                    find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
-                    date_format="YYYY-MM-DD",
-                ),
-                ### Date of Diabetes resolved codes
-                DMRES_DAT=patients.with_these_clinical_events(
-                    dmres_cod,
-                    returning="date",
-                    find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
-                    date_format="YYYY-MM-DD",
-                ),
-                ### Addison’s disease & Pan-hypopituitary diagnosis codes
-                ADDIS=patients.with_these_clinical_events(
-                    addis_cod,
-                    find_last_match_in_period=True,
-                    returning="binary_flag",
-                    on_or_before="index_date - 1 day",
-                ),
-                ### Patients who are currently pregnant with gestational diabetes
-                GDIAB_GROUP=patients.satisfying(
-                    """
-                GDIAB
-                AND
-                PREG1_GROUP
-                """,
-                    ### Gestational Diabetes diagnosis codes
-                    GDIAB=patients.with_these_clinical_events(
-                        gdiab_cod,
-                        find_last_match_in_period=True,
-                        returning="binary_flag",
-                        between=["index_date - 254 days", "index_date - 1 day"],
-                    ),
-                    ### Patients who are currently pregnant
-                    PREG1_GROUP=patients.satisfying(
-                        """
-                    PREG
-                    AND
-                    PREG_DAT
-                    AND
-                    PREGDEL_DAT < PREG_DAT
-                    """,
-                        ### Pregnancy codes recorded in the 8.5 months before the audit run date
-                        PREG=patients.with_these_clinical_events(
-                            preg_cod,
-                            returning="binary_flag",
-                            between=["index_date - 254 days", "index_date - 1 day"],
-                        ),
-                        ### Pregnancy or Delivery codes recorded in the 8.5 months before audit run date
-                        PREGDEL_DAT=patients.with_these_clinical_events(
-                            pregdel_cod,
-                            returning="date",
-                            find_last_match_in_period=True,
-                            between=["index_date - 254 days", "index_date - 1 day"],
-                            date_format="YYYY-MM-DD",
-                        ),
-                        ### Date of pregnancy codes recorded in the 8.5 months before audit run date
-                        PREG_DAT=patients.with_these_clinical_events(
-                            preg_cod,
-                            returning="date",
-                            find_last_match_in_period=True,
-                            between=["index_date - 254 days", "index_date - 1 day"],
-                            date_format="YYYY-MM-DD",
-                        ),
-                    ),
-                ),
-            ),
-            ### Chronic Liver disease codes
-            CLD=patients.with_these_clinical_events(
-                cld_cod,
-                find_first_match_in_period=True,
-                returning="binary_flag",
-                on_or_before="index_date - 1 day",
-            ),
-            ### Patients with CNS Disease (including Stroke/TIA)
-            CNS_GROUP=patients.with_these_clinical_events(
-                cns_cov_cod,
-                find_first_match_in_period=True,
-                returning="binary_flag",
-                on_or_before="index_date - 1 day",
-            ),
-            ### Chronic heart disease codes
-            CHD_COV=patients.with_these_clinical_events(
-                chd_cov_cod,
-                find_first_match_in_period=True,
-                returning="binary_flag",
-                on_or_before="index_date - 1 day",
-            ),
-            ### Asplenia or Dysfunction of the Spleen codes
-            SPLN_COV=patients.with_these_clinical_events(
-                spln_cov_cod,
-                find_first_match_in_period=True,
-                returning="binary_flag",
-                on_or_before="index_date - 1 day",
-            ),
-            ### Wider Learning Disability
-            LEARNDIS=patients.with_these_clinical_events(
-                learndis_cod,
-                find_last_match_in_period=True,
-                returning="binary_flag",
-                on_or_before="index_date - 1 day",
-            ),
-            ### Patients with Severe Mental Health
-            SEVMENT_GROUP=patients.satisfying(
-                """
-            SEV_MENTAL_DAT
+            (
+            ast_1
             AND
-            SEV_MENTAL_DAT > nulldate
+            astrxm1_1
             AND
-            SEV_MENTAL_DAT > SMHRES_DAT
+            astrxm2_1 >= 2
+            )
             """,
-                ### date of Severe Mental Illness codes
-                SEV_MENTAL_DAT=patients.with_these_clinical_events(
-                    sev_mental_cod,
-                    returning="date",
-                    find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
-                    date_format="YYYY-MM-DD",
+              ### asthma admission codes
+              astadm_1 = patients.with_these_clinical_events(
+                  codelists.astadm_cod,
+                  between=[f"{index_date} - 730 days",f"{index_date} - 1 day"],
+              ),  
+              ### asthma diagnosis code
+              ast_1 = patients.with_these_clinical_events(
+                  codelists.ast_cod,
+                  on_or_before=f"{index_date} - 1 day",
+              ),  
+              ### asthma - inhalers in last 12 months
+              astrxm1_1=patients.with_these_medications(
+                  codelists.astrx_cod,
+                  returning="binary_flag",
+                  between=[f"{index_date} - 12 months", f"{index_date} - 1 day"],
                 ),
-                ### date of Remission codes relating to Severe Mental Illness
-                SMHRES_DAT=patients.with_these_clinical_events(
-                    smhres_cod,
-                    returning="date",
-                    find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
-                    date_format="YYYY-MM-DD",
+              ### asthma - systemic oral steroid prescription codes in last 24 months
+              astrxm2_1=patients.with_these_medications(
+                  codelists.astrx_cod,
+                  returning="number_of_matches_in_period",
+                  between=[f"{index_date} - 24 months", f"{index_date} - 1 day"],
                 ),
             ),
+          ### chronic respiratory disease
+          resp_cov_1 =patients.with_these_clinical_events(
+              codelists.resp_cov_cod,
+              returning="binary_flag",
+              on_or_before=f"{index_date} - 1 day",
+          ),
+          ),
+          ### patients with diabetes
+          diab_group = patients.satisfying(
+          """
+          (
+          diab
+          OR
+          diab_dat>dmres_dat
+          )
+          OR
+          addis
+          OR
+          gdiab_group
+          """,
+            diab = patients.with_these_clinical_events(
+              codelists.diab_cod,
+              returning="binary_flag",
+              on_or_before=f"{index_date} - 1 day",
+            ),
+            ### date any diabetes diagnosis read code is recorded
+            diab_dat=patients.with_these_clinical_events(
+              codelists.diab_cod,
+              returning="date",
+              find_last_match_in_period=True,
+              on_or_before=f"{index_date} - 1 day",
+              date_format="YYYY-MM-DD",
+            ),
+            ### date of diabetes resolved codes
+            dmres_dat=patients.with_these_clinical_events(
+              codelists.dmres_cod,
+              returning="date",
+              find_last_match_in_period=True,
+              on_or_before=f"{index_date} - 1 day",
+              date_format="YYYY-MM-DD",
+            ),
+            ### addison’s disease & pan-hypopituitary diagnosis codes
+            addis = patients.with_these_clinical_events(
+              codelists.addis_cod,
+              returning="binary_flag",
+              on_or_before=f"{index_date} - 1 day",
+            ),
+            ### patients who are currently pregnant with gestational diabetes 
+            gdiab_group = patients.satisfying(
+            """
+            gdiab
+            AND
+            preg1_group
+            """,
+              ### gestational diabetes diagnosis codes
+              gdiab =  patients.with_these_clinical_events(
+                codelists.gdiab_cod,
+                returning="binary_flag",
+                between=[f"{index_date} - 254 days",f"{index_date} - 1 day"],
+              ),
+              ### patients who are currently pregnant 
+              preg1_group = patients.satisfying(
+                """
+                preg
+                AND
+                pregdel_dat < preg_dat
+                """,
+                  ### pregnancy codes recorded
+                  preg =  patients.with_these_clinical_events(
+                  codelists.preg_cod,
+                  returning="binary_flag",
+                    ### Pregnancy codes recorded in the 8.5 months before the audit run date
+                  between=[f"{index_date} - 254 days", f"{index_date} - 1 days"],
+                  ),
+                  ### pregnancy or delivery codes 
+                  pregdel_dat=patients.with_these_clinical_events(
+                  codelists.pregdel_cod,
+                  returning="date",
+                  find_last_match_in_period=True,
+                  between=[f"{index_date} - 254 days", f"{index_date} - 1 days"],
+                  date_format="YYYY-MM-DD",
+                  ),
+                  ### date of pregnancy codes recorded
+                  # (Pregnancy or Delivery codes recorded in the 8.5 months before audit run date)
+                  preg_dat=patients.with_these_clinical_events(
+                  codelists.preg_cod,
+                  returning="date",
+                  find_last_match_in_period=True,
+                  between=[f"{index_date} - 254 days", f"{index_date} - 1 days"],
+                  date_format="YYYY-MM-DD",
+                  ),
+              ),
+            ),
+          ),  
+          ### chronic liver disease codes
+          cld = patients.with_these_clinical_events(
+            codelists.cld_cod,
+            returning="binary_flag",
+            on_or_before=f"{index_date} - 1 day",
+          ),
+          ### patients with cns disease (including stroke/tia)
+          cns_group= patients.with_these_clinical_events(
+            codelists.cns_cov_cod,
+            returning="binary_flag",
+            on_or_before=f"{index_date} - 1 day",
+          ),  
+          ### chronic heart disease codes
+          chd_cov = patients.with_these_clinical_events(
+            codelists.chd_cov_cod,
+            returning="binary_flag",
+            on_or_before=f"{index_date} - 1 day",
+          ),  
+          ### asplenia or dysfunction of the spleen codes
+          spln_cov= patients.with_these_clinical_events(
+              codelists.spln_cov_cod,
+              returning="binary_flag",
+              on_or_before=f"{index_date} - 1 day",
+          ),  
+          ### wider learning disability
+          learndis_1 = patients.with_these_clinical_events(
+              codelists.learndis_cod,
+              returning="binary_flag",
+              on_or_before=f"{index_date} - 1 day",
+          ),
+          ### patients with severe mental health
+          sevment_group = patients.satisfying(
+          """
+          sev_mental_dat > smhres_dat
+          """,
+          ### date of severe mental illness codes
+          sev_mental_dat=   patients.with_these_clinical_events(
+              codelists.sev_mental_cod,
+              returning="date",
+              find_last_match_in_period=True,
+              on_or_before=f"{index_date} - 1 day",
+              date_format="YYYY-MM-DD",
+          ),
+          ### date of remission codes relating to severe mental illness
+          smhres_dat=   patients.with_these_clinical_events(
+            codelists.smhres_cod,
+            returning="date",
+            find_last_match_in_period=True,
+            on_or_before=f"{index_date} - 1 day",
+            date_format="YYYY-MM-DD",
+          ),
         ),
+      ),
     ),
-          ########## end of at risk criteria
-
-    )
-    return inclusion_variables
+    ########## end of at risk criteria
+    
+          
+  )
+  return inclusion_variables
 

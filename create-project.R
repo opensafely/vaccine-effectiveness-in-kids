@@ -72,7 +72,7 @@ action_1matchround <- function(cohort, matching_round) {
       name = glue("extract_controlpotential_{cohort}_{matching_round}"),
       run = glue(
         "cohortextractor:latest generate_cohort",
-        " --study-definition study_definition_control_potential",
+        " --study-definition study_definition_controlpotential",
         " --output-file output/{cohort}/matchround{matching_round}/extract/input_controlpotential.feather",
         " --param cohort={cohort}",
         " --param matching_round={matching_round}",
@@ -235,13 +235,13 @@ action_extract_and_match <- function(cohort, n_matching_rounds) {
 action_km <- function(cohort, subgroup, outcome) {
   action(
     name = glue("km_{cohort}_{subgroup}_{outcome}"),
-    run = glue("r:latest analysis/km.R"),
+    run = glue("r:latest analysis/model/km.R"),
     arguments = c(cohort, subgroup, outcome),
     needs = namelesslst(
       glue("process_controlfinal_{cohort}"),
     ),
     moderately_sensitive = lst(
-      csv = glue("output/{cohort}/models/km/{subgroup}/{outcome}/*.csv"),
+      # csv= glue("output/{cohort}/models/km/{subgroup}/{outcome}/*.csv"),
       rds = glue("output/{cohort}/models/km/{subgroup}/{outcome}/*.rds"),
       png = glue("output/{cohort}/models/km/{subgroup}/{outcome}/*.png"),
     )
@@ -249,37 +249,40 @@ action_km <- function(cohort, subgroup, outcome) {
 }
 
 ## model action function ----
-action_km_combine <- function(cohort, subgroup, outcome) {
-  dash <- if (paste0(subgroup_levels, collapse = "") == "") "" else "-"
+action_km_combine <- function(cohort) {
   action(
-    name = glue("combine_km_{cohort}_{subgroup}_{outcome}"),
-    run = glue("r:latest analysis/km_combine.R"),
-    arguments = c(cohort, subgroup, outcome),
+    name = glue("combine_km_{cohort}"),
+    run = glue("r:latest analysis/model/km_combine.R"),
+    arguments = c(cohort),
     needs = splice(
       as.list(
         glue_data(
           .x = expand_grid(
-            treatment = c("pfizer", "moderna")
+            subgroup = c("all", "prior_covid_infection"),
+            outcome = c("postest", "emergency", "covidemergency", "covidadmitted", "covidcritcare", "coviddeath", "noncoviddeath"),
           ),
-          "match_seqtrialcox_{treatment}"
-        )
-      ),
-      as.list(
-        glue_data(
-          .x = expand_grid(
-            subgroups = paste0(subgroup, dash, subgroup_levels),
-            treatment = c("pfizer", "moderna"),
-            outcome = c("postest", "covidemergency", "covidadmittedproxy1", "covidadmitted", "noncovidadmitted", "coviddeath", "noncoviddeath"),
-            script = c("model", "report"),
-          ),
-          "{script}_seqtrialcox_{treatment}_{outcome}_{subgroups}"
+          "km_{cohort}_{subgroup}_{outcome}"
         )
       )
     ),
     moderately_sensitive = lst(
-      csv = glue("output/models/seqtrialcox/combined/{subgroup}/*.csv"),
-      png = glue("output/models/seqtrialcox/combined/{subgroup}/*.png"),
-      svg = glue("output/models/seqtrialcox/combined/{subgroup}/*.svg"),
+      rds = glue("output/{cohort}/models/km/combined/*.csv"),
+      png = glue("output/{cohort}/models/km/combined/*.png"),
+    )
+  )
+}
+
+action_table1 <- function(cohort) {
+  action(
+    name = glue("table1_{cohort}"),
+    run = glue("r:latest analysis/matching/table1.R"),
+    arguments = c(cohort),
+    needs = namelesslst(
+      glue("process_controlfinal_{cohort}"),
+    ),
+    moderately_sensitive = lst(
+      csv = glue("output/{cohort}/table1/*.csv"),
+      # png= glue("output/{cohort}/table1/*.png"),
     )
   )
 }
@@ -312,6 +315,7 @@ actions_list <- splice(
     "Extract and match"
   ),
   action_extract_and_match("over12", n_matching_rounds),
+  action_table1("over12"),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Model"
@@ -323,12 +327,14 @@ actions_list <- splice(
   action_km("over12", "all", "covidcritcare"),
   action_km("over12", "all", "coviddeath"),
   action_km("over12", "all", "noncoviddeath"),
-
-  # action_km_combine("over12"),
-
-  # action_release("over12"),
-
-
+  action_km("over12", "prior_covid_infection", "postest"),
+  action_km("over12", "prior_covid_infection", "emergency"),
+  action_km("over12", "prior_covid_infection", "covidemergency"),
+  action_km("over12", "prior_covid_infection", "covidadmitted"),
+  action_km("over12", "prior_covid_infection", "covidcritcare"),
+  action_km("over12", "prior_covid_infection", "coviddeath"),
+  action_km("over12", "prior_covid_infection", "noncoviddeath"),
+  action_km_combine("over12"),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Under 12s cohort",
@@ -339,6 +345,7 @@ actions_list <- splice(
     "Extract and match"
   ),
   action_extract_and_match("under12", n_matching_rounds),
+  action_table1("under12"),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Model"
@@ -350,14 +357,35 @@ actions_list <- splice(
   action_km("under12", "all", "covidcritcare"),
   action_km("under12", "all", "coviddeath"),
   action_km("under12", "all", "noncoviddeath"),
-
-  # action_km_combine("over12"),
-
-  # action_release("over12"),
-
+  action_km("under12", "prior_covid_infection", "postest"),
+  action_km("under12", "prior_covid_infection", "emergency"),
+  action_km("under12", "prior_covid_infection", "covidemergency"),
+  action_km("under12", "prior_covid_infection", "covidadmitted"),
+  action_km("under12", "prior_covid_infection", "covidcritcare"),
+  action_km("under12", "prior_covid_infection", "coviddeath"),
+  action_km("under12", "prior_covid_infection", "noncoviddeath"),
+  action_km_combine("under12"),
+  comment(
+    "# # # # # # # # # # # # # # # # # # #",
+    "Move files for release",
+    "# # # # # # # # # # # # # # # # # # #"
+  ),
+  action(
+    name = "release",
+    run = glue("r:latest analysis/release_objects.R"),
+    needs = namelesslst(
+      glue("combine_km_over12"),
+      glue("table1_over12"),
+      glue("combine_km_under12"),
+      glue("table1_under12"),
+    ),
+    moderately_sensitive = lst(
+      txt = glue("output/meta-release/*.txt"),
+      csv = glue("output/release/*.csv"),
+    ),
+  ),
   comment("#### End ####")
 )
-
 
 project_list <- splice(
   defaults_list,
@@ -405,5 +433,5 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("expectations", "tpp")) {
 
   # fail if backend not recognised
 } else {
-  stop("Backend not recognised")
+  stop("Backend not recognised by create.project.R script")
 }
