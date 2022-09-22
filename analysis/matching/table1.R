@@ -161,6 +161,11 @@ raw_stats_redacted <- raw_stats %>%
     n=roundmid_any(n, 6),
     N=roundmid_any(N, 6),
     p=n/N,
+    N_miss = roundmid_any(N_miss, 6),
+    N_obs = roundmid_any(N_obs, 6),
+    p_miss = N_miss/N_obs,
+    N_nonmiss = roundmid_any(N_nonmiss, 6),
+    p_nonmiss = N_nonmiss/N_obs,
     var_label = factor(var_label, levels=map_chr(var_labels[-c(1,2)], ~last(as.character(.)))),
     variable_levels = replace_na(as.character(variable_levels), "")
   ) 
