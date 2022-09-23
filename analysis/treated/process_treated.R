@@ -288,12 +288,12 @@ data_criteria <- data_processed %>%
       TRUE ~ FALSE
     ),
     has_vaxgap12 = vax2_date >= (vax1_date + 17) | is.na(vax2_date), # at least 17 days between first two vaccinations
-    no_recentcovid90 = is.na(anycovid_0_date) | ((vax1_date - anycovid_0_date) > 90),
+    no_recentcovid30 = is.na(anycovid_0_date) | ((vax1_date - anycovid_0_date) > 30),
     include = (
       vax1_betweenentrydates & has_vaxgap12 &
         has_age & has_sex & has_imd & # has_ethnicity &
         has_region &
-        no_recentcovid90
+        no_recentcovid30
     ),
   )
 
@@ -316,7 +316,7 @@ data_flowchart <- data_criteria %>%
   transmute(
     c0 = vax1_betweenentrydates & has_vaxgap12,
     c1 = c0 & (has_age & has_sex & has_imd & has_region),
-    c2 = c1 + no_recentcovid90
+    c2 = c1 + no_recentcovid30
   ) %>%
   summarise(
     across(.fns = sum)
@@ -335,7 +335,7 @@ data_flowchart <- data_criteria %>%
     criteria = fct_case_when(
       crit == "c0" ~ "Received age-correct vaccine within study entry dates",
       crit == "c1" ~ "  with no missing demographic information",
-      crit == "c2" ~ "  with no COVID-19 90 days prior",
+      crit == "c2" ~ "  with no COVID-19 30 days prior",
       TRUE ~ NA_character_
     )
   )
