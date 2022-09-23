@@ -179,12 +179,12 @@ data_criteria <- data_processed %>%
     #has_ethnicity = !is.na(ethnicity_combined),
     has_region = !is.na(region),
     
-    no_recentcovid90 = is.na(anycovid_0_date) |  ((trial_date - anycovid_0_date)>90),
+    no_recentcovid30 = is.na(anycovid_0_date) |  ((trial_date - anycovid_0_date)>30),
     
     include = (
       has_age & has_sex & has_imd & # has_ethnicity &
         has_region &
-        no_recentcovid90
+        no_recentcovid30
     ),
   )
 
