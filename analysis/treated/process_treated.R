@@ -162,7 +162,7 @@ data_processed <- data_extract %>%
 
     # latest covid event before study start
     anycovid_0_date = pmax(postest_0_date, covidemergency_0_date, covidadmitted_0_date, na.rm = TRUE),
-    time_since_last_covid = covid_vax_1_date - anycovid_0_date
+    # time_since_last_covid = covid_vax_1_date - anycovid_0_date,
     # # earliest covid event after study start
     # anycovid_1_date = pmin(postest_1_date, covidemergency_1_date, covidadmitted_1_date, covidcc_1_date, coviddeath_date, na.rm=TRUE),
     #
