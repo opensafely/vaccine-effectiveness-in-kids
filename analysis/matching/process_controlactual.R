@@ -148,7 +148,8 @@ data_processed <-
       #sex == "U" ~ "Unknown",
       TRUE ~ NA_character_
     ),
-    
+  prior_tests_cat = cut(prior_covid_test_frequency, breaks=c(0, 1, 3, Inf), labels=c("0", "1-2", "3+"), right=FALSE),
+
     region = fct_collapse(
       region,
       `East of England` = "East",
@@ -159,7 +160,7 @@ data_processed <-
       `South East` = "South East",
       `South West` = "South West"
     ),
-    
+
     # latest covid event before study start
     anycovid_0_date = pmax(postest_0_date, covidemergency_0_date, covidadmitted_0_date, na.rm=TRUE),
     
