@@ -131,6 +131,8 @@ data_processed <- data_extract %>%
       # sex == "U" ~ "Unknown",
       TRUE ~ NA_character_
     ),
+    prior_tests_cat = cut(prior_covid_test_frequency, breaks = c(0, 1, 3, Inf), labels = c("0", "1-2", "3+"), right = FALSE),
+
 
     # ethnicity_combined = if_else(is.na(ethnicity), ethnicity_6_sus, ethnicity),
     #
@@ -155,9 +157,6 @@ data_processed <- data_extract %>%
       `South East` = "South East",
       `South West` = "South West"
     ),
-
-    # prior_tests_cat = cut(prior_covid_test_frequency, breaks=c(0, 1, 2, 3, Inf), labels=c("0", "1", "2", "3+"), right=FALSE),
-
     prior_covid_infection = (!is.na(postest_0_date)) | (!is.na(covidadmitted_0_date)) | (!is.na(primary_care_covid_case_0_date)),
 
     # latest covid event before study start
@@ -340,3 +339,38 @@ data_flowchart <- data_criteria %>%
     )
   )
 write_rds(data_flowchart, ghere("output", cohort, "treated", "flowchart_treatedeligible.rds"))
+
+
+### second vax distribution
+vax_2_dist <- data_extract %>%
+  mutate(
+    has_gap_vax12 = (covid_vax_any_2_date >= (covid_vax_any_1_date + 17) & !is.na(covid_vax_any_2_date)), # at least 17 days between first two vaccinations
+    vaxgap12 = case_when(has_gap_vax12 ~ covid_vax_any_2_date - covid_vax_any_1_date)
+  ) %>%
+  summarise(
+    n = length(vaxgap12),
+    n_nonmiss = sum(!is.na(vaxgap12)),
+    pct_nonmiss = sum(!is.na(vaxgap12)) / length(vaxgap12),
+    n_miss = sum(is.na(vaxgap12)),
+    pct_miss = sum(is.na(vaxgap12)) / length(vaxgap12),
+    mean = mean(vaxgap12, na.rm = TRUE),
+    sd = sd(vaxgap12, na.rm = TRUE),
+    min = min(vaxgap12, na.rm = TRUE),
+    p10 = quantile(vaxgap12, p = 0.1, na.rm = TRUE, type = 1),
+    p25 = quantile(vaxgap12, p = 0.25, na.rm = TRUE, type = 1),
+    p50 = quantile(vaxgap12, p = 0.5, na.rm = TRUE, type = 1),
+    p75 = quantile(vaxgap12, p = 0.75, na.rm = TRUE, type = 1),
+    p90 = quantile(vaxgap12, p = 0.9, na.rm = TRUE, type = 1),
+    max = max(vaxgap12, na.rm = TRUE),
+    unique = n_distinct(vaxgap12, na.rm = TRUE),
+    n_max = sum(vaxgap12 == max),
+    n_min = sum(vaxgap12 == min)
+  ) %>%
+  mutate(
+    min = case_when(n_min >= 5 ~ min),
+    max = case_when(n_max >= 5 ~ max),
+    n_min = case_when(n_min >= 5 ~ min),
+    n_max = case_when(n_max >= 5 ~ max),
+  )
+
+write_csv(vax_2_dist, ghere("output", cohort, "treated", "vaxgap12.csv"))

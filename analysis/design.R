@@ -6,8 +6,8 @@
 # Preliminaries ----
 
 ## Import libraries ----
-library('tidyverse')
-library('here')
+library("tidyverse")
+library("here")
 
 ## create output directories ----
 fs::dir_create(here("lib", "design"))
@@ -23,9 +23,9 @@ n_matching_rounds <- 4
 
 study_dates <- lst(
   over12 = lst(
-   start_date = "2021-09-20", # start of vaccine eligibility for non-high-risk 12-15 year olds monday 20 september 2021, adult pfizer dose licensed 
-   end_date = "2021-12-19", # end of recruitment (13 weeks later)
-   followupend_date = "2022-01-02", # end of follow-up
+    start_date = "2021-09-20", # start of vaccine eligibility for non-high-risk 12-15 year olds monday 20 september 2021, adult pfizer dose licensed
+    end_date = "2021-12-19", # end of recruitment (13 weeks later)
+    followupend_date = "2022-01-02", # end of follow-up
   ),
   under12 = lst(
     start_date = "2022-04-04", # start of vaccine eligibility for non-high-risk 5-11 year olds monday 4 APril 2022, child pfizer dose licensed
@@ -36,34 +36,32 @@ study_dates <- lst(
 
 extract_increment <- 21
 
-study_dates$over12$control_extract_dates = as.Date(study_dates$over12$start_date) + (0:26)*extract_increment
-study_dates$under12$control_extract_dates = as.Date(study_dates$under12$start_date) + (0:26)*extract_increment
+study_dates$over12$control_extract_dates <- as.Date(study_dates$over12$start_date) + (0:26) * extract_increment
+study_dates$under12$control_extract_dates <- as.Date(study_dates$under12$start_date) + (0:26) * extract_increment
 
 # write to json so that both R and python (study defs) can easily pick up
-jsonlite::write_json(study_dates, path = here("lib", "design", "study-dates.json"), auto_unbox=TRUE, pretty =TRUE)
+jsonlite::write_json(study_dates, path = here("lib", "design", "study-dates.json"), auto_unbox = TRUE, pretty = TRUE)
 
 # define study parameters used in study definition
 study_params <- lst(
-  
+
   # over 12 params
   over12 = lst(
-   minage = 12,
-   maxage= 15,
-  
-   treatment = "pfizerA",
+    minage = 12,
+    maxage = 15,
+    treatment = "pfizerA",
   ),
-  
+
   # under 12 params
   under12 = lst(
     minage = 5,
-    maxage= 11,
+    maxage = 11,
     treatment = "pfizerC",
   )
-  
 )
 
 # write to json so that both R and python (study defs) can easily pick up
-jsonlite::write_json(study_params, path = here("lib", "design", "study-params.json"), auto_unbox=TRUE, pretty =TRUE)
+jsonlite::write_json(study_params, path = here("lib", "design", "study-params.json"), auto_unbox = TRUE, pretty = TRUE)
 
 # define outcomes ----
 
@@ -74,14 +72,13 @@ events_lookup <- tribble(
   "test", "covid_test_date", "SARS-CoV-2 test",
   "dereg", "dereg_date", "Deregistration",
   "primary_care_covid_case", "primary_care_covid_case_date", "Primary care COVID-19",
-  
+
   # effectiveness
   "postest", "postest_date", "Positive SARS-CoV-2 test",
   "covidemergency", "covidemergency_date", "COVID-19 A&E attendance",
   "covidemergencyhosp", "covidemergencyhosp_date", "Admission from COVID-19 A&E",
   "covidadmitted", "covidadmitted_date", "COVID-19 hospitalisation",
   "noncovidadmitted", "noncovidadmitted_date", "Non-COVID-19 hospitalisation",
-  
   "covidadmittedproxy1", "covidadmittedproxy1_date", "COVID-19 hospitalisation (A&E proxy)",
   "covidadmittedproxy2", "covidadmittedproxy2_date", "COVID-19 hospitalisation (A&E proxy v2)",
   "covidcritcare", "covidcritcare_date", "COVID-19 critical care",
@@ -105,7 +102,7 @@ recoder <-
       `Prior SARS-CoV-2 infection` = "prior_covid_infection"
     ),
     status = c(
-      `Unmatched`= "unmatched",
+      `Unmatched` = "unmatched",
       `Matched` = "matched"
     ),
     treated = c(
@@ -124,7 +121,7 @@ recoder <-
 ## follow-up time ----
 
 # where to split follow-up time after recruitment
-postbaselinecuts <- seq(0, 14*7, 14)
+postbaselinecuts <- seq(0, 14 * 7, 14)
 
 # maximum follow-up
 maxfup <- max(postbaselinecuts)
@@ -137,14 +134,14 @@ exact_variables <- c(
   "region",
   "sex",
   "prior_covid_infection",
+  "prior_tests_cat",
+  "imd_Q5",
   NULL
 )
 
 # caliper variables
 caliper_variables <- c(
-  #age = 1,
+  # age = 1,
   NULL
 )
 matching_variables <- c(exact_variables, names(caliper_variables))
-
-

@@ -61,6 +61,9 @@ sim_list_pre <- lst(
   age = bn_node(
     ~ as.integer(runif(n = ..n, minage, maxage))
   ),
+  prior_covid_test_frequency = bn_node(
+    ~ as.integer(runif(n = ..n, 0, 12))
+  ),
   age_aug21 = bn_node(
     ~age
   ),

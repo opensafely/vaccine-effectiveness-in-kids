@@ -130,6 +130,9 @@ data_processed <- data_extract %>%
       # sex == "U" ~ "Unknown",
       TRUE ~ NA_character_
     ),
+    prior_tests_cat = cut(prior_covid_test_frequency, breaks = c(0, 1, 3, Inf), labels = c("0", "1-2", "3+"), right = FALSE),
+
+
 
     # ethnicity_combined = if_else(is.na(ethnicity), ethnicity_6_sus, ethnicity),
     #

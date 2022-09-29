@@ -162,6 +162,16 @@ def generate_matching_variables(index_date):
         restrict_to_earliest_specimen_date=False,
     ),
     
+  prior_covid_test_frequency=patients.with_test_result_in_sgss(
+    pathogen="SARS-CoV-2",
+    test_result="any",
+    between=["index_date - 182 days", "index_date - 1 day"], # 182 days = 26 weeks
+    returning="number_of_matches_in_period", 
+    date_format="YYYY-MM-DD",
+    restrict_to_earliest_specimen_date=False,
+  ),
+
+
     # emergency attendance for covid
     covidemergency_0_date=patients.attended_emergency_care(
       returning="date_arrived",

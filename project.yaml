@@ -32,6 +32,7 @@ actions:
     outputs:
       highly_sensitive:
         rds: output/over12/treated/*.rds
+        csv: output/over12/treated/*.csv
 
   extract_controlpotential_over12_1:
     run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
@@ -440,6 +441,7 @@ actions:
     outputs:
       highly_sensitive:
         rds: output/under12/treated/*.rds
+        csv: output/under12/treated/*.csv
 
   extract_controlpotential_under12_1:
     run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
