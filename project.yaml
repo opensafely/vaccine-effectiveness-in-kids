@@ -851,7 +851,7 @@ actions:
   ## #### End #### 
 
   ### temporary change to be removed ####
-  process_treated_over12:
+  second_vax_over12:
   run: r:latest analysis/treated/second_vax.R over12
   needs:
   - extract_treated_over12
@@ -859,7 +859,7 @@ actions:
     moderately_sensitive:
       csv: output/over12/treated/*.csv
 
-  process_treated_under12:
+  second_vax_under12:
   run: r:latest analysis/treated/second_vax.R under12
   needs:
   - extract_treated_under12
