@@ -25,7 +25,6 @@ source(here("lib", "functions", "utility.R"))
 
 args <- commandArgs(trailingOnly = TRUE)
 
-
 if (length(args) == 0) {
     # use for interactive testing
     removeobjects <- FALSE
@@ -35,12 +34,6 @@ if (length(args) == 0) {
     removeobjects <- TRUE
     cohort <- args[[1]]
 }
-
-## get cohort-specific parameters study dates and parameters ----
-
-dates <- map(study_dates[[cohort]], as.Date)
-params <- study_params[[cohort]]
-
 ## create output directory ----
 fs::dir_create(here("output", cohort, "treated"))
 
