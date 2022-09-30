@@ -189,9 +189,11 @@ action_extract_and_match <- function(cohort, n_matching_rounds) {
         glue("extract_treated_{cohort}")
       ),
       highly_sensitive = lst(
-        rds = glue("output/{cohort}/treated/*.rds"),
-        csv = glue("output/{cohort}/treated/*.csv")
+        rds = glue("output/{cohort}/treated/*.rds")
       ),
+      moderately_sensitive = lst(
+        csv = glue("output/{cohort}/treated/*.csv")
+      )
     ),
     allrounds,
     action(
