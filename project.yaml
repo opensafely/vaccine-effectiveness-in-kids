@@ -32,6 +32,7 @@ actions:
     outputs:
       highly_sensitive:
         rds: output/over12/treated/*.rds
+      moderately_sensitive:
         csv: output/over12/treated/*.csv
 
   extract_controlpotential_over12_1:
@@ -441,6 +442,7 @@ actions:
     outputs:
       highly_sensitive:
         rds: output/under12/treated/*.rds
+      moderately_sensitive:
         csv: output/under12/treated/*.csv
 
   extract_controlpotential_under12_1:
@@ -848,3 +850,19 @@ actions:
 
   ## #### End #### 
 
+  ### temporary change to be removed ####
+  second_vax_over12:
+  run: r:latest analysis/treated/second_vax.R over12
+  needs:
+  - extract_treated_over12
+  outputs:
+    moderately_sensitive:
+      csv: output/over12/treated/*.csv
+
+  second_vax_under12:
+  run: r:latest analysis/treated/second_vax.R under12
+  needs:
+  - extract_treated_under12
+  outputs:
+    moderately_sensitive:
+      csv: output/under12/treated/*.csv
