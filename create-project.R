@@ -318,7 +318,19 @@ actions_list <- splice(
     "Extract and match"
   ),
   action_extract_and_match("over12", n_matching_rounds),
+  
+  action(
+    name = "skim_over12_matched",
+    run = "r:latest analysis/data_skim.R",
+    arguments = c("output/over12/match/data_matched.rds", "output/over12/skim"),
+    needs = list("process_controlfinal_over12"),
+    moderately_sensitive = lst(
+      cohort = "output/over12/skim/*.txt"
+    )
+  ),
+  
   action_table1("over12"),
+  
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Model"
@@ -348,7 +360,19 @@ actions_list <- splice(
     "Extract and match"
   ),
   action_extract_and_match("under12", n_matching_rounds),
+  
+  action(
+    name = "skim_under12_matched",
+    run = "r:latest analysis/data_skim.R",
+    arguments = c("output/under12/match/data_matched.rds", "output/under12/skim"),
+    needs = list("process_controlfinal_under12"),
+    moderately_sensitive = lst(
+      cohort = "output/under12/skim/*.txt"
+    )
+  ),
+  
   action_table1("under12"),
+  
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Model"

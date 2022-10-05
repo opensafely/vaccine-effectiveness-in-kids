@@ -369,6 +369,14 @@ actions:
       highly_sensitive:
         extract: output/over12/match/*.rds
 
+  skim_over12_matched:
+    run: r:latest analysis/data_skim.R output/over12/match/data_matched.rds output/over12/skim
+    needs:
+    - process_controlfinal_over12
+    outputs:
+      moderately_sensitive:
+        cohort: output/over12/skim/*.txt
+
   table1_over12:
     run: r:latest analysis/matching/table1.R over12
     needs:
@@ -884,6 +892,14 @@ actions:
     outputs:
       highly_sensitive:
         extract: output/under12/match/*.rds
+
+  skim_under12_matched:
+    run: r:latest analysis/data_skim.R output/under12/match/data_matched.rds output/under12/skim
+    needs:
+    - process_controlfinal_under12
+    outputs:
+      moderately_sensitive:
+        cohort: output/under12/skim/*.txt
 
   table1_under12:
     run: r:latest analysis/matching/table1.R under12
