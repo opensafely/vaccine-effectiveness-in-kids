@@ -16,7 +16,7 @@ fs::dir_create(here("lib", "design"))
 
 # number of matching rounds to perform
 
-n_matching_rounds <- 4
+n_matching_rounds <- 6
 
 
 # define key dates ----
@@ -24,17 +24,17 @@ n_matching_rounds <- 4
 study_dates <- lst(
   over12 = lst(
     start_date = "2021-09-20", # start of vaccine eligibility for non-high-risk 12-15 year olds monday 20 september 2021, adult pfizer dose licensed
-    end_date = "2021-12-19", # end of recruitment (13 weeks later)
-    followupend_date = "2022-01-02", # end of follow-up
+    end_date = "2021-12-26", # end of recruitment (14 weeks later)
+    followupend_date = "2022-07-24", # end of follow-up
   ),
   under12 = lst(
     start_date = "2022-04-04", # start of vaccine eligibility for non-high-risk 5-11 year olds monday 4 APril 2022, child pfizer dose licensed
-    end_date = "2022-07-03", # end of recruitment (13 weeks later)
-    followupend_date = "2022-07-10" # end of follow-up
+    end_date = "2022-07-10", # end of recruitment (14 weeks later)
+    followupend_date = "2022-07-24" # end of follow-up
   )
 )
 
-extract_increment <- 21
+extract_increment <- 14
 
 study_dates$over12$control_extract_dates <- as.Date(study_dates$over12$start_date) + (0:26) * extract_increment
 study_dates$under12$control_extract_dates <- as.Date(study_dates$under12$start_date) + (0:26) * extract_increment
@@ -121,7 +121,7 @@ recoder <-
 ## follow-up time ----
 
 # where to split follow-up time after recruitment
-postbaselinecuts <- seq(0, 14 * 7, 14)
+postbaselinecuts <- seq(0, 20 * 7, 14)
 
 # maximum follow-up
 maxfup <- max(postbaselinecuts)
