@@ -74,7 +74,8 @@ data_matched <-
     controlistreated_date,
     vax1_date,
     death_date, dereg_date, coviddeath_date, noncoviddeath_date,
-    all_of(c(glue("{outcome}_date"), subgroup))
+    all_of(c(glue("{outcome}_date"), subgroup)),
+    # ends_with("_count")
   ) %>%
   mutate(
 
@@ -382,7 +383,6 @@ kmcontrasts <- function(data, cuts = NULL) {
       rd.ul = rd + qnorm(0.975) * rd.se,
 
 
-
       # cumulative incidence rate difference
       # cmlird = cml.rate_1 - cml.rate_0
     )
@@ -397,3 +397,17 @@ contrasts_rounded_overall <- kmcontrasts(data_surv_rounded, c(0, maxfup))
 write_rds(contrasts_rounded_daily, fs::path(output_dir, "contrasts_daily_rounded.rds"))
 write_rds(contrasts_rounded_cuts, fs::path(output_dir, "contrasts_cuts_rounded.rds"))
 write_rds(contrasts_rounded_overall, fs::path(output_dir, "contrasts_overall_rounded.rds"))
+
+
+# report number of tests ----
+
+# data_counts <- data_matched %>%
+#   group_by(treated, !!subgroup_sym) %>%
+#   summarise(
+#     n=n(),
+#     persontime = sum(as.numeric(censor_date - (trial_date - 1))),
+#     test_rate = test_count / persontime,
+#     postest_rate = postest_count / persontime,
+#   )
+# 
+# write_rds(data_counts, fs::path(output_dir, "counts.rds"))
