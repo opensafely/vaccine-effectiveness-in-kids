@@ -3,9 +3,10 @@
 # Purpose: Get cumulative incidence(kaplan meier) estimates for specified outcome, and derive risk differences
 #  - import matched data
 #  - adds outcome variable and restricts follow-up
-#  - gets KM estimates, with covid and non covid death as competing risks
-#  - The script must be accompanied by two arguments:
+#  - gets KM estimates
+#  - The script must be accompanied by three arguments:
 #    `cohort` - over12s or under12s
+#    `subgroup` - the subgroup to stratify results by
 #    `outcome` - the dependent variable
 
 # # # # # # # # # # # # # # # # # # # # #
@@ -397,17 +398,3 @@ contrasts_rounded_overall <- kmcontrasts(data_surv_rounded, c(0, maxfup))
 write_rds(contrasts_rounded_daily, fs::path(output_dir, "contrasts_daily_rounded.rds"))
 write_rds(contrasts_rounded_cuts, fs::path(output_dir, "contrasts_cuts_rounded.rds"))
 write_rds(contrasts_rounded_overall, fs::path(output_dir, "contrasts_overall_rounded.rds"))
-
-
-# report number of tests ----
-
-# data_counts <- data_matched %>%
-#   group_by(treated, !!subgroup_sym) %>%
-#   summarise(
-#     n=n(),
-#     persontime = sum(as.numeric(censor_date - (trial_date - 1))),
-#     test_rate = test_count / persontime,
-#     postest_rate = postest_count / persontime,
-#   )
-# 
-# write_rds(data_counts, fs::path(output_dir, "counts.rds"))
