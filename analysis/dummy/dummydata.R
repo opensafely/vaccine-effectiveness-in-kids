@@ -20,7 +20,7 @@ nthmax <- function(x, n = 1) {
 
 source(here("analysis", "design.R"))
 
-cohort <- "under12"
+cohort <- "over12"
 
 dates <- map(study_dates[[cohort]], as.Date)
 params <- study_params[[cohort]]

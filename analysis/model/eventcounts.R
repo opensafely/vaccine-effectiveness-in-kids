@@ -34,7 +34,7 @@ args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
-  cohort <- "over12"
+  cohort <- "under12"
   subgroup <- "prior_covid_infection"
 } else {
   removeobjects <- TRUE
