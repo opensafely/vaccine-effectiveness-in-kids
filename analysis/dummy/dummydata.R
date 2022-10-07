@@ -293,6 +293,16 @@ sim_list_post <- lst(
     ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 100)),
     missing_rate = ~0.90
   ),
+  
+  
+  test_count = bn_node(
+     ~ rpois(n = ..n, 1)
+  ),
+  
+  postest_count = bn_node(
+    ~ rpois(n = ..n, 0.1)
+  )
+  
 )
 
 
