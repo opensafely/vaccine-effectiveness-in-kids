@@ -269,8 +269,8 @@ action_km_combine <- function(cohort) {
       )
     ),
     moderately_sensitive = lst(
-      rds = glue("output/{cohort}/models/km/combined/*.csv"),
-      png = glue("output/{cohort}/models/km/combined/*.png"),
+      rds = glue("output/{cohort}/models/combined/*.csv"),
+      png = glue("output/{cohort}/models/combined/*.png"),
     )
   )
 }

@@ -25,7 +25,7 @@ fs::dir_create(output_dir)
 for(cohort in c("over12", "under12")){
 #for(cohort in c("over12")){
 
-  input_dir <- ghere("output", cohort, "models", "km", "combined")
+  input_dir <- ghere("output", cohort, "models", "combined")
   
   ## table1 ----
 

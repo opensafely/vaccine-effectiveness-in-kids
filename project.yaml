@@ -533,8 +533,8 @@ actions:
     - km_over12_prior_covid_infection_noncoviddeath
     outputs:
       moderately_sensitive:
-        rds: output/over12/models/km/combined/*.csv
-        png: output/over12/models/km/combined/*.png
+        rds: output/over12/models/combined/*.csv
+        png: output/over12/models/combined/*.png
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Under 12s cohort 
@@ -1057,8 +1057,8 @@ actions:
     - km_under12_prior_covid_infection_noncoviddeath
     outputs:
       moderately_sensitive:
-        rds: output/under12/models/km/combined/*.csv
-        png: output/under12/models/km/combined/*.png
+        rds: output/under12/models/combined/*.csv
+        png: output/under12/models/combined/*.png
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Move files for release 

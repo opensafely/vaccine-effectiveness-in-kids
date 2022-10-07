@@ -34,7 +34,7 @@ if(length(args)==0){
 
 
 
-output_dir <- ghere("output", cohort, "models", "km", "combined")
+output_dir <- ghere("output", cohort, "models", "combined")
 fs::dir_create(output_dir)
 
 
