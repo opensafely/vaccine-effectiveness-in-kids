@@ -130,6 +130,30 @@ contrasts_overall <- metaparams %>%
 write_csv(contrasts_overall, fs::path(output_dir, "contrasts_overall_rounded.csv"))
 
 
+## event counts ----
+
+eventcounts_overall <- metaparams %>%
+  distinct() %>%
+  mutate(
+    data = pmap(list(cohort, subgroup, outcome), function(cohort, subgroup, outcome){
+      subgroup <- as.character(subgroup)
+      dat <- read_rds(here("output", cohort, "models", "eventcounts", subgroup, "testcounts.rds"))
+      dat %>%
+        add_column(
+          subgroup_level = as.character(.[[subgroup]]),
+          subgroup_level_descr = fct_recoderelevel(.[[subgroup]], recoder[[subgroup]]),
+          .before=1
+        ) %>%
+        select(-all_of(subgroup))
+    }
+    )
+  ) %>%
+  unnest(data)
+
+write_csv(eventcounts_overall, fs::path(output_dir, "testcounts_rounded.csv"))
+
+
+
 ## move km plots to single folder ----
 fs::dir_create(here("output", cohort, "models", "km", "combined"))
 

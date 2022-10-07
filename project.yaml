@@ -514,8 +514,24 @@ actions:
         rds: output/over12/models/km/prior_covid_infection/noncoviddeath/*.rds
         png: output/over12/models/km/prior_covid_infection/noncoviddeath/*.png
 
-  combine_km_over12:
-    run: r:latest analysis/model/km_combine.R over12
+  eventcounts_over12_all:
+    run: r:latest analysis/model/eventcounts.R over12 all
+    needs:
+    - process_controlfinal_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/models/eventcounts/all/*.rds
+
+  eventcounts_over12_prior_covid_infection:
+    run: r:latest analysis/model/eventcounts.R over12 prior_covid_infection
+    needs:
+    - process_controlfinal_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/models/eventcounts/prior_covid_infection/*.rds
+
+  combine_over12:
+    run: r:latest analysis/model/combine.R over12
     needs:
     - km_over12_all_postest
     - km_over12_all_emergency
@@ -531,6 +547,8 @@ actions:
     - km_over12_prior_covid_infection_covidcritcare
     - km_over12_prior_covid_infection_coviddeath
     - km_over12_prior_covid_infection_noncoviddeath
+    - eventcounts_over12_all
+    - eventcounts_over12_prior_covid_infection
     outputs:
       moderately_sensitive:
         rds: output/over12/models/combined/*.csv
@@ -1038,8 +1056,24 @@ actions:
         rds: output/under12/models/km/prior_covid_infection/noncoviddeath/*.rds
         png: output/under12/models/km/prior_covid_infection/noncoviddeath/*.png
 
-  combine_km_under12:
-    run: r:latest analysis/model/km_combine.R under12
+  eventcounts_under12_all:
+    run: r:latest analysis/model/eventcounts.R under12 all
+    needs:
+    - process_controlfinal_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/models/eventcounts/all/*.rds
+
+  eventcounts_under12_prior_covid_infection:
+    run: r:latest analysis/model/eventcounts.R under12 prior_covid_infection
+    needs:
+    - process_controlfinal_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/models/eventcounts/prior_covid_infection/*.rds
+
+  combine_under12:
+    run: r:latest analysis/model/combine.R under12
     needs:
     - km_under12_all_postest
     - km_under12_all_emergency
@@ -1055,6 +1089,8 @@ actions:
     - km_under12_prior_covid_infection_covidcritcare
     - km_under12_prior_covid_infection_coviddeath
     - km_under12_prior_covid_infection_noncoviddeath
+    - eventcounts_under12_all
+    - eventcounts_under12_prior_covid_infection
     outputs:
       moderately_sensitive:
         rds: output/under12/models/combined/*.csv
@@ -1067,10 +1103,10 @@ actions:
   release:
     run: r:latest analysis/release_objects.R
     needs:
-    - combine_km_over12
     - table1_over12
-    - combine_km_under12
+    - combine_over12
     - table1_under12
+    - combine_under12
     outputs:
       moderately_sensitive:
         txt: output/meta-release/*.txt

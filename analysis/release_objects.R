@@ -38,6 +38,10 @@ for(cohort in c("over12", "under12")){
   fs::file_copy(fs::path(input_dir, "contrasts_daily_rounded.csv"), fs::path(output_dir, glue("{cohort}_contrasts_daily_rounded.csv")), overwrite = TRUE)
   fs::file_copy(fs::path(input_dir, "contrasts_cuts_rounded.csv"), fs::path(output_dir, glue("{cohort}_contrasts_cuts_rounded.csv")), overwrite = TRUE)
   fs::file_copy(fs::path(input_dir, "contrasts_overall_rounded.csv"), fs::path(output_dir, glue("{cohort}_contrasts_overall_rounded.csv")), overwrite = TRUE)
+  
+  ## event counts ---
+  
+  fs::file_copy(ghere("output", cohort, "models", "eventcounts", subgroup, "testcounts.csv"), fs::path(output_dir, glue("{cohort}_testcounts_rounded.csv")), overwrite = TRUE)
 }
 
 
