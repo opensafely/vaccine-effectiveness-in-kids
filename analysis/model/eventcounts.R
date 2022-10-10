@@ -89,7 +89,7 @@ data_matched <-
 data_counts <- data_matched %>%
   group_by(treated, !!subgroup_sym) %>%
   summarise(
-    n=roundmid_any(n()),
+    n=roundmid_any(n(), threshold),
     persontime = sum(as.numeric(censor_date - (trial_date - 1))),
     test_rate = test_count / persontime,
     postest_rate = postest_count / persontime,
