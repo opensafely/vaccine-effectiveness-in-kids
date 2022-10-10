@@ -106,9 +106,7 @@ table(
 )
 # should be c(0, 0, nrow(data_matched))
 
-## redaction threshold ----
 
-threshold <- 6
 
 ## competing risks cumulative risk differences ----
 

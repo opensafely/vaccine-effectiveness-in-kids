@@ -97,10 +97,6 @@ data_coverage <-
   arrange(status_descr, vax1_date)
 
 
-
-## round to nearest 6 for disclosure control
-threshold <- 6
-
 data_coverage_rounded <-
   data_coverage %>%
   group_by(status) %>%
