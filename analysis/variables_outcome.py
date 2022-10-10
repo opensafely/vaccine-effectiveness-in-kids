@@ -197,22 +197,23 @@ def generate_outcome_variables(index_date):
     
     
     # censor_date = patients.minimum_of("death_date", "dereg_date", f"{index_date} + 140 days"), # 140 is the maximum days of follow up, specified in design.R
-    # 
-    # test_count = patients.with_test_result_in_sgss(
-    #   pathogen = "SARS-CoV-2",
-    #   test_result = "any",
-    #   returning = "number_of_matches_in_period",
-    #   between = [index_date, "censor_date"],
-    #   restrict_to_earliest_specimen_date=False
-    # ),
-    # 
-    # postest_count = patients.with_test_result_in_sgss(
-    #   pathogen = "SARS-CoV-2",
-    #   test_result = "positive",
-    #   returning = "number_of_matches_in_period",
-    #   between = [index_date, "censor_date"],
-    #   restrict_to_earliest_specimen_date=False
-    # ),
+    # once the above censor_date variable is possible, then replace `f"{index_date} + 140 days"` with `censor_date` below
+    
+    test_count = patients.with_test_result_in_sgss(
+      pathogen = "SARS-CoV-2",
+      test_result = "any",
+      returning = "number_of_matches_in_period",
+      between = [index_date, f"{index_date} + 140 days"],
+      restrict_to_earliest_specimen_date=False
+    ),
+
+    postest_count = patients.with_test_result_in_sgss(
+      pathogen = "SARS-CoV-2",
+      test_result = "positive",
+      returning = "number_of_matches_in_period",
+      between = [index_date, f"{index_date} + 140 days"],
+      restrict_to_earliest_specimen_date=False
+    ),
     
   )
   

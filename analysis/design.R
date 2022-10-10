@@ -12,7 +12,9 @@ library("here")
 ## create output directories ----
 fs::dir_create(here("lib", "design"))
 
+# rounding threshold
 
+threshold <- 6
 
 # number of matching rounds to perform
 

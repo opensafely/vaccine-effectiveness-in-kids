@@ -235,6 +235,22 @@ action_extract_and_match <- function(cohort, n_matching_rounds) {
 # action_extract_and_match("over12", 2)
 
 
+action_table1 <- function(cohort) {
+  action(
+    name = glue("table1_{cohort}"),
+    run = glue("r:latest analysis/matching/table1.R"),
+    arguments = c(cohort),
+    needs = namelesslst(
+      glue("process_controlfinal_{cohort}"),
+    ),
+    moderately_sensitive = lst(
+      csv = glue("output/{cohort}/table1/*.csv"),
+      # png= glue("output/{cohort}/table1/*.png"),
+    )
+  )
+}
+
+
 action_km <- function(cohort, subgroup, outcome) {
   action(
     name = glue("km_{cohort}_{subgroup}_{outcome}"),
@@ -251,11 +267,24 @@ action_km <- function(cohort, subgroup, outcome) {
   )
 }
 
-## model action function ----
-action_km_combine <- function(cohort) {
+action_eventcounts <- function(cohort, subgroup, outcome) {
   action(
-    name = glue("combine_km_{cohort}"),
-    run = glue("r:latest analysis/model/km_combine.R"),
+    name = glue("eventcounts_{cohort}_{subgroup}"),
+    run = glue("r:latest analysis/model/eventcounts.R"),
+    arguments = c(cohort, subgroup),
+    needs = namelesslst(
+      glue("process_controlfinal_{cohort}"),
+    ),
+    moderately_sensitive = lst(
+      rds = glue("output/{cohort}/models/eventcounts/{subgroup}/*.rds"),
+    )
+  )
+}
+
+action_combine <- function(cohort) {
+  action(
+    name = glue("combine_{cohort}"),
+    run = glue("r:latest analysis/model/combine.R"),
     arguments = c(cohort),
     needs = splice(
       as.list(
@@ -266,29 +295,24 @@ action_km_combine <- function(cohort) {
           ),
           "km_{cohort}_{subgroup}_{outcome}"
         )
+      ),
+      as.list(
+        glue_data(
+          .x = expand_grid(
+            subgroup = c("all", "prior_covid_infection"),
+          ),
+          "eventcounts_{cohort}_{subgroup}"
+        )
       )
     ),
     moderately_sensitive = lst(
-      rds = glue("output/{cohort}/models/km/combined/*.csv"),
-      png = glue("output/{cohort}/models/km/combined/*.png"),
+      rds = glue("output/{cohort}/models/combined/*.csv"),
+      png = glue("output/{cohort}/models/combined/*.png"),
     )
   )
 }
 
-action_table1 <- function(cohort) {
-  action(
-    name = glue("table1_{cohort}"),
-    run = glue("r:latest analysis/matching/table1.R"),
-    arguments = c(cohort),
-    needs = namelesslst(
-      glue("process_controlfinal_{cohort}"),
-    ),
-    moderately_sensitive = lst(
-      csv = glue("output/{cohort}/table1/*.csv"),
-      # png= glue("output/{cohort}/table1/*.png"),
-    )
-  )
-}
+
 
 # specify project ----
 
@@ -349,7 +373,13 @@ actions_list <- splice(
   action_km("over12", "prior_covid_infection", "covidcritcare"),
   action_km("over12", "prior_covid_infection", "coviddeath"),
   action_km("over12", "prior_covid_infection", "noncoviddeath"),
-  action_km_combine("over12"),
+  
+  action_eventcounts("over12", "all"),
+  action_eventcounts("over12", "prior_covid_infection"),
+  
+  action_combine("over12"),
+  
+  
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Under 12s cohort",
@@ -391,7 +421,12 @@ actions_list <- splice(
   action_km("under12", "prior_covid_infection", "covidcritcare"),
   action_km("under12", "prior_covid_infection", "coviddeath"),
   action_km("under12", "prior_covid_infection", "noncoviddeath"),
-  action_km_combine("under12"),
+  
+  action_eventcounts("under12", "all"),
+  action_eventcounts("under12", "prior_covid_infection"),
+  
+  action_combine("under12"),
+  
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Move files for release",
@@ -401,10 +436,10 @@ actions_list <- splice(
     name = "release",
     run = glue("r:latest analysis/release_objects.R"),
     needs = namelesslst(
-      glue("combine_km_over12"),
       glue("table1_over12"),
-      glue("combine_km_under12"),
+      glue("combine_over12"),
       glue("table1_under12"),
+      glue("combine_under12"),
     ),
     moderately_sensitive = lst(
       txt = glue("output/meta-release/*.txt"),

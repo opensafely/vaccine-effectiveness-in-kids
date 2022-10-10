@@ -25,7 +25,7 @@ fs::dir_create(output_dir)
 for(cohort in c("over12", "under12")){
 #for(cohort in c("over12")){
 
-  input_dir <- ghere("output", cohort, "models", "km", "combined")
+  input_dir <- ghere("output", cohort, "models", "combined")
   
   ## table1 ----
 
@@ -38,6 +38,10 @@ for(cohort in c("over12", "under12")){
   fs::file_copy(fs::path(input_dir, "contrasts_daily_rounded.csv"), fs::path(output_dir, glue("{cohort}_contrasts_daily_rounded.csv")), overwrite = TRUE)
   fs::file_copy(fs::path(input_dir, "contrasts_cuts_rounded.csv"), fs::path(output_dir, glue("{cohort}_contrasts_cuts_rounded.csv")), overwrite = TRUE)
   fs::file_copy(fs::path(input_dir, "contrasts_overall_rounded.csv"), fs::path(output_dir, glue("{cohort}_contrasts_overall_rounded.csv")), overwrite = TRUE)
+  
+  ## event counts ---
+  
+  fs::file_copy(fs::path(input_dir, "testcounts_rounded.csv"), fs::path(output_dir, glue("{cohort}_testcounts_rounded.csv")), overwrite = TRUE)
 }
 
 

@@ -103,6 +103,10 @@ dummydata <- data_matchedcontrols %>%
     admitted_unplanned_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.7),
     death_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.9),
     coviddeath_day = missing(death_day, 0.7),
+    
+    test_count = rpois(n = n(), 1),
+    postest_count = rpois(n = n(), 0.1),
+    
   )
 
 
