@@ -108,9 +108,7 @@ table(
 
 
 
-## competing risks cumulative risk differences ----
-
-# no applicable method for 'complete' applied to an object of class "c('integer', 'numeric')"
+## cumulative risk differences ----
 
 data_surv <-
   data_matched %>%

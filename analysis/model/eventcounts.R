@@ -91,8 +91,8 @@ data_counts <- data_matched %>%
   summarise(
     n=roundmid_any(n(), threshold),
     persontime = sum(as.numeric(censor_date - (trial_date - 1))),
-    test_rate = test_count / persontime,
-    postest_rate = postest_count / persontime,
+    test_rate = sum(test_count) / persontime,
+    postest_rate = sum(postest_count) / persontime,
   )
 
 write_rds(data_counts, fs::path(output_dir, "testcounts.rds"))
