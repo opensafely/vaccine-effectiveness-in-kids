@@ -27,13 +27,13 @@ params <- study_params[[cohort]]
 
 minage <- params$minage
 maxage <- params$maxage
-start_date <- as.Date(dates$start_date)
-end_date <- as.Date(dates$end_date)
-followupend_date <- as.Date(dates$followupend_date)
-index_date <- as.Date(dates$start_date)
+start_date <- as.Date(dates$start_date1)
+end_date <- as.Date(dates$end_date2)
+followupend_date <- as.Date(dates$followupend_date2)
+index_date <- as.Date(dates$start_date1)
 
-first_pfizerA_date <- as.Date(dates$start_date)
-first_pfizerC_date <- as.Date(dates$start_date)
+first_pfizerA_date <- as.Date(dates$start_date1)
+first_pfizerC_date <- as.Date(dates$start_date1)
 
 index_day <- 0L
 start_day <- as.integer(start_date - index_date)
@@ -149,6 +149,10 @@ sim_list_pre <- lst(
     ~ as.integer(runif(n = ..n, covid_vax_pfizerA_1_day + 180, covid_vax_pfizerA_1_day + 240)),
     needs = c("covid_vax_pfizerA_1_day"),
   ),
+  covid_vax_pfizerA_3_day = bn_node(
+    ~ as.integer(runif(n = ..n, covid_vax_pfizerA_2_day + 180, covid_vax_pfizerA_2_day + 240)),
+    needs = c("covid_vax_pfizerA_1_day"),
+  ),
   covid_vax_pfizerC_1_day = bn_node(
     ~ as.integer(runif(n = ..n, first_pfizerC_day, first_pfizerC_day + 90)),
     missing_rate = ~ 1 - (first_vax_type == "pfizerC")
@@ -156,6 +160,10 @@ sim_list_pre <- lst(
   covid_vax_pfizerC_2_day = bn_node(
     ~ as.integer(runif(n = ..n, covid_vax_pfizerC_1_day + 180, covid_vax_pfizerC_1_day + 240)),
     needs = c("covid_vax_pfizerC_1_day"),
+  ),
+  covid_vax_pfizerC_3_day = bn_node(
+    ~ as.integer(runif(n = ..n, covid_vax_pfizerC_2_day + 180, covid_vax_pfizerC_2_day + 240)),
+    needs = c("covid_vax_pfizerC_2_day"),
   ),
   vax1_day = bn_node(
     ~ pmin(
@@ -324,6 +332,7 @@ dummydata_processed <- dummydata %>%
     # covid vax any
     covid_vax_any_1_day = pmin(covid_vax_pfizerA_1_day, covid_vax_pfizerC_1_day, na.rm = TRUE),
     covid_vax_any_2_day = pmin(covid_vax_pfizerA_2_day, covid_vax_pfizerC_2_day, na.rm = TRUE),
+    covid_vax_any_3_day = pmin(covid_vax_pfizerA_2_day, covid_vax_pfizerC_2_day, na.rm = TRUE),
   ) %>%
   # convert logical to integer as study defs output 0/1 not TRUE/FALSE
   # mutate(across(where(is.logical), ~ as.integer(.))) %>%

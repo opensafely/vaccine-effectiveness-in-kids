@@ -34,7 +34,37 @@ def vaccination_date_X(name, index_date, n, product_name_matches=None, target_di
     ))
   return variables
 
+def week_12_vaccination_date_X(name, index_date, n, product_name_matches=None, target_disease_matches=None):
+  # vaccination date, given product_name
+  def var_signature(
+    name,
+    on_or_after,
+    product_name_matches,
+    target_disease_matches
+  ):
+    return {
+      name: patients.with_tpp_vaccination_record(
+        product_name_matches=product_name_matches,
+        target_disease_matches=target_disease_matches,
+        on_or_after=on_or_after,
+        find_first_match_in_period=True,
+        returning="date",
+        date_format="YYYY-MM-DD"
+      ),
+    }
+    
+  variables = var_signature(f"{name}_1_date", index_date, product_name_matches, target_disease_matches)
+  for i in range(2, n+1):
+    variables.update(var_signature(
+      f"{name}_{i}_date", 
+      f"{name}_{i-1}_date + 84 days",
+      # pick up subsequent vaccines occurring one day or later -- people with unrealistic dosing intervals are later excluded
+      product_name_matches,
+      target_disease_matches
+    ))
+  return variables
 
+  
 def generate_outcome_variables(index_date):
   outcome_variables = dict(
   

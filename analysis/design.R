@@ -25,22 +25,30 @@ n_matching_rounds <- 6
 
 study_dates <- lst(
   over12 = lst(
-    start_date = "2021-09-20", # start of vaccine eligibility for non-high-risk 12-15 year olds monday 20 september 2021, adult pfizer dose licensed
-    end_date = "2021-12-26", # end of recruitment (14 weeks later)
-    followupend_date = "2022-07-24", # end of follow-up
+    start_date1 = "2021-09-20", # start of vaccine eligibility for non-high-risk 12-15 year olds monday 20 september 2021, adult pfizer dose licensed
+    end_date1 = "2021-12-26", # end of recruitment (14 weeks later)
+    followupend_date1 = "2022-07-24", # end of follow-up
+    start_date2 = "2021-12-13", # 12 weeks after the start of vaccine eligibility for non-high-risk 12-15 year olds monday 20 september 2021, adult pfizer dose licensed
+    end_date2 = "2022-03-14", # end of recruitment (14 weeks later)
+    followupend_date2 = "2022-04-10", # end of follow-up
   ),
   under12 = lst(
-    start_date = "2022-04-04", # start of vaccine eligibility for non-high-risk 5-11 year olds monday 4 APril 2022, child pfizer dose licensed
-    end_date = "2022-07-10", # end of recruitment (14 weeks later)
-    followupend_date = "2022-07-24" # end of follow-up
+    start_date1 = "2022-04-04", # start of vaccine eligibility for non-high-risk 5-11 year olds monday 4 APril 2022, child pfizer dose licensed
+    end_date1 = "2022-07-10", # end of recruitment (14 weeks later)
+    followupend_date1 = "2022-07-24", # end of follow-up
+    start_date2 = "2022-06-27", # 12 weeks after the start of vaccine eligibility for non-high-risk 5-11 year olds monday 4 APril 2022, child pfizer dose licensed
+    end_date2 = "2022-09-26", # end of recruitment (14 weeks later)
+    followupend_date2 = "2022-10-10", # end of follow-up
   )
 )
 
+
 extract_increment <- 14
 
-study_dates$over12$control_extract_dates <- as.Date(study_dates$over12$start_date) + (0:26) * extract_increment
-study_dates$under12$control_extract_dates <- as.Date(study_dates$under12$start_date) + (0:26) * extract_increment
-
+study_dates$over12$control_extract_dates1 <- as.Date(study_dates$over12$start_date1) + (0:26) * extract_increment
+study_dates$under12$control_extract_dates1 <- as.Date(study_dates$under12$start_date1) + (0:26) * extract_increment
+study_dates$over12$control_extract_dates2 <- as.Date(study_dates$over12$start_date2) + (0:26) * extract_increment
+study_dates$under12$control_extract_dates2 <- as.Date(study_dates$under12$start_date2) + (0:26) * extract_increment
 # write to json so that both R and python (study defs) can easily pick up
 jsonlite::write_json(study_dates, path = here("lib", "design", "study-dates.json"), auto_unbox = TRUE, pretty = TRUE)
 

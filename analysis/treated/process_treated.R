@@ -33,19 +33,23 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
+  vaxn <- "vax1"
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   cohort <- args[[1]]
+  vaxn <- args[[2]]
 }
 
+# get vax number
+n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
 ## get cohort-specific parameters study dates and parameters ----
 
 dates <- map(study_dates[[cohort]], as.Date)
 params <- study_params[[cohort]]
 
 ## create output directory ----
-fs::dir_create(here("output", cohort, "treated"))
+fs::dir_create(here("output", vaxn, cohort, "treated"))
 
 
 # import data ----
@@ -57,7 +61,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
 
-  data_studydef_dummy <- read_feather(ghere("output", cohort, "extract", "input_treated.feather")) %>%
+  data_studydef_dummy <- read_feather(ghere("output", vaxn, cohort, "extract", "input_treated.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), ~ as.Date(.))) %>%
     # because of a bug in cohort extractor -- remove once pulled new version
@@ -246,6 +250,7 @@ data_processed <- data_processed %>%
   mutate(
     vax1_type = covid_vax_1_type,
     vax2_type = covid_vax_2_type,
+    vax3_type = covid_vax_3_type,
     vax1_type_descr = fct_case_when(
       vax1_type == "pfizerA" ~ "BNT162b2 30micrograms/0.3ml",
       vax1_type == "pfizerC" ~ "BNT162b2 10mcg/0.2ml",
@@ -258,8 +263,15 @@ data_processed <- data_processed %>%
       vax2_type == "any" ~ "Other",
       TRUE ~ NA_character_
     ),
+    vax3_type_descr = fct_case_when(
+      vax3_type == "pfizerA" ~ "BNT162b2 30micrograms/0.3ml",
+      vax3_type == "pfizerC" ~ "BNT162b2 10mcg/0.2ml",
+      vax3_type == "any" ~ "Other",
+      TRUE ~ NA_character_
+    ),
     vax1_date = covid_vax_1_date,
     vax2_date = covid_vax_2_date,
+    vax3_date = covid_vax_3_date
   ) %>%
   select(
     -starts_with("covid_vax_"),
@@ -282,20 +294,41 @@ data_criteria <- data_processed %>%
     has_region = !is.na(region),
     vax1_betweenentrydates = case_when(
       (vax1_type == params$treatment) &
-        (vax1_date >= dates$start_date) &
-        (vax1_date <= dates$end_date) ~ TRUE,
+        (vax1_date >= dates$start_date1) &
+        (vax1_date <= dates$end_date1) ~ TRUE,
+      TRUE ~ FALSE
+    ),
+    vax2_betweenentrydates = case_when(
+      (vax2_type == params$treatment) &
+        (vax2_date >= dates$start_date2) &
+        (vax2_date <= dates$end_date2) ~ TRUE,
       TRUE ~ FALSE
     ),
     has_vaxgap12 = vax2_date >= (vax1_date + 17) | is.na(vax2_date), # at least 17 days between first two vaccinations
+    has_vaxgap23 = vax3_date >= (vax2_date + 17) | is.na(vax3_date), # at least 17 days between second and third vaccinations
     no_recentcovid30 = is.na(anycovid_0_date) | ((vax1_date - anycovid_0_date) > 30),
-    include = (
+  )
+
+if (n_vax == 1) {
+  data_criteria <- data_criteria %>%
+    mutate(include = (
       vax1_betweenentrydates & has_vaxgap12 &
         has_age & has_sex & has_imd & # has_ethnicity &
         has_region &
         no_recentcovid30
-    ),
-  )
+    ))
+}
 
+if (n_vax == 2) {
+  data_criteria <- data_criteria %>%
+    mutate(include = (
+      vax2_betweenentrydates & vax2_betweenentrydates &
+        has_vaxgap12 & has_vaxgap23 &
+        has_age & has_sex & has_imd & # has_ethnicity &
+        has_region &
+        no_recentcovid30
+    ))
+}
 ## filter and export ----
 
 data_treated_eligible <-
@@ -305,7 +338,7 @@ data_treated_eligible <-
   left_join(data_processed, by = "patient_id") %>%
   droplevels()
 
-write_rds(data_treated_eligible, ghere("output", cohort, "treated", "data_treatedeligible.rds"), compress = "gz")
+write_rds(data_treated_eligible, ghere("output", vaxn, cohort, "treated", "data_treatedeligible.rds"), compress = "gz")
 
 
 # create flowchart ----
@@ -338,39 +371,4 @@ data_flowchart <- data_criteria %>%
       TRUE ~ NA_character_
     )
   )
-write_rds(data_flowchart, ghere("output", cohort, "treated", "flowchart_treatedeligible.rds"))
-
-
-### second vax distribution
-vax_2_dist <- data_extract %>%
-  mutate(
-    has_gap_vax12 = (covid_vax_any_2_date >= (covid_vax_any_1_date + 17) & !is.na(covid_vax_any_2_date)), # at least 17 days between first two vaccinations
-    vaxgap12 = case_when(has_gap_vax12 ~ covid_vax_any_2_date - covid_vax_any_1_date)
-  ) %>%
-  summarise(
-    n = length(vaxgap12),
-    n_nonmiss = sum(!is.na(vaxgap12)),
-    pct_nonmiss = sum(!is.na(vaxgap12)) / length(vaxgap12),
-    n_miss = sum(is.na(vaxgap12)),
-    pct_miss = sum(is.na(vaxgap12)) / length(vaxgap12),
-    mean = mean(vaxgap12, na.rm = TRUE),
-    sd = sd(vaxgap12, na.rm = TRUE),
-    min = min(vaxgap12, na.rm = TRUE),
-    p10 = quantile(vaxgap12, p = 0.1, na.rm = TRUE, type = 1),
-    p25 = quantile(vaxgap12, p = 0.25, na.rm = TRUE, type = 1),
-    p50 = quantile(vaxgap12, p = 0.5, na.rm = TRUE, type = 1),
-    p75 = quantile(vaxgap12, p = 0.75, na.rm = TRUE, type = 1),
-    p90 = quantile(vaxgap12, p = 0.9, na.rm = TRUE, type = 1),
-    max = max(vaxgap12, na.rm = TRUE),
-    unique = n_distinct(vaxgap12, na.rm = TRUE),
-    n_max = sum(vaxgap12 == max),
-    n_min = sum(vaxgap12 == min)
-  ) %>%
-  mutate(
-    min = case_when(n_min >= 5 ~ min),
-    max = case_when(n_max >= 5 ~ max),
-    n_min = case_when(n_min >= 5 ~ min),
-    n_max = case_when(n_max >= 5 ~ max),
-  )
-
-write_csv(vax_2_dist, ghere("output", cohort, "treated", "vaxgap12.csv"))
+write_rds(data_flowchart, ghere("output", vaxn, cohort, "treated", "flowchart_treatedeligible.rds"))
