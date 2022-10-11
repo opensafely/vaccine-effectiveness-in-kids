@@ -125,6 +125,24 @@ data_treated <-
   ) 
 
 
+## check controls are all unique---
+
+match_dups <- data_matchstatus %>% filter(treated==0L) %>%
+  arrange(patient_id, matching_round) %>%
+  group_by(patient_id) %>%
+  mutate(
+   n_id = n()
+  ) %>%
+  filter(
+    n_id>1
+  ) %>%
+  select(patient_id, matching_round, match_id, trial_date)
+
+
+print("number of duplicate matches: \\n")
+nrow(match_dups)
+# should be zero
+
 # import final dataset of matched controls, including matching variables
 # alternative to this is re-extracting everything in the study definition
 data_control <- 
@@ -133,8 +151,8 @@ data_control <-
     map_dfr(
       seq_len(n_matching_rounds), 
       ~{read_rds(ghere("output", cohort, glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))}
-    ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date), # remove to avoid clash with already-stored variables
-    by=c("patient_id")
+    ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date, - matching_round), # remove to avoid clash with already-stored variables
+    by=c("patient_id")#, "match_id", "trial_date", "treated", "controlistreated_date", "matching_round")
   ) %>%
   # merge with outcomes data
   left_join(
