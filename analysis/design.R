@@ -17,7 +17,6 @@ fs::dir_create(here("lib", "design"))
 threshold <- 6
 
 # number of matching rounds to perform
-
 n_matching_rounds <- 6
 
 

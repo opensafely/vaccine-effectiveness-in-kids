@@ -4,6 +4,7 @@ import codelists
 
 # import json module
 import json
+import re
 
 from cohortextractor import (
   StudyDefinition,
@@ -15,18 +16,26 @@ from cohortextractor import (
   params
 )
 
-from variables_outcome import vaccination_date_X 
+from variables_outcome import week_12_vaccination_date_X 
 
 cohort = params["cohort"]
 matching_round = params["matching_round"]
+vaxn = params["vaxn"]
+n_vax = int(re.sub(r'[^0-9]', '', vaxn))
 
 # import study dates defined in "./analysis/design.R" script
 with open("./lib/design/study-dates.json") as f:
   study_dates = json.load(f)
 
 # change these in design.R if necessary
-start_date = study_dates[cohort]["start_date"]
-end_date = study_dates[cohort]["end_date"]
+start_date_0 = study_dates[cohort]["start_date1"]
+end_date_0 = study_dates[cohort]["end_date1"]
+start_date_1 = study_dates[cohort]["start_date1"]
+end_date_1 = study_dates[cohort]["end_date1"]
+start_date_2 = study_dates[cohort]["start_date2"]
+end_date_2 = study_dates[cohort]["end_date2"]
+start_date = study_dates[cohort][f"start_date{n_vax}"]
+end_date = study_dates[cohort][f"end_date{n_vax}"]
 
 
 # import study parameters defined in "./analysis/design.R" script  
@@ -83,21 +92,54 @@ study = StudyDefinition(
       (NOT child_atrisk)
       AND
       prematched
+      AND 
+      (covid_vax_any_{n_vax-1}_date >= start_date_{n_vax-1})
+      AND
+      (covid_vax_any_{n_vax-1}_date <= end_date_{n_vax-1})
+      AND 
+      (covid_vax_any_{n_vax-1}_date = covid_vax_{treatment}_{n_vax-1}_date)
     """,
-    
-    prematched = patients.which_exist_in_file(f_path=f"output/{cohort}/matchround{matching_round}/potential/potential_matchedcontrols.csv.gz"),
-    
+    #NOT (covid_vax_any_1_date <= index_date) # doesn't work for some reason `unknown colunm : index_date`
+    #previouslymatched = patients.which_exist_in_file(f_path="output/match/cumulative_matchedcontrols{matching_round}.csv.gz"),
+  start_date_0 = patients.fixed_value(start_date_0),
+  end_date_0 = patients.fixed_value(end_date_0),  
+  start_date_1 = patients.fixed_value(start_date_1),
+  end_date_1 = patients.fixed_value(end_date_1),  
+  start_date_2 = patients.fixed_value(start_date_2),
+  end_date_2 = patients.fixed_value(end_date_2),  
+  covid_vax_any_0_date = patients.fixed_value(start_date_0),
+  covid_vax_pfizerA_0_date = patients.fixed_value(start_date_0),
+  covid_vax_pfizerC_0_date = patients.fixed_value(start_date_0),
+  prematched = patients.which_exist_in_file(f_path=f"output/{cohort}/matchround{matching_round}/potential/potential_matchedcontrols.csv.gz"),  
   ),
   trial_date = patients.with_value_from_file(f_path=f"output/{cohort}/matchround{matching_round}/potential/potential_matchedcontrols.csv.gz", returning="trial_date", returning_type="date", date_format='YYYY-MM-DD'),
   
   match_id = patients.with_value_from_file(f_path=f"output/{cohort}/matchround{matching_round}/potential/potential_matchedcontrols.csv.gz", returning="match_id", returning_type="int"),
   
-  **vaccination_date_X(
+  **week_12_vaccination_date_X(
     name = "covid_vax_any",
     index_date = "1900-01-01",
     n = 1,
     target_disease_matches="SARS-2 CORONAVIRUS"
   ),
+    # pfizer
+  **week_12_vaccination_date_X(
+    name = "covid_vax_pfizerA",
+    # use 1900 to capture all possible recorded covid vaccinations, including date errors
+    # any vaccines occurring before national rollout are later excluded
+    index_date = "1900-01-01", 
+    n = 2,
+    product_name_matches="COVID-19 mRNA Vaccine Comirnaty 30micrograms/0.3ml dose conc for susp for inj MDV (Pfizer)"
+  ),
+  
+  # pfizer approved for use in children (5-11)
+  **week_12_vaccination_date_X(
+    name = "covid_vax_pfizerC",
+    index_date = "1900-01-01",
+    n = 2,
+    product_name_matches="COVID-19 mRNA Vaccine Comirnaty Children 5-11yrs 10mcg/0.2ml dose conc for disp for inj MDV (Pfizer)"
+  ),
+
   **inclusion_variables,
   **matching_variables,
 )

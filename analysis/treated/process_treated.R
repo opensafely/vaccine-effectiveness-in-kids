@@ -33,7 +33,7 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
-  vaxn <- "vax1"
+  vaxn <- "vax2"
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
@@ -67,7 +67,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
     # because of a bug in cohort extractor -- remove once pulled new version
     mutate(patient_id = as.integer(patient_id))
 
-  data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_treated_{cohort}.feather")) %>%
+  data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_treated_{vaxn}_{cohort}.feather")) %>%
     mutate(
       msoa = sample(factor(c("1", "2")), size = n(), replace = TRUE) # override msoa so matching success more likely
     )
@@ -116,7 +116,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
 
   data_extract <- data_custom_dummy
 } else {
-  data_extract <- read_feather(ghere("output", cohort, "extract", "input_treated.feather")) %>%
+  data_extract <- read_feather(ghere("output", vaxn, cohort, "extract", "input_treated.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), as.Date))
 }
@@ -251,6 +251,11 @@ data_processed <- data_processed %>%
     vax1_type = covid_vax_1_type,
     vax2_type = covid_vax_2_type,
     vax3_type = covid_vax_3_type,
+    vax_type = case_when(
+      n_vax == 1 ~ vax1_type,
+      n_vax == 2 ~ vax2_type,
+      n_vax == 3 ~ vax3_type
+    ),
     vax1_type_descr = fct_case_when(
       vax1_type == "pfizerA" ~ "BNT162b2 30micrograms/0.3ml",
       vax1_type == "pfizerC" ~ "BNT162b2 10mcg/0.2ml",
@@ -271,7 +276,12 @@ data_processed <- data_processed %>%
     ),
     vax1_date = covid_vax_1_date,
     vax2_date = covid_vax_2_date,
-    vax3_date = covid_vax_3_date
+    vax3_date = covid_vax_3_date,
+    vax_date = case_when(
+      n_vax == 1 ~ vax1_date,
+      n_vax == 2 ~ vax2_date,
+      n_vax == 3 ~ vax3_date,
+    )
   ) %>%
   select(
     -starts_with("covid_vax_"),

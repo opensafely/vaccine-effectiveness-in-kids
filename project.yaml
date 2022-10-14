@@ -18,7 +18,7 @@ actions:
   ## # # # # # # # # # # # # # # # # # # # 
   ## Extract and match 
 
-  extract_treated_over12_vax1:
+  extract_treated_vax1_over12:
     run: cohortextractor:latest generate_cohort --study-definition study_definition_treated
       --output-file output/vax1/over12/extract/input_treated.feather --param cohort=over12
       --param vaxn=vax1
@@ -26,12 +26,1335 @@ actions:
       highly_sensitive:
         extract: output/vax1/over12/extract/input_treated.feather
 
-  process_treated_over12_vax1:
+  process_treated_vax1_over12:
     run: r:latest analysis/treated/process_treated.R over12 vax1
     needs:
-    - extract_treated_over12_vax1
+    - extract_treated_vax1_over12
     outputs:
       highly_sensitive:
         rds: output/vax1/over12/treated/*.rds
+
+  extract_controlpotential_vax1_over12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/over12/matchround1/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=1 --param index_date=2021-09-20
+      --param vaxn=vax1
+    needs: []
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround1/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_over12_1:
+    run: r:latest analysis/matching/process_controlpotential.R over12 1 vax1
+    needs:
+    - extract_controlpotential_vax1_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround1/process/*.rds
+
+  match_potential_vax1_over12_1:
+    run: r:latest analysis/matching/match_potential.R over12 1 vax1
+    needs:
+    - process_treated_vax1_over12
+    - process_controlpotential_vax1_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround1/potential/*.rds
+        csv: output/vax1/over12/matchround1/potential/*.csv.gz
+
+  extract_controlactual_vax1_over12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/over12/matchround1/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=1 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_over12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround1/extract/input_controlactual.feather
+
+  process_controlactual_vax1_over12_1:
+    run: r:latest analysis/matching/process_controlactual.R over12 1 vax1
+    needs:
+    - process_treated_vax1_over12
+    - match_potential_vax1_over12_1
+    - extract_controlpotential_vax1_over12_1
+    - extract_controlactual_vax1_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround1/actual/*.rds
+        csv: output/vax1/over12/matchround1/actual/*.csv.gz
+
+  extract_controlpotential_vax1_over12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/over12/matchround2/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=2 --param index_date=2021-10-04
+      --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_over12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround2/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_over12_2:
+    run: r:latest analysis/matching/process_controlpotential.R over12 2 vax1
+    needs:
+    - extract_controlpotential_vax1_over12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround2/process/*.rds
+
+  match_potential_vax1_over12_2:
+    run: r:latest analysis/matching/match_potential.R over12 2 vax1
+    needs:
+    - process_treated_vax1_over12
+    - process_controlpotential_vax1_over12_2
+    - process_controlactual_vax1_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround2/potential/*.rds
+        csv: output/vax1/over12/matchround2/potential/*.csv.gz
+
+  extract_controlactual_vax1_over12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/over12/matchround2/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=2 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_over12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround2/extract/input_controlactual.feather
+
+  process_controlactual_vax1_over12_2:
+    run: r:latest analysis/matching/process_controlactual.R over12 2 vax1
+    needs:
+    - process_treated_vax1_over12
+    - match_potential_vax1_over12_2
+    - extract_controlpotential_vax1_over12_2
+    - extract_controlactual_vax1_over12_2
+    - process_controlactual_vax1_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround2/actual/*.rds
+        csv: output/vax1/over12/matchround2/actual/*.csv.gz
+
+  extract_controlfinal_vax1_over12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
+      --output-file output/vax1/over12/extract/input_controlfinal.feather --param
+      cohort=over12 --param n_matching_rounds=2 --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_over12_2
+    outputs:
+      highly_sensitive:
+        extract: output/vax1/over12/extract/input_controlfinal.feather
+
+  process_controlfinal_vax1_over12:
+    run: r:latest analysis/matching/process_controlfinal.R over12 vax1
+    needs:
+    - process_controlactual_vax1_over12_1
+    - process_controlactual_vax1_over12_2
+    - extract_controlfinal_vax1_over12
+    - process_treated_vax1_over12
+    outputs:
+      highly_sensitive:
+        extract: output/vax1/over12/match/*.rds
+
+  skim_vax1_over12_matched:
+    run: r:latest analysis/data_skim.R output/vax1/over12/match/data_matched.rds output/vax1/over12/skim
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
       moderately_sensitive:
-        csv: output/vax1/over12/treated/*.csv
+        cohort: output/vax1/over12/skim/*.txt
+
+  table1_vax1_over12:
+    run: r:latest analysis/matching/table1.R over12 vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        csv: output/vax1/over12/table1/*.csv
+
+  extract_treated_vax2_over12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_treated
+      --output-file output/vax2/over12/extract/input_treated.feather --param cohort=over12
+      --param vaxn=vax2
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/over12/extract/input_treated.feather
+
+  process_treated_vax2_over12:
+    run: r:latest analysis/treated/process_treated.R over12 vax2
+    needs:
+    - extract_treated_vax2_over12
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/treated/*.rds
+
+  extract_controlpotential_vax2_over12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/over12/matchround1/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=1 --param index_date=2021-12-13
+      --param vaxn=vax2
+    needs: []
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround1/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_over12_1:
+    run: r:latest analysis/matching/process_controlpotential.R over12 1 vax2
+    needs:
+    - extract_controlpotential_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround1/process/*.rds
+
+  match_potential_vax2_over12_1:
+    run: r:latest analysis/matching/match_potential.R over12 1 vax2
+    needs:
+    - process_treated_vax2_over12
+    - process_controlpotential_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround1/potential/*.rds
+        csv: output/vax2/over12/matchround1/potential/*.csv.gz
+
+  extract_controlactual_vax2_over12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/over12/matchround1/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=1 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround1/extract/input_controlactual.feather
+
+  process_controlactual_vax2_over12_1:
+    run: r:latest analysis/matching/process_controlactual.R over12 1 vax2
+    needs:
+    - process_treated_vax2_over12
+    - match_potential_vax2_over12_1
+    - extract_controlpotential_vax2_over12_1
+    - extract_controlactual_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround1/actual/*.rds
+        csv: output/vax2/over12/matchround1/actual/*.csv.gz
+
+  extract_controlpotential_vax2_over12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/over12/matchround2/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=2 --param index_date=2021-12-27
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround2/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_over12_2:
+    run: r:latest analysis/matching/process_controlpotential.R over12 2 vax2
+    needs:
+    - extract_controlpotential_vax2_over12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround2/process/*.rds
+
+  match_potential_vax2_over12_2:
+    run: r:latest analysis/matching/match_potential.R over12 2 vax2
+    needs:
+    - process_treated_vax2_over12
+    - process_controlpotential_vax2_over12_2
+    - process_controlactual_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround2/potential/*.rds
+        csv: output/vax2/over12/matchround2/potential/*.csv.gz
+
+  extract_controlactual_vax2_over12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/over12/matchround2/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=2 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_over12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround2/extract/input_controlactual.feather
+
+  process_controlactual_vax2_over12_2:
+    run: r:latest analysis/matching/process_controlactual.R over12 2 vax2
+    needs:
+    - process_treated_vax2_over12
+    - match_potential_vax2_over12_2
+    - extract_controlpotential_vax2_over12_2
+    - extract_controlactual_vax2_over12_2
+    - process_controlactual_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround2/actual/*.rds
+        csv: output/vax2/over12/matchround2/actual/*.csv.gz
+
+  extract_controlfinal_vax2_over12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
+      --output-file output/vax2/over12/extract/input_controlfinal.feather --param
+      cohort=over12 --param n_matching_rounds=2 --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_over12_2
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/over12/extract/input_controlfinal.feather
+
+  process_controlfinal_vax2_over12:
+    run: r:latest analysis/matching/process_controlfinal.R over12 vax2
+    needs:
+    - process_controlactual_vax2_over12_1
+    - process_controlactual_vax2_over12_2
+    - extract_controlfinal_vax2_over12
+    - process_treated_vax2_over12
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/over12/match/*.rds
+
+  skim_vax2_over12_matched:
+    run: r:latest analysis/data_skim.R output/vax2/over12/match/data_matched.rds output/vax2/over12/skim
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        cohort: output/vax2/over12/skim/*.txt
+
+  table1_vax2_over12:
+    run: r:latest analysis/matching/table1.R over12 vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        csv: output/vax2/over12/table1/*.csv
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## Model 
+
+  km_vax1_over12_all_postest:
+    run: r:latest analysis/model/km.R over12 all postest vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/all/postest/*.rds
+        png: output/vax1/over12/models/km/all/postest/*.png
+
+  km_vax1_over12_all_emergency:
+    run: r:latest analysis/model/km.R over12 all emergency vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/all/emergency/*.rds
+        png: output/vax1/over12/models/km/all/emergency/*.png
+
+  km_vax1_over12_all_covidemergency:
+    run: r:latest analysis/model/km.R over12 all covidemergency vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/all/covidemergency/*.rds
+        png: output/vax1/over12/models/km/all/covidemergency/*.png
+
+  km_vax1_over12_all_covidadmitted:
+    run: r:latest analysis/model/km.R over12 all covidadmitted vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/all/covidadmitted/*.rds
+        png: output/vax1/over12/models/km/all/covidadmitted/*.png
+
+  km_vax1_over12_all_covidcritcare:
+    run: r:latest analysis/model/km.R over12 all covidcritcare vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/all/covidcritcare/*.rds
+        png: output/vax1/over12/models/km/all/covidcritcare/*.png
+
+  km_vax1_over12_all_coviddeath:
+    run: r:latest analysis/model/km.R over12 all coviddeath vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/all/coviddeath/*.rds
+        png: output/vax1/over12/models/km/all/coviddeath/*.png
+
+  km_vax1_over12_all_noncoviddeath:
+    run: r:latest analysis/model/km.R over12 all noncoviddeath vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/all/noncoviddeath/*.rds
+        png: output/vax1/over12/models/km/all/noncoviddeath/*.png
+
+  km_vax1_over12_prior_covid_infection_postest:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection postest vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/prior_covid_infection/postest/*.rds
+        png: output/vax1/over12/models/km/prior_covid_infection/postest/*.png
+
+  km_vax1_over12_prior_covid_infection_emergency:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection emergency vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/prior_covid_infection/emergency/*.rds
+        png: output/vax1/over12/models/km/prior_covid_infection/emergency/*.png
+
+  km_vax1_over12_prior_covid_infection_covidemergency:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection covidemergency
+      vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/prior_covid_infection/covidemergency/*.rds
+        png: output/vax1/over12/models/km/prior_covid_infection/covidemergency/*.png
+
+  km_vax1_over12_prior_covid_infection_covidadmitted:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection covidadmitted vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/prior_covid_infection/covidadmitted/*.rds
+        png: output/vax1/over12/models/km/prior_covid_infection/covidadmitted/*.png
+
+  km_vax1_over12_prior_covid_infection_covidcritcare:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection covidcritcare vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/prior_covid_infection/covidcritcare/*.rds
+        png: output/vax1/over12/models/km/prior_covid_infection/covidcritcare/*.png
+
+  km_vax1_over12_prior_covid_infection_coviddeath:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection coviddeath vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/prior_covid_infection/coviddeath/*.rds
+        png: output/vax1/over12/models/km/prior_covid_infection/coviddeath/*.png
+
+  km_vax1_over12_prior_covid_infection_noncoviddeath:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection noncoviddeath vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/km/prior_covid_infection/noncoviddeath/*.rds
+        png: output/vax1/over12/models/km/prior_covid_infection/noncoviddeath/*.png
+
+  eventcounts_vax1_over12_all:
+    run: r:latest analysis/model/eventcounts.R over12 all vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/eventcounts/all/*.rds
+
+  eventcounts_vax1_over12_prior_covid_infection:
+    run: r:latest analysis/model/eventcounts.R over12 prior_covid_infection vax1
+    needs:
+    - process_controlfinal_vax1_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/eventcounts/prior_covid_infection/*.rds
+
+  combine_vax1_over12:
+    run: r:latest analysis/model/combine.R over12 vax1
+    needs:
+    - km_vax1_over12_all_postest
+    - km_vax1_over12_all_emergency
+    - km_vax1_over12_all_covidemergency
+    - km_vax1_over12_all_covidadmitted
+    - km_vax1_over12_all_covidcritcare
+    - km_vax1_over12_all_coviddeath
+    - km_vax1_over12_all_noncoviddeath
+    - km_vax1_over12_prior_covid_infection_postest
+    - km_vax1_over12_prior_covid_infection_emergency
+    - km_vax1_over12_prior_covid_infection_covidemergency
+    - km_vax1_over12_prior_covid_infection_covidadmitted
+    - km_vax1_over12_prior_covid_infection_covidcritcare
+    - km_vax1_over12_prior_covid_infection_coviddeath
+    - km_vax1_over12_prior_covid_infection_noncoviddeath
+    - eventcounts_vax1_over12_all
+    - eventcounts_vax1_over12_prior_covid_infection
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/over12/models/combined/*.csv
+        png: output/vax1/over12/models/combined/*.png
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## second vaccination 
+
+  km_vax2_over12_all_postest:
+    run: r:latest analysis/model/km.R over12 all postest vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/all/postest/*.rds
+        png: output/vax2/over12/models/km/all/postest/*.png
+
+  km_vax2_over12_all_emergency:
+    run: r:latest analysis/model/km.R over12 all emergency vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/all/emergency/*.rds
+        png: output/vax2/over12/models/km/all/emergency/*.png
+
+  km_vax2_over12_all_covidemergency:
+    run: r:latest analysis/model/km.R over12 all covidemergency vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/all/covidemergency/*.rds
+        png: output/vax2/over12/models/km/all/covidemergency/*.png
+
+  km_vax2_over12_all_covidadmitted:
+    run: r:latest analysis/model/km.R over12 all covidadmitted vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/all/covidadmitted/*.rds
+        png: output/vax2/over12/models/km/all/covidadmitted/*.png
+
+  km_vax2_over12_all_covidcritcare:
+    run: r:latest analysis/model/km.R over12 all covidcritcare vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/all/covidcritcare/*.rds
+        png: output/vax2/over12/models/km/all/covidcritcare/*.png
+
+  km_vax2_over12_all_coviddeath:
+    run: r:latest analysis/model/km.R over12 all coviddeath vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/all/coviddeath/*.rds
+        png: output/vax2/over12/models/km/all/coviddeath/*.png
+
+  km_vax2_over12_all_noncoviddeath:
+    run: r:latest analysis/model/km.R over12 all noncoviddeath vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/all/noncoviddeath/*.rds
+        png: output/vax2/over12/models/km/all/noncoviddeath/*.png
+
+  km_vax2_over12_prior_covid_infection_postest:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection postest vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/prior_covid_infection/postest/*.rds
+        png: output/vax2/over12/models/km/prior_covid_infection/postest/*.png
+
+  km_vax2_over12_prior_covid_infection_emergency:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection emergency vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/prior_covid_infection/emergency/*.rds
+        png: output/vax2/over12/models/km/prior_covid_infection/emergency/*.png
+
+  km_vax2_over12_prior_covid_infection_covidemergency:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection covidemergency
+      vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/prior_covid_infection/covidemergency/*.rds
+        png: output/vax2/over12/models/km/prior_covid_infection/covidemergency/*.png
+
+  km_vax2_over12_prior_covid_infection_covidadmitted:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection covidadmitted vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/prior_covid_infection/covidadmitted/*.rds
+        png: output/vax2/over12/models/km/prior_covid_infection/covidadmitted/*.png
+
+  km_vax2_over12_prior_covid_infection_covidcritcare:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection covidcritcare vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/prior_covid_infection/covidcritcare/*.rds
+        png: output/vax2/over12/models/km/prior_covid_infection/covidcritcare/*.png
+
+  km_vax2_over12_prior_covid_infection_coviddeath:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection coviddeath vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/prior_covid_infection/coviddeath/*.rds
+        png: output/vax2/over12/models/km/prior_covid_infection/coviddeath/*.png
+
+  km_vax2_over12_prior_covid_infection_noncoviddeath:
+    run: r:latest analysis/model/km.R over12 prior_covid_infection noncoviddeath vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/km/prior_covid_infection/noncoviddeath/*.rds
+        png: output/vax2/over12/models/km/prior_covid_infection/noncoviddeath/*.png
+
+  eventcounts_vax2_over12_all:
+    run: r:latest analysis/model/eventcounts.R over12 all vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/eventcounts/all/*.rds
+
+  eventcounts_vax2_over12_prior_covid_infection:
+    run: r:latest analysis/model/eventcounts.R over12 prior_covid_infection vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/eventcounts/prior_covid_infection/*.rds
+
+  combine_vax2_over12:
+    run: r:latest analysis/model/combine.R over12 vax2
+    needs:
+    - km_vax2_over12_all_postest
+    - km_vax2_over12_all_emergency
+    - km_vax2_over12_all_covidemergency
+    - km_vax2_over12_all_covidadmitted
+    - km_vax2_over12_all_covidcritcare
+    - km_vax2_over12_all_coviddeath
+    - km_vax2_over12_all_noncoviddeath
+    - km_vax2_over12_prior_covid_infection_postest
+    - km_vax2_over12_prior_covid_infection_emergency
+    - km_vax2_over12_prior_covid_infection_covidemergency
+    - km_vax2_over12_prior_covid_infection_covidadmitted
+    - km_vax2_over12_prior_covid_infection_covidcritcare
+    - km_vax2_over12_prior_covid_infection_coviddeath
+    - km_vax2_over12_prior_covid_infection_noncoviddeath
+    - eventcounts_vax2_over12_all
+    - eventcounts_vax2_over12_prior_covid_infection
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/over12/models/combined/*.csv
+        png: output/vax2/over12/models/combined/*.png
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## Under 12s cohort 
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## Extract and match 
+
+  extract_treated_vax1_under12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_treated
+      --output-file output/vax1/under12/extract/input_treated.feather --param cohort=under12
+      --param vaxn=vax1
+    outputs:
+      highly_sensitive:
+        extract: output/vax1/under12/extract/input_treated.feather
+
+  process_treated_vax1_under12:
+    run: r:latest analysis/treated/process_treated.R under12 vax1
+    needs:
+    - extract_treated_vax1_under12
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/treated/*.rds
+
+  extract_controlpotential_vax1_under12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/under12/matchround1/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=1 --param index_date=2022-04-04
+      --param vaxn=vax1
+    needs: []
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround1/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_under12_1:
+    run: r:latest analysis/matching/process_controlpotential.R under12 1 vax1
+    needs:
+    - extract_controlpotential_vax1_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround1/process/*.rds
+
+  match_potential_vax1_under12_1:
+    run: r:latest analysis/matching/match_potential.R under12 1 vax1
+    needs:
+    - process_treated_vax1_under12
+    - process_controlpotential_vax1_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround1/potential/*.rds
+        csv: output/vax1/under12/matchround1/potential/*.csv.gz
+
+  extract_controlactual_vax1_under12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/under12/matchround1/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=1 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_under12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround1/extract/input_controlactual.feather
+
+  process_controlactual_vax1_under12_1:
+    run: r:latest analysis/matching/process_controlactual.R under12 1 vax1
+    needs:
+    - process_treated_vax1_under12
+    - match_potential_vax1_under12_1
+    - extract_controlpotential_vax1_under12_1
+    - extract_controlactual_vax1_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround1/actual/*.rds
+        csv: output/vax1/under12/matchround1/actual/*.csv.gz
+
+  extract_controlpotential_vax1_under12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/under12/matchround2/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=2 --param index_date=2022-04-18
+      --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_under12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround2/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_under12_2:
+    run: r:latest analysis/matching/process_controlpotential.R under12 2 vax1
+    needs:
+    - extract_controlpotential_vax1_under12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround2/process/*.rds
+
+  match_potential_vax1_under12_2:
+    run: r:latest analysis/matching/match_potential.R under12 2 vax1
+    needs:
+    - process_treated_vax1_under12
+    - process_controlpotential_vax1_under12_2
+    - process_controlactual_vax1_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround2/potential/*.rds
+        csv: output/vax1/under12/matchround2/potential/*.csv.gz
+
+  extract_controlactual_vax1_under12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/under12/matchround2/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=2 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_under12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround2/extract/input_controlactual.feather
+
+  process_controlactual_vax1_under12_2:
+    run: r:latest analysis/matching/process_controlactual.R under12 2 vax1
+    needs:
+    - process_treated_vax1_under12
+    - match_potential_vax1_under12_2
+    - extract_controlpotential_vax1_under12_2
+    - extract_controlactual_vax1_under12_2
+    - process_controlactual_vax1_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround2/actual/*.rds
+        csv: output/vax1/under12/matchround2/actual/*.csv.gz
+
+  extract_controlfinal_vax1_under12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
+      --output-file output/vax1/under12/extract/input_controlfinal.feather --param
+      cohort=under12 --param n_matching_rounds=2 --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_under12_2
+    outputs:
+      highly_sensitive:
+        extract: output/vax1/under12/extract/input_controlfinal.feather
+
+  process_controlfinal_vax1_under12:
+    run: r:latest analysis/matching/process_controlfinal.R under12 vax1
+    needs:
+    - process_controlactual_vax1_under12_1
+    - process_controlactual_vax1_under12_2
+    - extract_controlfinal_vax1_under12
+    - process_treated_vax1_under12
+    outputs:
+      highly_sensitive:
+        extract: output/vax1/under12/match/*.rds
+
+  skim_vax1_under12_matched:
+    run: r:latest analysis/data_skim.R output/vax1/under12/match/data_matched.rds
+      output/vax1/under12/skim
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        cohort: output/vax1/under12/skim/*.txt
+
+  table1_vax1_under12:
+    run: r:latest analysis/matching/table1.R under12 vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        csv: output/vax1/under12/table1/*.csv
+
+  extract_treated_vax2_under12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_treated
+      --output-file output/vax2/under12/extract/input_treated.feather --param cohort=under12
+      --param vaxn=vax2
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/under12/extract/input_treated.feather
+
+  process_treated_vax2_under12:
+    run: r:latest analysis/treated/process_treated.R under12 vax2
+    needs:
+    - extract_treated_vax2_under12
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/treated/*.rds
+
+  extract_controlpotential_vax2_under12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/under12/matchround1/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=1 --param index_date=2022-06-27
+      --param vaxn=vax2
+    needs: []
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround1/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_under12_1:
+    run: r:latest analysis/matching/process_controlpotential.R under12 1 vax2
+    needs:
+    - extract_controlpotential_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround1/process/*.rds
+
+  match_potential_vax2_under12_1:
+    run: r:latest analysis/matching/match_potential.R under12 1 vax2
+    needs:
+    - process_treated_vax2_under12
+    - process_controlpotential_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround1/potential/*.rds
+        csv: output/vax2/under12/matchround1/potential/*.csv.gz
+
+  extract_controlactual_vax2_under12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/under12/matchround1/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=1 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround1/extract/input_controlactual.feather
+
+  process_controlactual_vax2_under12_1:
+    run: r:latest analysis/matching/process_controlactual.R under12 1 vax2
+    needs:
+    - process_treated_vax2_under12
+    - match_potential_vax2_under12_1
+    - extract_controlpotential_vax2_under12_1
+    - extract_controlactual_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround1/actual/*.rds
+        csv: output/vax2/under12/matchround1/actual/*.csv.gz
+
+  extract_controlpotential_vax2_under12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/under12/matchround2/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=2 --param index_date=2022-07-11
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround2/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_under12_2:
+    run: r:latest analysis/matching/process_controlpotential.R under12 2 vax2
+    needs:
+    - extract_controlpotential_vax2_under12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround2/process/*.rds
+
+  match_potential_vax2_under12_2:
+    run: r:latest analysis/matching/match_potential.R under12 2 vax2
+    needs:
+    - process_treated_vax2_under12
+    - process_controlpotential_vax2_under12_2
+    - process_controlactual_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround2/potential/*.rds
+        csv: output/vax2/under12/matchround2/potential/*.csv.gz
+
+  extract_controlactual_vax2_under12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/under12/matchround2/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=2 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_under12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround2/extract/input_controlactual.feather
+
+  process_controlactual_vax2_under12_2:
+    run: r:latest analysis/matching/process_controlactual.R under12 2 vax2
+    needs:
+    - process_treated_vax2_under12
+    - match_potential_vax2_under12_2
+    - extract_controlpotential_vax2_under12_2
+    - extract_controlactual_vax2_under12_2
+    - process_controlactual_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround2/actual/*.rds
+        csv: output/vax2/under12/matchround2/actual/*.csv.gz
+
+  extract_controlfinal_vax2_under12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
+      --output-file output/vax2/under12/extract/input_controlfinal.feather --param
+      cohort=under12 --param n_matching_rounds=2 --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_under12_2
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/under12/extract/input_controlfinal.feather
+
+  process_controlfinal_vax2_under12:
+    run: r:latest analysis/matching/process_controlfinal.R under12 vax2
+    needs:
+    - process_controlactual_vax2_under12_1
+    - process_controlactual_vax2_under12_2
+    - extract_controlfinal_vax2_under12
+    - process_treated_vax2_under12
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/under12/match/*.rds
+
+  skim_vax2_under12_matched:
+    run: r:latest analysis/data_skim.R output/vax2/under12/match/data_matched.rds
+      output/vax2/under12/skim
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        cohort: output/vax2/under12/skim/*.txt
+
+  table1_vax2_under12:
+    run: r:latest analysis/matching/table1.R under12 vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        csv: output/vax2/under12/table1/*.csv
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## Model 
+
+  km_vax1_under12_all_postest:
+    run: r:latest analysis/model/km.R under12 all postest vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/all/postest/*.rds
+        png: output/vax1/under12/models/km/all/postest/*.png
+
+  km_vax1_under12_all_emergency:
+    run: r:latest analysis/model/km.R under12 all emergency vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/all/emergency/*.rds
+        png: output/vax1/under12/models/km/all/emergency/*.png
+
+  km_vax1_under12_all_covidemergency:
+    run: r:latest analysis/model/km.R under12 all covidemergency vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/all/covidemergency/*.rds
+        png: output/vax1/under12/models/km/all/covidemergency/*.png
+
+  km_vax1_under12_all_covidadmitted:
+    run: r:latest analysis/model/km.R under12 all covidadmitted vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/all/covidadmitted/*.rds
+        png: output/vax1/under12/models/km/all/covidadmitted/*.png
+
+  km_vax1_under12_all_covidcritcare:
+    run: r:latest analysis/model/km.R under12 all covidcritcare vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/all/covidcritcare/*.rds
+        png: output/vax1/under12/models/km/all/covidcritcare/*.png
+
+  km_vax1_under12_all_coviddeath:
+    run: r:latest analysis/model/km.R under12 all coviddeath vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/all/coviddeath/*.rds
+        png: output/vax1/under12/models/km/all/coviddeath/*.png
+
+  km_vax1_under12_all_noncoviddeath:
+    run: r:latest analysis/model/km.R under12 all noncoviddeath vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/all/noncoviddeath/*.rds
+        png: output/vax1/under12/models/km/all/noncoviddeath/*.png
+
+  km_vax1_under12_prior_covid_infection_postest:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection postest vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/prior_covid_infection/postest/*.rds
+        png: output/vax1/under12/models/km/prior_covid_infection/postest/*.png
+
+  km_vax1_under12_prior_covid_infection_emergency:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection emergency vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/prior_covid_infection/emergency/*.rds
+        png: output/vax1/under12/models/km/prior_covid_infection/emergency/*.png
+
+  km_vax1_under12_prior_covid_infection_covidemergency:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection covidemergency
+      vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/prior_covid_infection/covidemergency/*.rds
+        png: output/vax1/under12/models/km/prior_covid_infection/covidemergency/*.png
+
+  km_vax1_under12_prior_covid_infection_covidadmitted:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection covidadmitted
+      vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/prior_covid_infection/covidadmitted/*.rds
+        png: output/vax1/under12/models/km/prior_covid_infection/covidadmitted/*.png
+
+  km_vax1_under12_prior_covid_infection_covidcritcare:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection covidcritcare
+      vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/prior_covid_infection/covidcritcare/*.rds
+        png: output/vax1/under12/models/km/prior_covid_infection/covidcritcare/*.png
+
+  km_vax1_under12_prior_covid_infection_coviddeath:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection coviddeath vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/prior_covid_infection/coviddeath/*.rds
+        png: output/vax1/under12/models/km/prior_covid_infection/coviddeath/*.png
+
+  km_vax1_under12_prior_covid_infection_noncoviddeath:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection noncoviddeath
+      vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/km/prior_covid_infection/noncoviddeath/*.rds
+        png: output/vax1/under12/models/km/prior_covid_infection/noncoviddeath/*.png
+
+  eventcounts_vax1_under12_all:
+    run: r:latest analysis/model/eventcounts.R under12 all vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/eventcounts/all/*.rds
+
+  eventcounts_vax1_under12_prior_covid_infection:
+    run: r:latest analysis/model/eventcounts.R under12 prior_covid_infection vax1
+    needs:
+    - process_controlfinal_vax1_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/eventcounts/prior_covid_infection/*.rds
+
+  combine_vax1_under12:
+    run: r:latest analysis/model/combine.R under12 vax1
+    needs:
+    - km_vax1_under12_all_postest
+    - km_vax1_under12_all_emergency
+    - km_vax1_under12_all_covidemergency
+    - km_vax1_under12_all_covidadmitted
+    - km_vax1_under12_all_covidcritcare
+    - km_vax1_under12_all_coviddeath
+    - km_vax1_under12_all_noncoviddeath
+    - km_vax1_under12_prior_covid_infection_postest
+    - km_vax1_under12_prior_covid_infection_emergency
+    - km_vax1_under12_prior_covid_infection_covidemergency
+    - km_vax1_under12_prior_covid_infection_covidadmitted
+    - km_vax1_under12_prior_covid_infection_covidcritcare
+    - km_vax1_under12_prior_covid_infection_coviddeath
+    - km_vax1_under12_prior_covid_infection_noncoviddeath
+    - eventcounts_vax1_under12_all
+    - eventcounts_vax1_under12_prior_covid_infection
+    outputs:
+      moderately_sensitive:
+        rds: output/vax1/under12/models/combined/*.csv
+        png: output/vax1/under12/models/combined/*.png
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## second vaccination 
+
+  km_vax2_under12_all_postest:
+    run: r:latest analysis/model/km.R under12 all postest vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/all/postest/*.rds
+        png: output/vax2/under12/models/km/all/postest/*.png
+
+  km_vax2_under12_all_emergency:
+    run: r:latest analysis/model/km.R under12 all emergency vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/all/emergency/*.rds
+        png: output/vax2/under12/models/km/all/emergency/*.png
+
+  km_vax2_under12_all_covidemergency:
+    run: r:latest analysis/model/km.R under12 all covidemergency vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/all/covidemergency/*.rds
+        png: output/vax2/under12/models/km/all/covidemergency/*.png
+
+  km_vax2_under12_all_covidadmitted:
+    run: r:latest analysis/model/km.R under12 all covidadmitted vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/all/covidadmitted/*.rds
+        png: output/vax2/under12/models/km/all/covidadmitted/*.png
+
+  km_vax2_under12_all_covidcritcare:
+    run: r:latest analysis/model/km.R under12 all covidcritcare vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/all/covidcritcare/*.rds
+        png: output/vax2/under12/models/km/all/covidcritcare/*.png
+
+  km_vax2_under12_all_coviddeath:
+    run: r:latest analysis/model/km.R under12 all coviddeath vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/all/coviddeath/*.rds
+        png: output/vax2/under12/models/km/all/coviddeath/*.png
+
+  km_vax2_under12_all_noncoviddeath:
+    run: r:latest analysis/model/km.R under12 all noncoviddeath vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/all/noncoviddeath/*.rds
+        png: output/vax2/under12/models/km/all/noncoviddeath/*.png
+
+  km_vax2_under12_prior_covid_infection_postest:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection postest vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/prior_covid_infection/postest/*.rds
+        png: output/vax2/under12/models/km/prior_covid_infection/postest/*.png
+
+  km_vax2_under12_prior_covid_infection_emergency:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection emergency vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/prior_covid_infection/emergency/*.rds
+        png: output/vax2/under12/models/km/prior_covid_infection/emergency/*.png
+
+  km_vax2_under12_prior_covid_infection_covidemergency:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection covidemergency
+      vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/prior_covid_infection/covidemergency/*.rds
+        png: output/vax2/under12/models/km/prior_covid_infection/covidemergency/*.png
+
+  km_vax2_under12_prior_covid_infection_covidadmitted:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection covidadmitted
+      vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/prior_covid_infection/covidadmitted/*.rds
+        png: output/vax2/under12/models/km/prior_covid_infection/covidadmitted/*.png
+
+  km_vax2_under12_prior_covid_infection_covidcritcare:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection covidcritcare
+      vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/prior_covid_infection/covidcritcare/*.rds
+        png: output/vax2/under12/models/km/prior_covid_infection/covidcritcare/*.png
+
+  km_vax2_under12_prior_covid_infection_coviddeath:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection coviddeath vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/prior_covid_infection/coviddeath/*.rds
+        png: output/vax2/under12/models/km/prior_covid_infection/coviddeath/*.png
+
+  km_vax2_under12_prior_covid_infection_noncoviddeath:
+    run: r:latest analysis/model/km.R under12 prior_covid_infection noncoviddeath
+      vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/km/prior_covid_infection/noncoviddeath/*.rds
+        png: output/vax2/under12/models/km/prior_covid_infection/noncoviddeath/*.png
+
+  eventcounts_vax2_under12_all:
+    run: r:latest analysis/model/eventcounts.R under12 all vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/eventcounts/all/*.rds
+
+  eventcounts_vax2_under12_prior_covid_infection:
+    run: r:latest analysis/model/eventcounts.R under12 prior_covid_infection vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/eventcounts/prior_covid_infection/*.rds
+
+  combine_vax2_under12:
+    run: r:latest analysis/model/combine.R under12 vax2
+    needs:
+    - km_vax2_under12_all_postest
+    - km_vax2_under12_all_emergency
+    - km_vax2_under12_all_covidemergency
+    - km_vax2_under12_all_covidadmitted
+    - km_vax2_under12_all_covidcritcare
+    - km_vax2_under12_all_coviddeath
+    - km_vax2_under12_all_noncoviddeath
+    - km_vax2_under12_prior_covid_infection_postest
+    - km_vax2_under12_prior_covid_infection_emergency
+    - km_vax2_under12_prior_covid_infection_covidemergency
+    - km_vax2_under12_prior_covid_infection_covidadmitted
+    - km_vax2_under12_prior_covid_infection_covidcritcare
+    - km_vax2_under12_prior_covid_infection_coviddeath
+    - km_vax2_under12_prior_covid_infection_noncoviddeath
+    - eventcounts_vax2_under12_all
+    - eventcounts_vax2_under12_prior_covid_infection
+    outputs:
+      moderately_sensitive:
+        rds: output/vax2/under12/models/combined/*.csv
+        png: output/vax2/under12/models/combined/*.png
+
+  ## # # # # # # # # # # # # # # # # # # # 
+  ## Move files for release 
+  ## # # # # # # # # # # # # # # # # # # # 
+
+  release:
+    run: r:latest analysis/release_objects.R
+    needs:
+    - table1_vax1_over12
+    - combine_vax1_over12
+    - table1_vax1_under12
+    - combine_vax1_under12
+    - table1_vax2_over12
+    - combine_vax2_over12
+    - table1_vax2_under12
+    - combine_vax2_under12
+    outputs:
+      moderately_sensitive:
+        txt: output/meta-release/*.txt
+        csv: output/release/*.csv
+
+  ## #### End #### 
+

@@ -4,6 +4,7 @@ import codelists
 
 # import json module
 import json
+import re
 
 from cohortextractor import (
   StudyDefinition,
@@ -20,15 +21,22 @@ from variables_outcome import vaccination_date_X
 
 cohort = params["cohort"]
 n_matching_rounds = params["n_matching_rounds"]
+vaxn = params["vaxn"]
+n_vax = int(re.sub(r'[^0-9]', '', vaxn))
 
 # import study dates defined in "./analysis/design.R" script
 with open("./lib/design/study-dates.json") as f:
   study_dates = json.load(f)
 
 # change these in design.R if necessary
-start_date = study_dates[cohort]["start_date"]
-end_date = study_dates[cohort]["end_date"]
-
+start_date_0 = study_dates[cohort]["start_date1"]
+end_date_0 = study_dates[cohort]["end_date1"]
+start_date_1 = study_dates[cohort]["start_date1"]
+end_date_1 = study_dates[cohort]["end_date1"]
+start_date_2 = study_dates[cohort]["start_date2"]
+end_date_2 = study_dates[cohort]["end_date2"]
+start_date = study_dates[cohort][f"start_date{n_vax}"]
+end_date = study_dates[cohort][f"end_date{n_vax}"]
 
 # import study parameters defined in "./analysis/design.R" script  
 with open("./lib/design/study-params.json") as f:

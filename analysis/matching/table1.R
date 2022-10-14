@@ -30,12 +30,16 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
+  vaxn <- "vax1"
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   cohort <- args[[1]]
+  vaxn <- args[[2]]
 }
 
+# get vax number
+n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
 
 ## get cohort-specific parameters study dates and parameters ----
 
@@ -46,14 +50,14 @@ params <- study_params[[cohort]]
 
 ## create output directories ----
 
-output_dir <- here("output", cohort, "table1")
+output_dir <- here("output", vaxn, cohort, "table1")
 fs::dir_create(output_dir)
 
 ## Import data and derive some variables ----
 
-data_matched <- read_rds(ghere("output", cohort, "match", "data_matched.rds"))
+data_matched <- read_rds(ghere("output", vaxn, cohort, "match", "data_matched.rds"))
 
-data_treatedeligible_matchstatus <- read_rds(here("output", cohort, "match", "data_treatedeligible_matchstatus.rds"))
+data_treatedeligible_matchstatus <- read_rds(here("output", vaxn, cohort, "match", "data_treatedeligible_matchstatus.rds"))
 
 
 # matching coverage on each day of recruitment period ----
@@ -62,7 +66,7 @@ data_treatedeligible_matchstatus <- read_rds(here("output", cohort, "match", "da
 # matching coverage for boosted people
 data_coverage <-
   data_treatedeligible_matchstatus %>%
-  group_by(vax1_date) %>%
+  group_by(vax_date) %>%
   summarise(
     n_eligible = n(),
     n_matched = sum(matched, na.rm = TRUE),
@@ -76,14 +80,14 @@ data_coverage <-
     names_prefix = "n_",
     values_to = "n"
   ) %>%
-  arrange(vax1_date, status) %>%
-  group_by(vax1_date, status) %>%
+  arrange(vax_date, status) %>%
+  group_by(vax_date, status) %>%
   summarise(
     n = sum(n),
   ) %>%
   group_by(status) %>%
   complete(
-    vax1_date = full_seq(c(dates$start_date, dates$end_date), 1), # go X days before to
+    vax_date = full_seq(c(dates[[c(glue("start_date{n_vax}"))]], dates[[c(glue("end_date{n_vax}"))]]), 1), # go X days before to
     fill = list(n = 0)
   ) %>%
   mutate(
@@ -94,7 +98,7 @@ data_coverage <-
     status = factor(status, levels = c("unmatched", "matched")),
     status_descr = fct_recoderelevel(status, recoder$status)
   ) %>%
-  arrange(status_descr, vax1_date)
+  arrange(status_descr, vax_date)
 
 
 data_coverage_rounded <-
