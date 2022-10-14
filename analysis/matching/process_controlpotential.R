@@ -25,7 +25,6 @@ source(here("analysis", "design.R"))
 
 source(here("lib", "functions", "utility.R"))
 
-source(here("lib", "functions", "source_args.R"))
 
 ## import command-line arguments ----
 
@@ -78,7 +77,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
         msoa = sample(factor(c("1", "2")), size = n(), replace = TRUE) # override msoa so matching success more likely
       )
   } else {
-    source_with_args(ghere("analysis", "dummy", "dummydata.R"), vaxn, cohort)
+    source(ghere("analysis", "dummy", "dummydata.R"), vaxn, cohort)
     data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{vaxn}_{cohort}.feather")) %>%
       mutate(
         msoa = sample(factor(c("1", "2")), size = n(), replace = TRUE) # override msoa so matching success more likely
@@ -129,7 +128,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
 
   data_extract <- data_custom_dummy
 } else {
-  data_extract <- read_feather(ghere("output", vaxn,cohort, "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
+  data_extract <- read_feather(ghere("output", vaxn, cohort, "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), as.Date))
 }

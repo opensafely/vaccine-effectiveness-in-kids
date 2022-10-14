@@ -24,7 +24,6 @@ source(here("analysis", "design.R"))
 
 source(here("lib", "functions", "utility.R"))
 
-source(here("lib", "functions", "source_args.R"))
 
 # import command-line arguments ----
 
@@ -34,7 +33,7 @@ args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
-  cohort <- "over12"
+  cohort <- "under12"
   vaxn <- "vax1"
 } else {
   # FIXME replace with actual eventual action variables
@@ -62,7 +61,7 @@ fs::dir_create(ghere("output", vaxn, cohort, "match"))
 # use externally created dummy data if not running in the server
 # check variables are as they should be
 if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
-  source_with_args(here("analysis", "dummy", "dummydata_controlfinal.R"), cohort, vaxn)
+  source(here("analysis", "dummy", "dummydata_controlfinal.R"))
 
   data_studydef_dummy <- read_feather(ghere("output", vaxn, cohort, "extract", "input_controlfinal.feather")) %>%
     # because date types are not returned consistently by cohort extractor
