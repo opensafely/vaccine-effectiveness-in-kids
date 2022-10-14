@@ -118,7 +118,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
     mutate(across(ends_with("_date"), as.Date))
 }
 
-print(cohort)
+
 data_matchstatus <- read_rds(ghere("output", vaxn, cohort, "matchround{n_matching_rounds}", "actual", "data_matchstatus_allrounds.rds"))
 
 # import data for treated group and select those who were successfully matched

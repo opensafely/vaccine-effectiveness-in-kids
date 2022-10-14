@@ -330,7 +330,7 @@ print(glue("{sum(data_successful_matchstatus$treated)} matched-pairs kept out of
 
 if (matching_round > 1) {
   data_matchstatusprevious <-
-    read_rds(ghere("output", cohort, "matchround{matching_round-1}", "actual", "data_matchstatus_allrounds.rds"))
+    read_rds(ghere("output", vaxn, cohort, "matchround{matching_round-1}", "actual", "data_matchstatus_allrounds.rds"))
 
   data_matchstatus_allrounds <-
     data_successful_matchstatus %>%
