@@ -13,7 +13,7 @@ actions:
   ## # # # # # # # # # # # # # # # # # # # 
   ##   
   ## # # # # # # # # # # # # # # # # # # # 
-  ## Over 12s cohort 
+  ## Vax1, Over 12s cohort 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Extract and match 
@@ -137,12 +137,224 @@ actions:
         rds: output/vax1/over12/matchround2/actual/*.rds
         csv: output/vax1/over12/matchround2/actual/*.csv.gz
 
+  extract_controlpotential_vax1_over12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/over12/matchround3/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=3 --param index_date=2021-10-18
+      --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_over12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround3/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_over12_3:
+    run: r:latest analysis/matching/process_controlpotential.R over12 3 vax1
+    needs:
+    - extract_controlpotential_vax1_over12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround3/process/*.rds
+
+  match_potential_vax1_over12_3:
+    run: r:latest analysis/matching/match_potential.R over12 3 vax1
+    needs:
+    - process_treated_vax1_over12
+    - process_controlpotential_vax1_over12_3
+    - process_controlactual_vax1_over12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround3/potential/*.rds
+        csv: output/vax1/over12/matchround3/potential/*.csv.gz
+
+  extract_controlactual_vax1_over12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/over12/matchround3/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=3 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_over12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround3/extract/input_controlactual.feather
+
+  process_controlactual_vax1_over12_3:
+    run: r:latest analysis/matching/process_controlactual.R over12 3 vax1
+    needs:
+    - process_treated_vax1_over12
+    - match_potential_vax1_over12_3
+    - extract_controlpotential_vax1_over12_3
+    - extract_controlactual_vax1_over12_3
+    - process_controlactual_vax1_over12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround3/actual/*.rds
+        csv: output/vax1/over12/matchround3/actual/*.csv.gz
+
+  extract_controlpotential_vax1_over12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/over12/matchround4/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=4 --param index_date=2021-11-01
+      --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_over12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround4/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_over12_4:
+    run: r:latest analysis/matching/process_controlpotential.R over12 4 vax1
+    needs:
+    - extract_controlpotential_vax1_over12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround4/process/*.rds
+
+  match_potential_vax1_over12_4:
+    run: r:latest analysis/matching/match_potential.R over12 4 vax1
+    needs:
+    - process_treated_vax1_over12
+    - process_controlpotential_vax1_over12_4
+    - process_controlactual_vax1_over12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround4/potential/*.rds
+        csv: output/vax1/over12/matchround4/potential/*.csv.gz
+
+  extract_controlactual_vax1_over12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/over12/matchround4/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=4 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_over12_4
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround4/extract/input_controlactual.feather
+
+  process_controlactual_vax1_over12_4:
+    run: r:latest analysis/matching/process_controlactual.R over12 4 vax1
+    needs:
+    - process_treated_vax1_over12
+    - match_potential_vax1_over12_4
+    - extract_controlpotential_vax1_over12_4
+    - extract_controlactual_vax1_over12_4
+    - process_controlactual_vax1_over12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround4/actual/*.rds
+        csv: output/vax1/over12/matchround4/actual/*.csv.gz
+
+  extract_controlpotential_vax1_over12_5:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/over12/matchround5/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=5 --param index_date=2021-11-15
+      --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_over12_4
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround5/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_over12_5:
+    run: r:latest analysis/matching/process_controlpotential.R over12 5 vax1
+    needs:
+    - extract_controlpotential_vax1_over12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround5/process/*.rds
+
+  match_potential_vax1_over12_5:
+    run: r:latest analysis/matching/match_potential.R over12 5 vax1
+    needs:
+    - process_treated_vax1_over12
+    - process_controlpotential_vax1_over12_5
+    - process_controlactual_vax1_over12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround5/potential/*.rds
+        csv: output/vax1/over12/matchround5/potential/*.csv.gz
+
+  extract_controlactual_vax1_over12_5:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/over12/matchround5/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=5 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_over12_5
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround5/extract/input_controlactual.feather
+
+  process_controlactual_vax1_over12_5:
+    run: r:latest analysis/matching/process_controlactual.R over12 5 vax1
+    needs:
+    - process_treated_vax1_over12
+    - match_potential_vax1_over12_5
+    - extract_controlpotential_vax1_over12_5
+    - extract_controlactual_vax1_over12_5
+    - process_controlactual_vax1_over12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround5/actual/*.rds
+        csv: output/vax1/over12/matchround5/actual/*.csv.gz
+
+  extract_controlpotential_vax1_over12_6:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/over12/matchround6/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=6 --param index_date=2021-11-29
+      --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_over12_5
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround6/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_over12_6:
+    run: r:latest analysis/matching/process_controlpotential.R over12 6 vax1
+    needs:
+    - extract_controlpotential_vax1_over12_6
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround6/process/*.rds
+
+  match_potential_vax1_over12_6:
+    run: r:latest analysis/matching/match_potential.R over12 6 vax1
+    needs:
+    - process_treated_vax1_over12
+    - process_controlpotential_vax1_over12_6
+    - process_controlactual_vax1_over12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround6/potential/*.rds
+        csv: output/vax1/over12/matchround6/potential/*.csv.gz
+
+  extract_controlactual_vax1_over12_6:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/over12/matchround6/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=6 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_over12_6
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/over12/matchround6/extract/input_controlactual.feather
+
+  process_controlactual_vax1_over12_6:
+    run: r:latest analysis/matching/process_controlactual.R over12 6 vax1
+    needs:
+    - process_treated_vax1_over12
+    - match_potential_vax1_over12_6
+    - extract_controlpotential_vax1_over12_6
+    - extract_controlactual_vax1_over12_6
+    - process_controlactual_vax1_over12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/over12/matchround6/actual/*.rds
+        csv: output/vax1/over12/matchround6/actual/*.csv.gz
+
   extract_controlfinal_vax1_over12:
     run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
       --output-file output/vax1/over12/extract/input_controlfinal.feather --param
-      cohort=over12 --param n_matching_rounds=2 --param vaxn=vax1
+      cohort=over12 --param n_matching_rounds=6 --param vaxn=vax1
     needs:
-    - process_controlactual_vax1_over12_2
+    - process_controlactual_vax1_over12_6
     outputs:
       highly_sensitive:
         extract: output/vax1/over12/extract/input_controlfinal.feather
@@ -152,6 +364,10 @@ actions:
     needs:
     - process_controlactual_vax1_over12_1
     - process_controlactual_vax1_over12_2
+    - process_controlactual_vax1_over12_3
+    - process_controlactual_vax1_over12_4
+    - process_controlactual_vax1_over12_5
+    - process_controlactual_vax1_over12_6
     - extract_controlfinal_vax1_over12
     - process_treated_vax1_over12
     outputs:
@@ -173,162 +389,6 @@ actions:
     outputs:
       moderately_sensitive:
         csv: output/vax1/over12/table1/*.csv
-
-  extract_treated_vax2_over12:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_treated
-      --output-file output/vax2/over12/extract/input_treated.feather --param cohort=over12
-      --param vaxn=vax2
-    outputs:
-      highly_sensitive:
-        extract: output/vax2/over12/extract/input_treated.feather
-
-  process_treated_vax2_over12:
-    run: r:latest analysis/treated/process_treated.R over12 vax2
-    needs:
-    - extract_treated_vax2_over12
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/over12/treated/*.rds
-
-  extract_controlpotential_vax2_over12_1:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
-      --output-file output/vax2/over12/matchround1/extract/input_controlpotential.feather
-      --param cohort=over12 --param matching_round=1 --param index_date=2021-12-13
-      --param vaxn=vax2
-    needs: []
-    outputs:
-      highly_sensitive:
-        cohort: output/vax2/over12/matchround1/extract/input_controlpotential.feather
-
-  process_controlpotential_vax2_over12_1:
-    run: r:latest analysis/matching/process_controlpotential.R over12 1 vax2
-    needs:
-    - extract_controlpotential_vax2_over12_1
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/over12/matchround1/process/*.rds
-
-  match_potential_vax2_over12_1:
-    run: r:latest analysis/matching/match_potential.R over12 1 vax2
-    needs:
-    - process_treated_vax2_over12
-    - process_controlpotential_vax2_over12_1
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/over12/matchround1/potential/*.rds
-        csv: output/vax2/over12/matchround1/potential/*.csv.gz
-
-  extract_controlactual_vax2_over12_1:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
-      --output-file output/vax2/over12/matchround1/extract/input_controlactual.feather
-      --param cohort=over12 --param matching_round=1 --param vaxn=vax2
-    needs:
-    - match_potential_vax2_over12_1
-    outputs:
-      highly_sensitive:
-        cohort: output/vax2/over12/matchround1/extract/input_controlactual.feather
-
-  process_controlactual_vax2_over12_1:
-    run: r:latest analysis/matching/process_controlactual.R over12 1 vax2
-    needs:
-    - process_treated_vax2_over12
-    - match_potential_vax2_over12_1
-    - extract_controlpotential_vax2_over12_1
-    - extract_controlactual_vax2_over12_1
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/over12/matchround1/actual/*.rds
-        csv: output/vax2/over12/matchround1/actual/*.csv.gz
-
-  extract_controlpotential_vax2_over12_2:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
-      --output-file output/vax2/over12/matchround2/extract/input_controlpotential.feather
-      --param cohort=over12 --param matching_round=2 --param index_date=2021-12-27
-      --param vaxn=vax2
-    needs:
-    - process_controlactual_vax2_over12_1
-    outputs:
-      highly_sensitive:
-        cohort: output/vax2/over12/matchround2/extract/input_controlpotential.feather
-
-  process_controlpotential_vax2_over12_2:
-    run: r:latest analysis/matching/process_controlpotential.R over12 2 vax2
-    needs:
-    - extract_controlpotential_vax2_over12_2
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/over12/matchround2/process/*.rds
-
-  match_potential_vax2_over12_2:
-    run: r:latest analysis/matching/match_potential.R over12 2 vax2
-    needs:
-    - process_treated_vax2_over12
-    - process_controlpotential_vax2_over12_2
-    - process_controlactual_vax2_over12_1
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/over12/matchround2/potential/*.rds
-        csv: output/vax2/over12/matchround2/potential/*.csv.gz
-
-  extract_controlactual_vax2_over12_2:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
-      --output-file output/vax2/over12/matchround2/extract/input_controlactual.feather
-      --param cohort=over12 --param matching_round=2 --param vaxn=vax2
-    needs:
-    - match_potential_vax2_over12_2
-    outputs:
-      highly_sensitive:
-        cohort: output/vax2/over12/matchround2/extract/input_controlactual.feather
-
-  process_controlactual_vax2_over12_2:
-    run: r:latest analysis/matching/process_controlactual.R over12 2 vax2
-    needs:
-    - process_treated_vax2_over12
-    - match_potential_vax2_over12_2
-    - extract_controlpotential_vax2_over12_2
-    - extract_controlactual_vax2_over12_2
-    - process_controlactual_vax2_over12_1
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/over12/matchround2/actual/*.rds
-        csv: output/vax2/over12/matchround2/actual/*.csv.gz
-
-  extract_controlfinal_vax2_over12:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
-      --output-file output/vax2/over12/extract/input_controlfinal.feather --param
-      cohort=over12 --param n_matching_rounds=2 --param vaxn=vax2
-    needs:
-    - process_controlactual_vax2_over12_2
-    outputs:
-      highly_sensitive:
-        extract: output/vax2/over12/extract/input_controlfinal.feather
-
-  process_controlfinal_vax2_over12:
-    run: r:latest analysis/matching/process_controlfinal.R over12 vax2
-    needs:
-    - process_controlactual_vax2_over12_1
-    - process_controlactual_vax2_over12_2
-    - extract_controlfinal_vax2_over12
-    - process_treated_vax2_over12
-    outputs:
-      highly_sensitive:
-        extract: output/vax2/over12/match/*.rds
-
-  skim_vax2_over12_matched:
-    run: r:latest analysis/data_skim.R output/vax2/over12/match/data_matched.rds output/vax2/over12/skim
-    needs:
-    - process_controlfinal_vax2_over12
-    outputs:
-      moderately_sensitive:
-        cohort: output/vax2/over12/skim/*.txt
-
-  table1_vax2_over12:
-    run: r:latest analysis/matching/table1.R over12 vax2
-    needs:
-    - process_controlfinal_vax2_over12
-    outputs:
-      moderately_sensitive:
-        csv: output/vax2/over12/table1/*.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Model 
@@ -501,7 +561,380 @@ actions:
         png: output/vax1/over12/models/combined/*.png
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## second vaccination 
+  ## Vax2, Over 12s cohort 
+  ## # # # # # # # # # # # # # # # # # # # 
+
+  extract_treated_vax2_over12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_treated
+      --output-file output/vax2/over12/extract/input_treated.feather --param cohort=over12
+      --param vaxn=vax2
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/over12/extract/input_treated.feather
+
+  process_treated_vax2_over12:
+    run: r:latest analysis/treated/process_treated.R over12 vax2
+    needs:
+    - extract_treated_vax2_over12
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/treated/*.rds
+
+  extract_controlpotential_vax2_over12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/over12/matchround1/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=1 --param index_date=2021-12-13
+      --param vaxn=vax2
+    needs: []
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround1/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_over12_1:
+    run: r:latest analysis/matching/process_controlpotential.R over12 1 vax2
+    needs:
+    - extract_controlpotential_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround1/process/*.rds
+
+  match_potential_vax2_over12_1:
+    run: r:latest analysis/matching/match_potential.R over12 1 vax2
+    needs:
+    - process_treated_vax2_over12
+    - process_controlpotential_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround1/potential/*.rds
+        csv: output/vax2/over12/matchround1/potential/*.csv.gz
+
+  extract_controlactual_vax2_over12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/over12/matchround1/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=1 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround1/extract/input_controlactual.feather
+
+  process_controlactual_vax2_over12_1:
+    run: r:latest analysis/matching/process_controlactual.R over12 1 vax2
+    needs:
+    - process_treated_vax2_over12
+    - match_potential_vax2_over12_1
+    - extract_controlpotential_vax2_over12_1
+    - extract_controlactual_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround1/actual/*.rds
+        csv: output/vax2/over12/matchround1/actual/*.csv.gz
+
+  extract_controlpotential_vax2_over12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/over12/matchround2/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=2 --param index_date=2021-12-27
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround2/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_over12_2:
+    run: r:latest analysis/matching/process_controlpotential.R over12 2 vax2
+    needs:
+    - extract_controlpotential_vax2_over12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround2/process/*.rds
+
+  match_potential_vax2_over12_2:
+    run: r:latest analysis/matching/match_potential.R over12 2 vax2
+    needs:
+    - process_treated_vax2_over12
+    - process_controlpotential_vax2_over12_2
+    - process_controlactual_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround2/potential/*.rds
+        csv: output/vax2/over12/matchround2/potential/*.csv.gz
+
+  extract_controlactual_vax2_over12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/over12/matchround2/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=2 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_over12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround2/extract/input_controlactual.feather
+
+  process_controlactual_vax2_over12_2:
+    run: r:latest analysis/matching/process_controlactual.R over12 2 vax2
+    needs:
+    - process_treated_vax2_over12
+    - match_potential_vax2_over12_2
+    - extract_controlpotential_vax2_over12_2
+    - extract_controlactual_vax2_over12_2
+    - process_controlactual_vax2_over12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround2/actual/*.rds
+        csv: output/vax2/over12/matchround2/actual/*.csv.gz
+
+  extract_controlpotential_vax2_over12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/over12/matchround3/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=3 --param index_date=2022-01-10
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_over12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround3/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_over12_3:
+    run: r:latest analysis/matching/process_controlpotential.R over12 3 vax2
+    needs:
+    - extract_controlpotential_vax2_over12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround3/process/*.rds
+
+  match_potential_vax2_over12_3:
+    run: r:latest analysis/matching/match_potential.R over12 3 vax2
+    needs:
+    - process_treated_vax2_over12
+    - process_controlpotential_vax2_over12_3
+    - process_controlactual_vax2_over12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround3/potential/*.rds
+        csv: output/vax2/over12/matchround3/potential/*.csv.gz
+
+  extract_controlactual_vax2_over12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/over12/matchround3/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=3 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_over12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround3/extract/input_controlactual.feather
+
+  process_controlactual_vax2_over12_3:
+    run: r:latest analysis/matching/process_controlactual.R over12 3 vax2
+    needs:
+    - process_treated_vax2_over12
+    - match_potential_vax2_over12_3
+    - extract_controlpotential_vax2_over12_3
+    - extract_controlactual_vax2_over12_3
+    - process_controlactual_vax2_over12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround3/actual/*.rds
+        csv: output/vax2/over12/matchround3/actual/*.csv.gz
+
+  extract_controlpotential_vax2_over12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/over12/matchround4/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=4 --param index_date=2022-01-24
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_over12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround4/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_over12_4:
+    run: r:latest analysis/matching/process_controlpotential.R over12 4 vax2
+    needs:
+    - extract_controlpotential_vax2_over12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround4/process/*.rds
+
+  match_potential_vax2_over12_4:
+    run: r:latest analysis/matching/match_potential.R over12 4 vax2
+    needs:
+    - process_treated_vax2_over12
+    - process_controlpotential_vax2_over12_4
+    - process_controlactual_vax2_over12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround4/potential/*.rds
+        csv: output/vax2/over12/matchround4/potential/*.csv.gz
+
+  extract_controlactual_vax2_over12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/over12/matchround4/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=4 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_over12_4
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround4/extract/input_controlactual.feather
+
+  process_controlactual_vax2_over12_4:
+    run: r:latest analysis/matching/process_controlactual.R over12 4 vax2
+    needs:
+    - process_treated_vax2_over12
+    - match_potential_vax2_over12_4
+    - extract_controlpotential_vax2_over12_4
+    - extract_controlactual_vax2_over12_4
+    - process_controlactual_vax2_over12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround4/actual/*.rds
+        csv: output/vax2/over12/matchround4/actual/*.csv.gz
+
+  extract_controlpotential_vax2_over12_5:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/over12/matchround5/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=5 --param index_date=2022-02-07
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_over12_4
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround5/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_over12_5:
+    run: r:latest analysis/matching/process_controlpotential.R over12 5 vax2
+    needs:
+    - extract_controlpotential_vax2_over12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround5/process/*.rds
+
+  match_potential_vax2_over12_5:
+    run: r:latest analysis/matching/match_potential.R over12 5 vax2
+    needs:
+    - process_treated_vax2_over12
+    - process_controlpotential_vax2_over12_5
+    - process_controlactual_vax2_over12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround5/potential/*.rds
+        csv: output/vax2/over12/matchround5/potential/*.csv.gz
+
+  extract_controlactual_vax2_over12_5:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/over12/matchround5/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=5 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_over12_5
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround5/extract/input_controlactual.feather
+
+  process_controlactual_vax2_over12_5:
+    run: r:latest analysis/matching/process_controlactual.R over12 5 vax2
+    needs:
+    - process_treated_vax2_over12
+    - match_potential_vax2_over12_5
+    - extract_controlpotential_vax2_over12_5
+    - extract_controlactual_vax2_over12_5
+    - process_controlactual_vax2_over12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround5/actual/*.rds
+        csv: output/vax2/over12/matchround5/actual/*.csv.gz
+
+  extract_controlpotential_vax2_over12_6:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/over12/matchround6/extract/input_controlpotential.feather
+      --param cohort=over12 --param matching_round=6 --param index_date=2022-02-21
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_over12_5
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround6/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_over12_6:
+    run: r:latest analysis/matching/process_controlpotential.R over12 6 vax2
+    needs:
+    - extract_controlpotential_vax2_over12_6
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround6/process/*.rds
+
+  match_potential_vax2_over12_6:
+    run: r:latest analysis/matching/match_potential.R over12 6 vax2
+    needs:
+    - process_treated_vax2_over12
+    - process_controlpotential_vax2_over12_6
+    - process_controlactual_vax2_over12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround6/potential/*.rds
+        csv: output/vax2/over12/matchround6/potential/*.csv.gz
+
+  extract_controlactual_vax2_over12_6:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/over12/matchround6/extract/input_controlactual.feather
+      --param cohort=over12 --param matching_round=6 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_over12_6
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/over12/matchround6/extract/input_controlactual.feather
+
+  process_controlactual_vax2_over12_6:
+    run: r:latest analysis/matching/process_controlactual.R over12 6 vax2
+    needs:
+    - process_treated_vax2_over12
+    - match_potential_vax2_over12_6
+    - extract_controlpotential_vax2_over12_6
+    - extract_controlactual_vax2_over12_6
+    - process_controlactual_vax2_over12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/over12/matchround6/actual/*.rds
+        csv: output/vax2/over12/matchround6/actual/*.csv.gz
+
+  extract_controlfinal_vax2_over12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
+      --output-file output/vax2/over12/extract/input_controlfinal.feather --param
+      cohort=over12 --param n_matching_rounds=6 --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_over12_6
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/over12/extract/input_controlfinal.feather
+
+  process_controlfinal_vax2_over12:
+    run: r:latest analysis/matching/process_controlfinal.R over12 vax2
+    needs:
+    - process_controlactual_vax2_over12_1
+    - process_controlactual_vax2_over12_2
+    - process_controlactual_vax2_over12_3
+    - process_controlactual_vax2_over12_4
+    - process_controlactual_vax2_over12_5
+    - process_controlactual_vax2_over12_6
+    - extract_controlfinal_vax2_over12
+    - process_treated_vax2_over12
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/over12/match/*.rds
+
+  skim_vax2_over12_matched:
+    run: r:latest analysis/data_skim.R output/vax2/over12/match/data_matched.rds output/vax2/over12/skim
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        cohort: output/vax2/over12/skim/*.txt
+
+  table1_vax2_over12:
+    run: r:latest analysis/matching/table1.R over12 vax2
+    needs:
+    - process_controlfinal_vax2_over12
+    outputs:
+      moderately_sensitive:
+        csv: output/vax2/over12/table1/*.csv
 
   km_vax2_over12_all_postest:
     run: r:latest analysis/model/km.R over12 all postest vax2
@@ -671,7 +1104,7 @@ actions:
         png: output/vax2/over12/models/combined/*.png
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## Under 12s cohort 
+  ## Vax1, Under 12s cohort 
   ## # # # # # # # # # # # # # # # # # # # 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Extract and match 
@@ -795,12 +1228,224 @@ actions:
         rds: output/vax1/under12/matchround2/actual/*.rds
         csv: output/vax1/under12/matchround2/actual/*.csv.gz
 
+  extract_controlpotential_vax1_under12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/under12/matchround3/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=3 --param index_date=2022-05-02
+      --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_under12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround3/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_under12_3:
+    run: r:latest analysis/matching/process_controlpotential.R under12 3 vax1
+    needs:
+    - extract_controlpotential_vax1_under12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround3/process/*.rds
+
+  match_potential_vax1_under12_3:
+    run: r:latest analysis/matching/match_potential.R under12 3 vax1
+    needs:
+    - process_treated_vax1_under12
+    - process_controlpotential_vax1_under12_3
+    - process_controlactual_vax1_under12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround3/potential/*.rds
+        csv: output/vax1/under12/matchround3/potential/*.csv.gz
+
+  extract_controlactual_vax1_under12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/under12/matchround3/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=3 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_under12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround3/extract/input_controlactual.feather
+
+  process_controlactual_vax1_under12_3:
+    run: r:latest analysis/matching/process_controlactual.R under12 3 vax1
+    needs:
+    - process_treated_vax1_under12
+    - match_potential_vax1_under12_3
+    - extract_controlpotential_vax1_under12_3
+    - extract_controlactual_vax1_under12_3
+    - process_controlactual_vax1_under12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround3/actual/*.rds
+        csv: output/vax1/under12/matchround3/actual/*.csv.gz
+
+  extract_controlpotential_vax1_under12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/under12/matchround4/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=4 --param index_date=2022-05-16
+      --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_under12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround4/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_under12_4:
+    run: r:latest analysis/matching/process_controlpotential.R under12 4 vax1
+    needs:
+    - extract_controlpotential_vax1_under12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround4/process/*.rds
+
+  match_potential_vax1_under12_4:
+    run: r:latest analysis/matching/match_potential.R under12 4 vax1
+    needs:
+    - process_treated_vax1_under12
+    - process_controlpotential_vax1_under12_4
+    - process_controlactual_vax1_under12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround4/potential/*.rds
+        csv: output/vax1/under12/matchround4/potential/*.csv.gz
+
+  extract_controlactual_vax1_under12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/under12/matchround4/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=4 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_under12_4
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround4/extract/input_controlactual.feather
+
+  process_controlactual_vax1_under12_4:
+    run: r:latest analysis/matching/process_controlactual.R under12 4 vax1
+    needs:
+    - process_treated_vax1_under12
+    - match_potential_vax1_under12_4
+    - extract_controlpotential_vax1_under12_4
+    - extract_controlactual_vax1_under12_4
+    - process_controlactual_vax1_under12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround4/actual/*.rds
+        csv: output/vax1/under12/matchround4/actual/*.csv.gz
+
+  extract_controlpotential_vax1_under12_5:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/under12/matchround5/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=5 --param index_date=2022-05-30
+      --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_under12_4
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround5/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_under12_5:
+    run: r:latest analysis/matching/process_controlpotential.R under12 5 vax1
+    needs:
+    - extract_controlpotential_vax1_under12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround5/process/*.rds
+
+  match_potential_vax1_under12_5:
+    run: r:latest analysis/matching/match_potential.R under12 5 vax1
+    needs:
+    - process_treated_vax1_under12
+    - process_controlpotential_vax1_under12_5
+    - process_controlactual_vax1_under12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround5/potential/*.rds
+        csv: output/vax1/under12/matchround5/potential/*.csv.gz
+
+  extract_controlactual_vax1_under12_5:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/under12/matchround5/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=5 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_under12_5
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround5/extract/input_controlactual.feather
+
+  process_controlactual_vax1_under12_5:
+    run: r:latest analysis/matching/process_controlactual.R under12 5 vax1
+    needs:
+    - process_treated_vax1_under12
+    - match_potential_vax1_under12_5
+    - extract_controlpotential_vax1_under12_5
+    - extract_controlactual_vax1_under12_5
+    - process_controlactual_vax1_under12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround5/actual/*.rds
+        csv: output/vax1/under12/matchround5/actual/*.csv.gz
+
+  extract_controlpotential_vax1_under12_6:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax1/under12/matchround6/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=6 --param index_date=2022-06-13
+      --param vaxn=vax1
+    needs:
+    - process_controlactual_vax1_under12_5
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround6/extract/input_controlpotential.feather
+
+  process_controlpotential_vax1_under12_6:
+    run: r:latest analysis/matching/process_controlpotential.R under12 6 vax1
+    needs:
+    - extract_controlpotential_vax1_under12_6
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround6/process/*.rds
+
+  match_potential_vax1_under12_6:
+    run: r:latest analysis/matching/match_potential.R under12 6 vax1
+    needs:
+    - process_treated_vax1_under12
+    - process_controlpotential_vax1_under12_6
+    - process_controlactual_vax1_under12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround6/potential/*.rds
+        csv: output/vax1/under12/matchround6/potential/*.csv.gz
+
+  extract_controlactual_vax1_under12_6:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax1/under12/matchround6/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=6 --param vaxn=vax1
+    needs:
+    - match_potential_vax1_under12_6
+    outputs:
+      highly_sensitive:
+        cohort: output/vax1/under12/matchround6/extract/input_controlactual.feather
+
+  process_controlactual_vax1_under12_6:
+    run: r:latest analysis/matching/process_controlactual.R under12 6 vax1
+    needs:
+    - process_treated_vax1_under12
+    - match_potential_vax1_under12_6
+    - extract_controlpotential_vax1_under12_6
+    - extract_controlactual_vax1_under12_6
+    - process_controlactual_vax1_under12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax1/under12/matchround6/actual/*.rds
+        csv: output/vax1/under12/matchround6/actual/*.csv.gz
+
   extract_controlfinal_vax1_under12:
     run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
       --output-file output/vax1/under12/extract/input_controlfinal.feather --param
-      cohort=under12 --param n_matching_rounds=2 --param vaxn=vax1
+      cohort=under12 --param n_matching_rounds=6 --param vaxn=vax1
     needs:
-    - process_controlactual_vax1_under12_2
+    - process_controlactual_vax1_under12_6
     outputs:
       highly_sensitive:
         extract: output/vax1/under12/extract/input_controlfinal.feather
@@ -810,6 +1455,10 @@ actions:
     needs:
     - process_controlactual_vax1_under12_1
     - process_controlactual_vax1_under12_2
+    - process_controlactual_vax1_under12_3
+    - process_controlactual_vax1_under12_4
+    - process_controlactual_vax1_under12_5
+    - process_controlactual_vax1_under12_6
     - extract_controlfinal_vax1_under12
     - process_treated_vax1_under12
     outputs:
@@ -832,163 +1481,6 @@ actions:
     outputs:
       moderately_sensitive:
         csv: output/vax1/under12/table1/*.csv
-
-  extract_treated_vax2_under12:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_treated
-      --output-file output/vax2/under12/extract/input_treated.feather --param cohort=under12
-      --param vaxn=vax2
-    outputs:
-      highly_sensitive:
-        extract: output/vax2/under12/extract/input_treated.feather
-
-  process_treated_vax2_under12:
-    run: r:latest analysis/treated/process_treated.R under12 vax2
-    needs:
-    - extract_treated_vax2_under12
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/under12/treated/*.rds
-
-  extract_controlpotential_vax2_under12_1:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
-      --output-file output/vax2/under12/matchround1/extract/input_controlpotential.feather
-      --param cohort=under12 --param matching_round=1 --param index_date=2022-06-27
-      --param vaxn=vax2
-    needs: []
-    outputs:
-      highly_sensitive:
-        cohort: output/vax2/under12/matchround1/extract/input_controlpotential.feather
-
-  process_controlpotential_vax2_under12_1:
-    run: r:latest analysis/matching/process_controlpotential.R under12 1 vax2
-    needs:
-    - extract_controlpotential_vax2_under12_1
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/under12/matchround1/process/*.rds
-
-  match_potential_vax2_under12_1:
-    run: r:latest analysis/matching/match_potential.R under12 1 vax2
-    needs:
-    - process_treated_vax2_under12
-    - process_controlpotential_vax2_under12_1
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/under12/matchround1/potential/*.rds
-        csv: output/vax2/under12/matchround1/potential/*.csv.gz
-
-  extract_controlactual_vax2_under12_1:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
-      --output-file output/vax2/under12/matchround1/extract/input_controlactual.feather
-      --param cohort=under12 --param matching_round=1 --param vaxn=vax2
-    needs:
-    - match_potential_vax2_under12_1
-    outputs:
-      highly_sensitive:
-        cohort: output/vax2/under12/matchround1/extract/input_controlactual.feather
-
-  process_controlactual_vax2_under12_1:
-    run: r:latest analysis/matching/process_controlactual.R under12 1 vax2
-    needs:
-    - process_treated_vax2_under12
-    - match_potential_vax2_under12_1
-    - extract_controlpotential_vax2_under12_1
-    - extract_controlactual_vax2_under12_1
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/under12/matchround1/actual/*.rds
-        csv: output/vax2/under12/matchround1/actual/*.csv.gz
-
-  extract_controlpotential_vax2_under12_2:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
-      --output-file output/vax2/under12/matchround2/extract/input_controlpotential.feather
-      --param cohort=under12 --param matching_round=2 --param index_date=2022-07-11
-      --param vaxn=vax2
-    needs:
-    - process_controlactual_vax2_under12_1
-    outputs:
-      highly_sensitive:
-        cohort: output/vax2/under12/matchround2/extract/input_controlpotential.feather
-
-  process_controlpotential_vax2_under12_2:
-    run: r:latest analysis/matching/process_controlpotential.R under12 2 vax2
-    needs:
-    - extract_controlpotential_vax2_under12_2
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/under12/matchround2/process/*.rds
-
-  match_potential_vax2_under12_2:
-    run: r:latest analysis/matching/match_potential.R under12 2 vax2
-    needs:
-    - process_treated_vax2_under12
-    - process_controlpotential_vax2_under12_2
-    - process_controlactual_vax2_under12_1
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/under12/matchround2/potential/*.rds
-        csv: output/vax2/under12/matchround2/potential/*.csv.gz
-
-  extract_controlactual_vax2_under12_2:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
-      --output-file output/vax2/under12/matchround2/extract/input_controlactual.feather
-      --param cohort=under12 --param matching_round=2 --param vaxn=vax2
-    needs:
-    - match_potential_vax2_under12_2
-    outputs:
-      highly_sensitive:
-        cohort: output/vax2/under12/matchround2/extract/input_controlactual.feather
-
-  process_controlactual_vax2_under12_2:
-    run: r:latest analysis/matching/process_controlactual.R under12 2 vax2
-    needs:
-    - process_treated_vax2_under12
-    - match_potential_vax2_under12_2
-    - extract_controlpotential_vax2_under12_2
-    - extract_controlactual_vax2_under12_2
-    - process_controlactual_vax2_under12_1
-    outputs:
-      highly_sensitive:
-        rds: output/vax2/under12/matchround2/actual/*.rds
-        csv: output/vax2/under12/matchround2/actual/*.csv.gz
-
-  extract_controlfinal_vax2_under12:
-    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
-      --output-file output/vax2/under12/extract/input_controlfinal.feather --param
-      cohort=under12 --param n_matching_rounds=2 --param vaxn=vax2
-    needs:
-    - process_controlactual_vax2_under12_2
-    outputs:
-      highly_sensitive:
-        extract: output/vax2/under12/extract/input_controlfinal.feather
-
-  process_controlfinal_vax2_under12:
-    run: r:latest analysis/matching/process_controlfinal.R under12 vax2
-    needs:
-    - process_controlactual_vax2_under12_1
-    - process_controlactual_vax2_under12_2
-    - extract_controlfinal_vax2_under12
-    - process_treated_vax2_under12
-    outputs:
-      highly_sensitive:
-        extract: output/vax2/under12/match/*.rds
-
-  skim_vax2_under12_matched:
-    run: r:latest analysis/data_skim.R output/vax2/under12/match/data_matched.rds
-      output/vax2/under12/skim
-    needs:
-    - process_controlfinal_vax2_under12
-    outputs:
-      moderately_sensitive:
-        cohort: output/vax2/under12/skim/*.txt
-
-  table1_vax2_under12:
-    run: r:latest analysis/matching/table1.R under12 vax2
-    needs:
-    - process_controlfinal_vax2_under12
-    outputs:
-      moderately_sensitive:
-        csv: output/vax2/under12/table1/*.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Model 
@@ -1164,7 +1656,381 @@ actions:
         png: output/vax1/under12/models/combined/*.png
 
   ## # # # # # # # # # # # # # # # # # # # 
-  ## second vaccination 
+  ## Vax2, Under 12s cohort 
+  ## # # # # # # # # # # # # # # # # # # # 
+
+  extract_treated_vax2_under12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_treated
+      --output-file output/vax2/under12/extract/input_treated.feather --param cohort=under12
+      --param vaxn=vax2
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/under12/extract/input_treated.feather
+
+  process_treated_vax2_under12:
+    run: r:latest analysis/treated/process_treated.R under12 vax2
+    needs:
+    - extract_treated_vax2_under12
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/treated/*.rds
+
+  extract_controlpotential_vax2_under12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/under12/matchround1/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=1 --param index_date=2022-06-27
+      --param vaxn=vax2
+    needs: []
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround1/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_under12_1:
+    run: r:latest analysis/matching/process_controlpotential.R under12 1 vax2
+    needs:
+    - extract_controlpotential_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround1/process/*.rds
+
+  match_potential_vax2_under12_1:
+    run: r:latest analysis/matching/match_potential.R under12 1 vax2
+    needs:
+    - process_treated_vax2_under12
+    - process_controlpotential_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround1/potential/*.rds
+        csv: output/vax2/under12/matchround1/potential/*.csv.gz
+
+  extract_controlactual_vax2_under12_1:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/under12/matchround1/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=1 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround1/extract/input_controlactual.feather
+
+  process_controlactual_vax2_under12_1:
+    run: r:latest analysis/matching/process_controlactual.R under12 1 vax2
+    needs:
+    - process_treated_vax2_under12
+    - match_potential_vax2_under12_1
+    - extract_controlpotential_vax2_under12_1
+    - extract_controlactual_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround1/actual/*.rds
+        csv: output/vax2/under12/matchround1/actual/*.csv.gz
+
+  extract_controlpotential_vax2_under12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/under12/matchround2/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=2 --param index_date=2022-07-11
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround2/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_under12_2:
+    run: r:latest analysis/matching/process_controlpotential.R under12 2 vax2
+    needs:
+    - extract_controlpotential_vax2_under12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround2/process/*.rds
+
+  match_potential_vax2_under12_2:
+    run: r:latest analysis/matching/match_potential.R under12 2 vax2
+    needs:
+    - process_treated_vax2_under12
+    - process_controlpotential_vax2_under12_2
+    - process_controlactual_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround2/potential/*.rds
+        csv: output/vax2/under12/matchround2/potential/*.csv.gz
+
+  extract_controlactual_vax2_under12_2:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/under12/matchround2/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=2 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_under12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround2/extract/input_controlactual.feather
+
+  process_controlactual_vax2_under12_2:
+    run: r:latest analysis/matching/process_controlactual.R under12 2 vax2
+    needs:
+    - process_treated_vax2_under12
+    - match_potential_vax2_under12_2
+    - extract_controlpotential_vax2_under12_2
+    - extract_controlactual_vax2_under12_2
+    - process_controlactual_vax2_under12_1
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround2/actual/*.rds
+        csv: output/vax2/under12/matchround2/actual/*.csv.gz
+
+  extract_controlpotential_vax2_under12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/under12/matchround3/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=3 --param index_date=2022-07-25
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_under12_2
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround3/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_under12_3:
+    run: r:latest analysis/matching/process_controlpotential.R under12 3 vax2
+    needs:
+    - extract_controlpotential_vax2_under12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround3/process/*.rds
+
+  match_potential_vax2_under12_3:
+    run: r:latest analysis/matching/match_potential.R under12 3 vax2
+    needs:
+    - process_treated_vax2_under12
+    - process_controlpotential_vax2_under12_3
+    - process_controlactual_vax2_under12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround3/potential/*.rds
+        csv: output/vax2/under12/matchround3/potential/*.csv.gz
+
+  extract_controlactual_vax2_under12_3:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/under12/matchround3/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=3 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_under12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround3/extract/input_controlactual.feather
+
+  process_controlactual_vax2_under12_3:
+    run: r:latest analysis/matching/process_controlactual.R under12 3 vax2
+    needs:
+    - process_treated_vax2_under12
+    - match_potential_vax2_under12_3
+    - extract_controlpotential_vax2_under12_3
+    - extract_controlactual_vax2_under12_3
+    - process_controlactual_vax2_under12_2
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround3/actual/*.rds
+        csv: output/vax2/under12/matchround3/actual/*.csv.gz
+
+  extract_controlpotential_vax2_under12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/under12/matchround4/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=4 --param index_date=2022-08-08
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_under12_3
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround4/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_under12_4:
+    run: r:latest analysis/matching/process_controlpotential.R under12 4 vax2
+    needs:
+    - extract_controlpotential_vax2_under12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround4/process/*.rds
+
+  match_potential_vax2_under12_4:
+    run: r:latest analysis/matching/match_potential.R under12 4 vax2
+    needs:
+    - process_treated_vax2_under12
+    - process_controlpotential_vax2_under12_4
+    - process_controlactual_vax2_under12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround4/potential/*.rds
+        csv: output/vax2/under12/matchround4/potential/*.csv.gz
+
+  extract_controlactual_vax2_under12_4:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/under12/matchround4/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=4 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_under12_4
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround4/extract/input_controlactual.feather
+
+  process_controlactual_vax2_under12_4:
+    run: r:latest analysis/matching/process_controlactual.R under12 4 vax2
+    needs:
+    - process_treated_vax2_under12
+    - match_potential_vax2_under12_4
+    - extract_controlpotential_vax2_under12_4
+    - extract_controlactual_vax2_under12_4
+    - process_controlactual_vax2_under12_3
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround4/actual/*.rds
+        csv: output/vax2/under12/matchround4/actual/*.csv.gz
+
+  extract_controlpotential_vax2_under12_5:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/under12/matchround5/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=5 --param index_date=2022-08-22
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_under12_4
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround5/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_under12_5:
+    run: r:latest analysis/matching/process_controlpotential.R under12 5 vax2
+    needs:
+    - extract_controlpotential_vax2_under12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround5/process/*.rds
+
+  match_potential_vax2_under12_5:
+    run: r:latest analysis/matching/match_potential.R under12 5 vax2
+    needs:
+    - process_treated_vax2_under12
+    - process_controlpotential_vax2_under12_5
+    - process_controlactual_vax2_under12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround5/potential/*.rds
+        csv: output/vax2/under12/matchround5/potential/*.csv.gz
+
+  extract_controlactual_vax2_under12_5:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/under12/matchround5/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=5 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_under12_5
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround5/extract/input_controlactual.feather
+
+  process_controlactual_vax2_under12_5:
+    run: r:latest analysis/matching/process_controlactual.R under12 5 vax2
+    needs:
+    - process_treated_vax2_under12
+    - match_potential_vax2_under12_5
+    - extract_controlpotential_vax2_under12_5
+    - extract_controlactual_vax2_under12_5
+    - process_controlactual_vax2_under12_4
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround5/actual/*.rds
+        csv: output/vax2/under12/matchround5/actual/*.csv.gz
+
+  extract_controlpotential_vax2_under12_6:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlpotential
+      --output-file output/vax2/under12/matchround6/extract/input_controlpotential.feather
+      --param cohort=under12 --param matching_round=6 --param index_date=2022-09-05
+      --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_under12_5
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround6/extract/input_controlpotential.feather
+
+  process_controlpotential_vax2_under12_6:
+    run: r:latest analysis/matching/process_controlpotential.R under12 6 vax2
+    needs:
+    - extract_controlpotential_vax2_under12_6
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround6/process/*.rds
+
+  match_potential_vax2_under12_6:
+    run: r:latest analysis/matching/match_potential.R under12 6 vax2
+    needs:
+    - process_treated_vax2_under12
+    - process_controlpotential_vax2_under12_6
+    - process_controlactual_vax2_under12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround6/potential/*.rds
+        csv: output/vax2/under12/matchround6/potential/*.csv.gz
+
+  extract_controlactual_vax2_under12_6:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlactual
+      --output-file output/vax2/under12/matchround6/extract/input_controlactual.feather
+      --param cohort=under12 --param matching_round=6 --param vaxn=vax2
+    needs:
+    - match_potential_vax2_under12_6
+    outputs:
+      highly_sensitive:
+        cohort: output/vax2/under12/matchround6/extract/input_controlactual.feather
+
+  process_controlactual_vax2_under12_6:
+    run: r:latest analysis/matching/process_controlactual.R under12 6 vax2
+    needs:
+    - process_treated_vax2_under12
+    - match_potential_vax2_under12_6
+    - extract_controlpotential_vax2_under12_6
+    - extract_controlactual_vax2_under12_6
+    - process_controlactual_vax2_under12_5
+    outputs:
+      highly_sensitive:
+        rds: output/vax2/under12/matchround6/actual/*.rds
+        csv: output/vax2/under12/matchround6/actual/*.csv.gz
+
+  extract_controlfinal_vax2_under12:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_controlfinal
+      --output-file output/vax2/under12/extract/input_controlfinal.feather --param
+      cohort=under12 --param n_matching_rounds=6 --param vaxn=vax2
+    needs:
+    - process_controlactual_vax2_under12_6
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/under12/extract/input_controlfinal.feather
+
+  process_controlfinal_vax2_under12:
+    run: r:latest analysis/matching/process_controlfinal.R under12 vax2
+    needs:
+    - process_controlactual_vax2_under12_1
+    - process_controlactual_vax2_under12_2
+    - process_controlactual_vax2_under12_3
+    - process_controlactual_vax2_under12_4
+    - process_controlactual_vax2_under12_5
+    - process_controlactual_vax2_under12_6
+    - extract_controlfinal_vax2_under12
+    - process_treated_vax2_under12
+    outputs:
+      highly_sensitive:
+        extract: output/vax2/under12/match/*.rds
+
+  skim_vax2_under12_matched:
+    run: r:latest analysis/data_skim.R output/vax2/under12/match/data_matched.rds
+      output/vax2/under12/skim
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        cohort: output/vax2/under12/skim/*.txt
+
+  table1_vax2_under12:
+    run: r:latest analysis/matching/table1.R under12 vax2
+    needs:
+    - process_controlfinal_vax2_under12
+    outputs:
+      moderately_sensitive:
+        csv: output/vax2/under12/table1/*.csv
 
   km_vax2_under12_all_postest:
     run: r:latest analysis/model/km.R under12 all postest vax2
