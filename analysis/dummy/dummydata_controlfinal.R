@@ -5,29 +5,39 @@ library("arrow")
 library("here")
 library("glue")
 
+if (length(args) == 0) {
+  # use for interactive testing
+  removeobjects <- FALSE
+  cohort <- "over12"
+  vaxn <- "vax2"
+} else {
+  # FIXME replace with actual eventual action variables
+  removeobjects <- TRUE
+  cohort <- args[[1]]
+  vaxn <- args[[2]]
+}
+
 
 # not needed as these are already available from process_controlfinal.R
 
 # source(here("lib", "functions", "utility.R"))
 # source(here("analysis", "design.R"))
 
-# dates <- map(study_dates[[cohort]], as.Date)
-# params <- study_params[[cohort]]
+dates <- map(study_dates[[cohort]], as.Date)
+params <- study_params[[cohort]]
 
 
 # get nth largest value from list
 nthmax <- function(x, n = 1) {
   dplyr::nth(sort(x, decreasing = TRUE), n)
 }
-for (cohort in c("under12","over12")){
-  for (vaxn in c("vax1", "vax2")) {
 
 n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
 
-start_date <- as.Date(dates$start_date1)
-end_date <- as.Date(dates$end_date1)
-followupend_date <- as.Date(dates$followupend_date2)
-index_date <- as.Date(dates$start_date1)
+start_date <- as.Date(dates[[c(glue("start_date{n_vax}"))]])
+end_date <- as.Date(dates[[c(glue("end_date{n_vax}"))]])
+followupend_date <- as.Date(dates[[c(glue("followupend_date{n_vax}"))]])
+index_date <- as.Date(dates[[c(glue("start_date{n_vax}"))]])
 
 first_pfizerA_date <- as.Date(dates$start_date1)
 first_pfizerC_date <- as.Date(dates$start_date1)
@@ -122,5 +132,3 @@ dummydata_processed <- dummydata %>%
 
 fs::dir_create(here("lib", "dummydata"))
 write_feather(dummydata_processed, sink = here("lib", "dummydata", glue("dummy_controlfinal_{vaxn}_{cohort}.feather")))
-  }
-}
