@@ -110,11 +110,11 @@ study = StudyDefinition(
   covid_vax_any_0_date = patients.fixed_value(start_date_0),
   covid_vax_pfizerA_0_date = patients.fixed_value(start_date_0),
   covid_vax_pfizerC_0_date = patients.fixed_value(start_date_0),
-  prematched = patients.which_exist_in_file(f_path=f"output/{cohort}/matchround{matching_round}/potential/potential_matchedcontrols.csv.gz"),  
+  prematched = patients.which_exist_in_file(f_path=f"output/{vaxn}/{cohort}/matchround{matching_round}/potential/potential_matchedcontrols.csv.gz"),  
   ),
-  trial_date = patients.with_value_from_file(f_path=f"output/{cohort}/matchround{matching_round}/potential/potential_matchedcontrols.csv.gz", returning="trial_date", returning_type="date", date_format='YYYY-MM-DD'),
+  trial_date = patients.with_value_from_file(f_path=f"output/{vaxn}/{cohort}/matchround{matching_round}/potential/potential_matchedcontrols.csv.gz", returning="trial_date", returning_type="date", date_format='YYYY-MM-DD'),
   
-  match_id = patients.with_value_from_file(f_path=f"output/{cohort}/matchround{matching_round}/potential/potential_matchedcontrols.csv.gz", returning="match_id", returning_type="int"),
+  match_id = patients.with_value_from_file(f_path=f"output/{vaxn}/{cohort}/matchround{matching_round}/potential/potential_matchedcontrols.csv.gz", returning="match_id", returning_type="int"),
   
   **week_12_vaccination_date_X(
     name = "covid_vax_any",
