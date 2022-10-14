@@ -6,7 +6,7 @@ library("arrow")
 library("here")
 library("glue")
 
-# remotes::install_github("https://github.com/wjchulme/dd4d")
+#remotes::install_github("https://github.com/wjchulme/dd4d")
 library("dd4d")
 
 source(here("lib", "functions", "utility.R"))
@@ -20,7 +20,25 @@ nthmax <- function(x, n = 1) {
 
 source(here("analysis", "design.R"))
 
-cohort <- "over12"
+args <- commandArgs(trailingOnly = TRUE)
+
+
+if (length(args) == 0) {
+  # use for interactive testing
+  removeobjects <- FALSE
+  cohort <- "over12"
+  vaxn <- "vax2"
+} else {
+  removeobjects <- TRUE
+  cohort <- args[[1]]
+  vaxn <- args[[2]]
+}
+
+for(cohort in c("over12","under12")){
+  for(vaxn in c("vax1","vax2")){
+
+# get vax number
+n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
 
 dates <- map(study_dates[[cohort]], as.Date)
 params <- study_params[[cohort]]
@@ -41,10 +59,11 @@ end_day <- as.integer(end_date - index_date)
 first_pfizerA_day <- as.integer(first_pfizerA_date - index_date)
 first_pfizerC_day <- as.integer(first_pfizerC_date - index_date)
 
+
 known_variables <- c(
   "minage", "maxage",
   "index_date", "start_date", "end_date", "first_pfizerA_date", "first_pfizerC_date",
-  "index_day", "start_day", "end_day", "first_pfizerA_day", "first_pfizerC_day"
+  "index_day", "start_day", "end_day", "first_pfizerA_day", "first_pfizerC_day","vaxn"
 )
 
 sim_list_pre <- lst(
@@ -58,6 +77,7 @@ sim_list_pre <- lst(
   #   ~rbernoulli(n=..n, p=0.999)
   # ),
   #
+
   age = bn_node(
     ~ as.integer(runif(n = ..n, minage, maxage))
   ),
@@ -146,23 +166,23 @@ sim_list_pre <- lst(
     missing_rate = ~ 1 - (first_vax_type == "pfizerA")
   ),
   covid_vax_pfizerA_2_day = bn_node(
-    ~ as.integer(runif(n = ..n, covid_vax_pfizerA_1_day + 180, covid_vax_pfizerA_1_day + 240)),
+    ~ as.integer(runif(n = ..n, covid_vax_pfizerA_1_day + 77, covid_vax_pfizerA_1_day + 240)),
     needs = c("covid_vax_pfizerA_1_day"),
   ),
   covid_vax_pfizerA_3_day = bn_node(
-    ~ as.integer(runif(n = ..n, covid_vax_pfizerA_2_day + 180, covid_vax_pfizerA_2_day + 240)),
-    needs = c("covid_vax_pfizerA_1_day"),
+    ~ as.integer(runif(n = ..n, covid_vax_pfizerA_2_day + 77, covid_vax_pfizerA_2_day + 240)),
+    needs = c("covid_vax_pfizerA_2_day"),
   ),
   covid_vax_pfizerC_1_day = bn_node(
     ~ as.integer(runif(n = ..n, first_pfizerC_day, first_pfizerC_day + 90)),
     missing_rate = ~ 1 - (first_vax_type == "pfizerC")
   ),
   covid_vax_pfizerC_2_day = bn_node(
-    ~ as.integer(runif(n = ..n, covid_vax_pfizerC_1_day + 180, covid_vax_pfizerC_1_day + 240)),
+    ~ as.integer(runif(n = ..n, covid_vax_pfizerC_1_day + 77, covid_vax_pfizerC_1_day + 240)),
     needs = c("covid_vax_pfizerC_1_day"),
   ),
   covid_vax_pfizerC_3_day = bn_node(
-    ~ as.integer(runif(n = ..n, covid_vax_pfizerC_2_day + 180, covid_vax_pfizerC_2_day + 240)),
+    ~ as.integer(runif(n = ..n, covid_vax_pfizerC_2_day + 77, covid_vax_pfizerC_2_day + 240)),
     needs = c("covid_vax_pfizerC_2_day"),
   ),
   vax1_day = bn_node(
@@ -173,7 +193,24 @@ sim_list_pre <- lst(
     ),
     keep = FALSE
   ),
-
+  vax2_day = bn_node(
+    ~ pmin(
+      if_else(first_vax_type == "pfizerC", covid_vax_pfizerC_2_day, NA_integer_),
+      if_else(first_vax_type == "pfizerA", covid_vax_pfizerA_2_day, NA_integer_),
+      na.rm = TRUE
+    ),
+    keep = FALSE
+  ),
+  vax_num =  bn_node(~vaxn,
+                     keep = FALSE),
+  vax_day = bn_node(
+    ~ pmin(
+      if_else(vax_num == "vax1", vax1_day, NA_integer_),
+      if_else(vax_num == "vax2", vax2_day, NA_integer_),
+      na.rm = TRUE
+    ),
+    keep = FALSE
+  ),
   ## baseline clinical variables
 
   # asthma = bn_node( ~rbernoulli(n=..n, p = 0.02)),
@@ -204,7 +241,7 @@ sim_list_pre <- lst(
   ## pre-baseline events where event date is relevant
   #
   primary_care_covid_case_0_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day - 100, vax1_day - 1)),
+    ~ as.integer(runif(n = ..n, vax_day - 100, vax_day - 1)),
     missing_rate = ~0.7
   ),
   #
@@ -214,15 +251,15 @@ sim_list_pre <- lst(
   # ),
   #
   postest_0_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day - 100, vax1_day - 1)),
+    ~ as.integer(runif(n = ..n, vax_day - 100, vax_day - 1)),
     missing_rate = ~0.9
   ),
   covidemergency_0_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day - 100, vax1_day - 1)),
+    ~ as.integer(runif(n = ..n, vax_day - 100, vax_day - 1)),
     missing_rate = ~0.99
   ),
   covidadmitted_0_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day - 100, vax1_day - 1)),
+    ~ as.integer(runif(n = ..n, vax_day - 100, vax_day - 1)),
     missing_rate = ~0.99
   ),
   #
@@ -231,64 +268,64 @@ sim_list_pre <- lst(
 sim_list_post <- lst(
   # ## post-baseline events (outcomes)
   dereg_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 120)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 120)),
     missing_rate = ~0.99
   ),
   primary_care_covid_case_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 100)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
     missing_rate = ~0.7
   ),
   covid_test_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 100)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
     missing_rate = ~0.7
   ),
   postest_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 100)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
     missing_rate = ~0.7
   ),
   emergency_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 200)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
     missing_rate = ~0.8
   ),
   emergencyhosp_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 200)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
     missing_rate = ~0.85
   ),
   covidemergency_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 200)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
     missing_rate = ~0.8
   ),
   covidemergencyhosp_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 200)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
     missing_rate = ~0.85
   ),
 
   # respemergency_day = bn_node(
-  #   ~as.integer(runif(n=..n, vax1_day, vax1_day+100)),
+  #   ~as.integer(runif(n=..n, vax_day, vax_day+100)),
   #   missing_rate = ~0.95
   # ),
   #
   # respemergencyhosp_day = bn_node(
-  #   ~as.integer(runif(n=..n, vax1_day, vax1_day+100)),
+  #   ~as.integer(runif(n=..n, vax_day, vax_day+100)),
   #   missing_rate = ~0.95
   # ),
 
   covidadmitted_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 100)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
     missing_rate = ~0.7
   ),
 
   # placeholder for single criticalcare variable ---
   covidcritcare_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 100)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
     missing_rate = ~0.8
   ),
   admitted_unplanned_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 100)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
     missing_rate = ~0.7
   ),
   # admitted_planned_day = bn_node(
-  #   ~as.integer(runif(n=..n, vax1_day, vax1_day+100)),
+  #   ~as.integer(runif(n=..n, vax_day, vax_day+100)),
   #   missing_rate = ~0.7
   # ),
 
@@ -298,11 +335,9 @@ sim_list_post <- lst(
     needs = "death_day"
   ),
   death_day = bn_node(
-    ~ as.integer(runif(n = ..n, vax1_day, vax1_day + 100)),
+    ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
     missing_rate = ~0.90
   ),
-  
-  
   test_count = bn_node(
      ~ rpois(n = ..n, 1)
   ),
@@ -332,7 +367,7 @@ dummydata_processed <- dummydata %>%
     # covid vax any
     covid_vax_any_1_day = pmin(covid_vax_pfizerA_1_day, covid_vax_pfizerC_1_day, na.rm = TRUE),
     covid_vax_any_2_day = pmin(covid_vax_pfizerA_2_day, covid_vax_pfizerC_2_day, na.rm = TRUE),
-    covid_vax_any_3_day = pmin(covid_vax_pfizerA_2_day, covid_vax_pfizerC_2_day, na.rm = TRUE),
+    covid_vax_any_3_day = pmin(covid_vax_pfizerA_3_day, covid_vax_pfizerC_3_day, na.rm = TRUE),
   ) %>%
   # convert logical to integer as study defs output 0/1 not TRUE/FALSE
   # mutate(across(where(is.logical), ~ as.integer(.))) %>%
@@ -346,10 +381,12 @@ fs::dir_create(here("lib", "dummydata"))
 dummydata_processed %>%
   filter(treated) %>%
   select(-treated) %>%
-  write_feather(sink = ghere("lib", "dummydata", "dummy_treated_{cohort}.feather"))
+  write_feather(sink = ghere("lib", "dummydata", "dummy_treated_{vaxn}_{cohort}.feather"))
 
 dummydata_processed %>%
   select(-treated) %>%
   select(-all_of(str_replace(names(sim_list_post), "_day", "_date"))) %>%
-  select(-covid_vax_pfizerA_1_date, -covid_vax_pfizerA_2_date, -covid_vax_pfizerC_1_date, -covid_vax_pfizerC_2_date, -covid_vax_any_2_date) %>%
-  write_feather(sink = ghere("lib", "dummydata", "dummy_control_potential1_{cohort}.feather"))
+  write_feather(sink = ghere("lib", "dummydata", "dummy_control_potential1_{vaxn}_{cohort}.feather"))
+
+  }
+}
