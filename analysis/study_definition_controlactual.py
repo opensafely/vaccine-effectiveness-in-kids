@@ -115,27 +115,30 @@ study = StudyDefinition(
   
   match_id = patients.with_value_from_file(f_path=f"output/{cohort}/vax{vaxn}/matchround{matching_round}/potential/potential_matchedcontrols.csv.gz", returning="match_id", returning_type="int"),
   
-  **week_12_vaccination_date_X(
+  **vaccination_date_X(
     name = "covid_vax_any",
     index_date = "1900-01-01",
     n = 1,
+    delay=84,
     target_disease_matches="SARS-2 CORONAVIRUS"
   ),
     # pfizer
-  **week_12_vaccination_date_X(
+  **vaccination_date_X(
     name = "covid_vax_pfizerA",
     # use 1900 to capture all possible recorded covid vaccinations, including date errors
     # any vaccines occurring before national rollout are later excluded
     index_date = "1900-01-01", 
     n = 2,
+    delay=84,
     product_name_matches="COVID-19 mRNA Vaccine Comirnaty 30micrograms/0.3ml dose conc for susp for inj MDV (Pfizer)"
   ),
   
   # pfizer approved for use in children (5-11)
-  **week_12_vaccination_date_X(
+  **vaccination_date_X(
     name = "covid_vax_pfizerC",
     index_date = "1900-01-01",
     n = 2,
+    delay=84,
     product_name_matches="COVID-19 mRNA Vaccine Comirnaty Children 5-11yrs 10mcg/0.2ml dose conc for disp for inj MDV (Pfizer)"
   ),
 
