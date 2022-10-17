@@ -47,14 +47,14 @@ params <- study_params[[cohort]]
 
 ## create output directories ----
 
-output_dir <- here("output", cohort, "vax{vaxn}", "table1")
+output_dir <- ghere("output", cohort, "vax{vaxn}", "table1")
 fs::dir_create(output_dir)
 
 ## Import data and derive some variables ----
 
 data_matched <- read_rds(ghere("output", cohort, "vax{vaxn}", "match", "data_matched.rds"))
 
-data_treatedeligible_matchstatus <- read_rds(here("output", cohort, "vax{vaxn}", "match", "data_treatedeligible_matchstatus.rds"))
+data_treatedeligible_matchstatus <- read_rds(ghere("output", cohort, "vax{vaxn}", "match", "data_treatedeligible_matchstatus.rds"))
 
 
 # matching coverage on each day of recruitment period ----
