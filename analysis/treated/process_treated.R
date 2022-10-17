@@ -33,23 +33,21 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
-  vaxn <- "vax2"
+  vaxn <- as.integer("2")
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   cohort <- args[[1]]
-  vaxn <- args[[2]]
+  vaxn <- as.integer(args[[2]])
 }
 
-# get vax number
-n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
 ## get cohort-specific parameters study dates and parameters ----
 
 dates <- map(study_dates[[cohort]], as.Date)
 params <- study_params[[cohort]]
 
 ## create output directory ----
-fs::dir_create(here("output", vaxn, cohort, "treated"))
+fs::dir_create(ghere("output", cohort, "vax{vaxn}", "treated"))
 
 
 # import data ----
@@ -61,16 +59,13 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
 
-  data_studydef_dummy <- read_feather(ghere("output", vaxn, cohort, "extract", "input_treated.feather")) %>%
+  data_studydef_dummy <- read_feather(ghere("output", cohort, "vax{vaxn}", "extract", "input_treated.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), ~ as.Date(.))) %>%
     # because of a bug in cohort extractor -- remove once pulled new version
     mutate(patient_id = as.integer(patient_id))
 
-  data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_treated_{vaxn}_{cohort}.feather")) %>%
-    mutate(
-      msoa = sample(factor(c("1", "2")), size = n(), replace = TRUE) # override msoa so matching success more likely
-    )
+  data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_treated_{cohort}_{vaxn}.feather")) 
 
 
   not_in_studydef <- names(data_custom_dummy)[!(names(data_custom_dummy) %in% names(data_studydef_dummy))]
@@ -116,7 +111,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
 
   data_extract <- data_custom_dummy
 } else {
-  data_extract <- read_feather(ghere("output", vaxn, cohort, "extract", "input_treated.feather")) %>%
+  data_extract <- read_feather(ghere("output", cohort, "vax{vaxn}", "extract", "input_treated.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), as.Date))
 }
@@ -252,9 +247,9 @@ data_processed <- data_processed %>%
     vax2_type = covid_vax_2_type,
     vax3_type = covid_vax_3_type,
     vax_type = case_when(
-      n_vax == 1 ~ vax1_type,
-      n_vax == 2 ~ vax2_type,
-      n_vax == 3 ~ vax3_type
+      vaxn == 1 ~ vax1_type,
+      vaxn == 2 ~ vax2_type,
+      vaxn == 3 ~ vax3_type
     ),
     vax1_type_descr = fct_case_when(
       vax1_type == "pfizerA" ~ "BNT162b2 30micrograms/0.3ml",
@@ -278,9 +273,9 @@ data_processed <- data_processed %>%
     vax2_date = covid_vax_2_date,
     vax3_date = covid_vax_3_date,
     vax_date = case_when(
-      n_vax == 1 ~ vax1_date,
-      n_vax == 2 ~ vax2_date,
-      n_vax == 3 ~ vax3_date,
+      vaxn == 1 ~ vax1_date,
+      vaxn == 2 ~ vax2_date,
+      vaxn == 3 ~ vax3_date,
     )
   ) %>%
   select(
@@ -319,7 +314,7 @@ data_criteria <- data_processed %>%
     no_recentcovid30 = is.na(anycovid_0_date) | ((vax1_date - anycovid_0_date) > 30),
   )
 
-if (n_vax == 1) {
+if (vaxn == 1) {
   data_criteria <- data_criteria %>%
     mutate(include = (
       vax1_betweenentrydates & has_vaxgap12 &
@@ -329,7 +324,7 @@ if (n_vax == 1) {
     ))
 }
 
-if (n_vax == 2) {
+if (vaxn == 2) {
   data_criteria <- data_criteria %>%
     mutate(include = (
       vax2_betweenentrydates & vax2_betweenentrydates &
@@ -348,7 +343,7 @@ data_treated_eligible <-
   left_join(data_processed, by = "patient_id") %>%
   droplevels()
 
-write_rds(data_treated_eligible, ghere("output", vaxn, cohort, "treated", "data_treatedeligible.rds"), compress = "gz")
+write_rds(data_treated_eligible, ghere("output", cohort, "vax{vaxn}", "treated", "data_treatedeligible.rds"), compress = "gz")
 
 
 # create flowchart ----
@@ -381,4 +376,4 @@ data_flowchart <- data_criteria %>%
       TRUE ~ NA_character_
     )
   )
-write_rds(data_flowchart, ghere("output", vaxn, cohort, "treated", "flowchart_treatedeligible.rds"))
+write_rds(data_flowchart, ghere("output", cohort, "vax{vaxn}", "treated", "flowchart_treatedeligible.rds"))

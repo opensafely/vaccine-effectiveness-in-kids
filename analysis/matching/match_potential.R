@@ -37,41 +37,39 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
+  vaxn <- as.integer("2")
   matching_round <- as.integer("1")
-  vaxn<-"vax2"
+  
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   cohort <- args[[1]]
-  matching_round <- as.integer(args[[2]])
-  vaxn<- args[[3]]
+  vaxn <- as.integer(args[[2]])
+  matching_round <- as.integer(args[[3]])
 }
-
-# get vax number
-n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
 
 ## get cohort-specific parameters study dates and parameters ----
 
 dates <- map(study_dates[[cohort]], as.Date)
 params <- study_params[[cohort]]
 
-matching_round_date <- dates[[c(glue("control_extract_dates{n_vax}"))]][matching_round]
+matching_round_date <- dates[[c(glue("control_extract_dates{vaxn}"))]][matching_round]
 
 
 ## create output directory ----
-fs::dir_create(ghere("output", vaxn, cohort, "matchround{matching_round}", "potential"))
+fs::dir_create(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "potential"))
 
 # Import datasets ----
 
 ## import treated populations ----
-data_alltreated <- read_rds(ghere("output", vaxn, cohort, "treated", "data_treatedeligible.rds")) %>% mutate(treated = 1L)
+data_alltreated <- read_rds(ghere("output", cohort, "vax{vaxn}", "treated", "data_treatedeligible.rds")) %>% mutate(treated = 1L)
 
 ## import control populations ----
-data_control <- read_rds(ghere("output", vaxn, cohort, "matchround{matching_round}", "process", "data_controlpotential.rds")) %>% mutate(treated = 0L)
+data_control <- read_rds(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "process", "data_controlpotential.rds")) %>% mutate(treated = 0L)
 
 # remove already-matched people from previous matching rounds
 if (matching_round > 1) {
-  data_matchstatusprevious <- read_rds(ghere("output", vaxn, cohort, "matchround{matching_round-1L}", "actual", "data_matchstatus_allrounds.rds")) %>%
+  data_matchstatusprevious <- read_rds(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round-1L}", "actual", "data_matchstatus_allrounds.rds")) %>%
     select(patient_id, treated)
 
   # do not select treated people who have already been matched
@@ -115,7 +113,7 @@ local({
   # time index is relative to "start date"
   # trial index start at one, not zero. i.e., study start date is "day 1" (but the _time_ at the start of study start date is zero)
   start_trial_time <- 0
-  end_trial_time <- as.integer(dates[[c(glue("end_date{n_vax}"))]] + 1 - dates[[c(glue("start_date{n_vax}"))]])
+  end_trial_time <- as.integer(dates[[c(glue("end_date{vaxn}"))]] + 1 - dates[[c(glue("start_date{vaxn}"))]])
   trials <- seq(start_trial_time + 1, end_trial_time, 1)
 
   # initialise list of candidate controls
@@ -129,7 +127,7 @@ local({
   for (trial in trials) {
     cat("matching trial ", trial, "\n")
     trial_time <- trial - 1
-    trial_date <-dates[[c(glue("start_date{n_vax}"))]] + trial_time
+    trial_date <-dates[[c(glue("start_date{vaxn}"))]] + trial_time
 
 
     # set of people vaccinated on trial day
@@ -308,7 +306,7 @@ local({
 })
 
 # output matching status ----
-write_rds(data_matchstatus, ghere("output",vaxn, cohort, "matchround{matching_round}", "potential", "data_potential_matchstatus.rds"), compress = "gz")
+write_rds(data_matchstatus, ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "potential", "data_potential_matchstatus.rds"), compress = "gz")
 
 # number of treated/controls per trial
 with(data_matchstatus %>% filter(matched == 1), table(trial_time, treated))
@@ -327,7 +325,7 @@ data_matchstatus %>%
   mutate(
     trial_date = as.character(trial_date)
   ) %>%
-  write_csv(ghere("output",vaxn, cohort, "matchround{matching_round}", "potential", glue("potential_matchedcontrols.csv.gz")))
+  write_csv(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "potential", glue("potential_matchedcontrols.csv.gz")))
 
 
 print(paste0("number of duplicate control IDs is ", data_matchstatus %>% filter(control == 1L, matched == 1L) %>% group_by(patient_id) %>% summarise(n = n()) %>% filter(n > 1) %>% nrow()))

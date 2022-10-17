@@ -33,17 +33,14 @@ args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
-  cohort <- "under12"
-  vaxn <- "vax1"
+  cohort <- "over12"
+  vaxn <- as.integer("1")
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   cohort <- args[[1]]
-  vaxn <- args[[2]]
+  vaxn <- as.integer(args[[2]])
 }
-
-# get vax number
-n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
 
 
 ## get cohort-specific parameters study dates and parameters ----
@@ -53,7 +50,7 @@ params <- study_params[[cohort]]
 
 
 ## create output directory ----
-fs::dir_create(ghere("output", vaxn, cohort, "match"))
+fs::dir_create(ghere("output", cohort, "vax{vaxn}", "match"))
 
 
 # import ----
@@ -63,11 +60,11 @@ fs::dir_create(ghere("output", vaxn, cohort, "match"))
 if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
   source(here("analysis", "dummy", "dummydata_controlfinal.R"))
 
-  data_studydef_dummy <- read_feather(ghere("output", vaxn, cohort, "extract", "input_controlfinal.feather")) %>%
+  data_studydef_dummy <- read_feather(ghere("output", cohort, "vax{vaxn}", "extract", "input_controlfinal.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), as.Date))
 
-  data_custom_dummy <- read_feather(fs::path("lib", "dummydata", glue("dummy_controlfinal_{vaxn}_{cohort}.feather")))
+  data_custom_dummy <- read_feather(fs::path("lib", "dummydata", glue("dummy_controlfinal_{cohort}_{vaxn}.feather")))
 
   not_in_studydef <- names(data_custom_dummy)[!(names(data_custom_dummy) %in% names(data_studydef_dummy))]
   not_in_custom <- names(data_studydef_dummy)[!(names(data_studydef_dummy) %in% names(data_custom_dummy))]
@@ -112,17 +109,17 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
 
   data_outcomes <- data_custom_dummy
 } else {
-  data_outcomes <- read_feather(ghere("output", vaxn, cohort, "extract", "input_controlfinal.feather")) %>%
+  data_outcomes <- read_feather(ghere("output", cohort, "vax{vaxn}", "extract", "input_controlfinal.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), as.Date))
 }
 
 
-data_matchstatus <- read_rds(ghere("output", vaxn, cohort, "matchround{n_matching_rounds}", "actual", "data_matchstatus_allrounds.rds"))
+data_matchstatus <- read_rds(ghere("output", cohort, "vax{vaxn}", "matchround{n_matching_rounds}", "actual", "data_matchstatus_allrounds.rds"))
 
 # import data for treated group and select those who were successfully matched
 
-data_treatedeligible <- read_rds(ghere("output", vaxn, cohort, "treated", "data_treatedeligible.rds"))
+data_treatedeligible <- read_rds(ghere("output", cohort, "vax{vaxn}", "treated", "data_treatedeligible.rds"))
 
 data_treated <-
   left_join(
@@ -141,7 +138,7 @@ data_control <-
     map_dfr(
       seq_len(n_matching_rounds),
       ~ {
-        read_rds(ghere("output", vaxn, cohort, glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))
+        read_rds(ghere("output", cohort,  "vax{vaxn}", glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))
       }
     ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date), # remove to avoid clash with already-stored variables
     by = c("patient_id")
@@ -181,7 +178,7 @@ data_matched <-
   )
 
 
-write_rds(data_matched, here("output", vaxn, cohort, "match", glue("data_matched.rds")), compress = "gz")
+write_rds(data_matched, ghere("output", cohort,  "vax{vaxn}", "match", glue("data_matched.rds")), compress = "gz")
 
 # matching status of all treated, eligible people ----
 
@@ -207,7 +204,7 @@ print(
   )
 )
 
-write_rds(data_treatedeligible_matchstatus, here("output", vaxn, cohort, "match", "data_treatedeligible_matchstatus.rds"), compress = "gz")
+write_rds(data_treatedeligible_matchstatus, ghere("output", cohort, "vax{vaxn}", "match", "data_treatedeligible_matchstatus.rds"), compress = "gz")
 
 
 

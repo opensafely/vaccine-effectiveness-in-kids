@@ -23,15 +23,15 @@ output_dir <- here("output", "release")
 fs::dir_create(output_dir)
 
 for (cohort in c("over12", "under12")) {
-  for (vaxn in c("vax1", "vax2")) {
+  for (vaxn in c(1L, 2L)) {
     # for(cohort in c("over12")){
 
-    input_dir <- ghere("output", vaxn, cohort, "models", "combined")
+    input_dir <- ghere("output", cohort, vaxn, "models", "combined")
 
     ## table1 ----
 
-    fs::file_copy(here("output", vaxn, cohort, "table1", "coverage.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_coverage.csv")), overwrite = TRUE)
-    fs::file_copy(here("output", vaxn, cohort, "table1", "table1.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_table1.csv")), overwrite = TRUE)
+    fs::file_copy(here("output", cohort, vaxn, "table1", "coverage.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_coverage.csv")), overwrite = TRUE)
+    fs::file_copy(here("output", cohort, vaxn, "table1", "table1.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_table1.csv")), overwrite = TRUE)
     # fs::file_copy(here("output", cohort, "table1", "flowchart.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_flowchart.csv")), overwrite = TRUE)
 
     ## KM ----

@@ -27,18 +27,15 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
-  vaxn <- "vax2"
+  vaxn <- as.integer("2")
 } else {
   removeobjects <- TRUE
   cohort <- args[[1]]
-  vaxn <- args[[2]]
+  vaxn <- as.integer(args[[2]])
 }
 
-for(cohort in c("over12","under12")){
-  for(vaxn in c("vax1","vax2")){
-
-# get vax number
-n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
+for(cohort in c("over12", "under12")){
+  for(vaxn in c(1L,2L)){
 
 dates <- map(study_dates[[cohort]], as.Date)
 params <- study_params[[cohort]]
@@ -201,12 +198,11 @@ sim_list_pre <- lst(
     ),
     keep = FALSE
   ),
-  vax_num =  bn_node(~vaxn,
-                     keep = FALSE),
+  vax_num =  bn_node(~vaxn, keep = FALSE),
   vax_day = bn_node(
     ~ pmin(
-      if_else(vax_num == "vax1", vax1_day, NA_integer_),
-      if_else(vax_num == "vax2", vax2_day, NA_integer_),
+      if_else(vax_num == 1, vax1_day, NA_integer_),
+      if_else(vax_num == 2, vax2_day, NA_integer_),
       na.rm = TRUE
     ),
     keep = FALSE
@@ -381,12 +377,12 @@ fs::dir_create(here("lib", "dummydata"))
 dummydata_processed %>%
   filter(treated) %>%
   select(-treated) %>%
-  write_feather(sink = ghere("lib", "dummydata", "dummy_treated_{vaxn}_{cohort}.feather"))
+  write_feather(sink = ghere("lib", "dummydata", "dummy_treated_{cohort}_{vaxn}.feather"))
 
 dummydata_processed %>%
   select(-treated) %>%
   select(-all_of(str_replace(names(sim_list_post), "_day", "_date"))) %>%
-  write_feather(sink = ghere("lib", "dummydata", "dummy_control_potential1_{vaxn}_{cohort}.feather"))
+  write_feather(sink = ghere("lib", "dummydata", "dummy_control_potential1_{cohort}_{vaxn}.feather"))
 
   }
 }

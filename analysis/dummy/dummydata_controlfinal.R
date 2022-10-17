@@ -5,19 +5,6 @@ library("arrow")
 library("here")
 library("glue")
 
-if (length(args) == 0) {
-  # use for interactive testing
-  removeobjects <- FALSE
-  cohort <- "over12"
-  vaxn <- "vax2"
-} else {
-  # FIXME replace with actual eventual action variables
-  removeobjects <- TRUE
-  cohort <- args[[1]]
-  vaxn <- args[[2]]
-}
-
-
 # not needed as these are already available from process_controlfinal.R
 
 # source(here("lib", "functions", "utility.R"))
@@ -32,12 +19,10 @@ nthmax <- function(x, n = 1) {
   dplyr::nth(sort(x, decreasing = TRUE), n)
 }
 
-n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
-
-start_date <- as.Date(dates[[c(glue("start_date{n_vax}"))]])
-end_date <- as.Date(dates[[c(glue("end_date{n_vax}"))]])
-followupend_date <- as.Date(dates[[c(glue("followupend_date{n_vax}"))]])
-index_date <- as.Date(dates[[c(glue("start_date{n_vax}"))]])
+start_date <- as.Date(dates[[c(glue("start_date{vaxn}"))]])
+end_date <- as.Date(dates[[c(glue("end_date{vaxn}"))]])
+followupend_date <- as.Date(dates[[c(glue("followupend_date{vaxn}"))]])
+index_date <- as.Date(dates[[c(glue("start_date{vaxn}"))]])
 
 first_pfizerA_date <- as.Date(dates$start_date1)
 first_pfizerC_date <- as.Date(dates$start_date1)
@@ -54,7 +39,7 @@ known_variables <- c(
 )
 
 
-data_matchstatus <- read_rds(ghere("output", vaxn, cohort, "matchround{n_matching_rounds}", "actual", "data_matchstatus_allrounds.rds")) %>% filter(treated == 0L)
+data_matchstatus <- read_rds(ghere("output", cohort, "vax{vaxn}", "matchround{n_matching_rounds}", "actual", "data_matchstatus_allrounds.rds")) %>% filter(treated == 0L)
 
 
 # import all datasets of matched controls, including matching variables
@@ -62,7 +47,7 @@ data_matchedcontrols <-
   map_dfr(
     seq_len(n_matching_rounds),
     ~ {
-      read_rds(ghere("output", vaxn, cohort, glue("matchround", .x), "actual", glue("data_successful_matchedcontrols.rds")))
+      read_rds(ghere("output", cohort, "vax{vaxn}", glue("matchround", .x), "actual", glue("data_successful_matchedcontrols.rds")))
     },
     .id = "matching_round"
   ) %>%
@@ -131,4 +116,4 @@ dummydata_processed <- dummydata %>%
 
 
 fs::dir_create(here("lib", "dummydata"))
-write_feather(dummydata_processed, sink = here("lib", "dummydata", glue("dummy_controlfinal_{vaxn}_{cohort}.feather")))
+write_feather(dummydata_processed, sink = here("lib", "dummydata", glue("dummy_controlfinal_{cohort}_{vaxn}.feather")))

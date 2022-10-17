@@ -37,19 +37,18 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
+  vaxn <- as.integer("2")
   subgroup <- "prior_covid_infection"
   outcome <- "postest"
-  vaxn <- "vax1"
+  
 } else {
   removeobjects <- TRUE
   cohort <- args[[1]]
-  subgroup <- args[[2]]
-  outcome <- args[[3]]
-  vaxn <- args[[4]]
+  vaxn <- as.integer(args[[2]])
+  subgroup <- args[[3]]
+  outcome <- args[[4]]
+  
 }
-
-# get vax number
-n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
 
 ## get cohort-specific parameters study dates and parameters ----
 
@@ -63,11 +62,11 @@ subgroup_sym <- sym(subgroup)
 
 # create output directories ----
 
-output_dir <- ghere("output", vaxn, cohort, "models", "km", subgroup, outcome)
+output_dir <- ghere("output", cohort, "vax{vaxn}", "models", "km", subgroup, outcome)
 fs::dir_create(output_dir)
 
 
-data_matched <- read_rds(ghere("output", vaxn, cohort, "match", "data_matched.rds"))
+data_matched <- read_rds(ghere("output", cohort, "vax{vaxn}", "match", "data_matched.rds"))
 
 ## import baseline data, restrict to matched individuals and derive time-to-event variables
 data_matched <-
@@ -92,7 +91,7 @@ data_matched <-
       dereg_date,
       # vax2_date-1, # -1 because we assume vax occurs at the start of the day
       death_date,
-      dates[[c(glue("followupend_date{n_vax}"))]],
+      dates[[c(glue("followupend_date{vaxn}"))]],
       trial_date + maxfup,
       na.rm = TRUE
     ),

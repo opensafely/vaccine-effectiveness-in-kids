@@ -65,15 +65,15 @@ namelesslst <- function(...) {
 
 
 action_1matchround <- function(cohort, vaxn, matching_round) {
-  control_extract_date <- study_dates[[cohort]][[glue("control_extract_dates{substr(vaxn,4,4)}")]][matching_round]
+  control_extract_date <- study_dates[[cohort]][[glue("control_extract_dates{vaxn}")]][matching_round]
 
   splice(
     action(
-      name = glue("extract_controlpotential_{vaxn}_{cohort}_{matching_round}"),
+      name = glue("extract_controlpotential_{cohort}_{vaxn}_{matching_round}"),
       run = glue(
         "cohortextractor:latest generate_cohort",
         " --study-definition study_definition_controlpotential",
-        " --output-file output/{vaxn}/{cohort}/matchround{matching_round}/extract/input_controlpotential.feather",
+        " --output-file output/{cohort}/vax{vaxn}/matchround{matching_round}/extract/input_controlpotential.feather",
         " --param cohort={cohort}",
         " --param matching_round={matching_round}",
         " --param index_date={control_extract_date}",
@@ -81,79 +81,79 @@ action_1matchround <- function(cohort, vaxn, matching_round) {
       ),
       needs = c(
         if (matching_round > 1) {
-          glue("process_controlactual_{vaxn}_{cohort}_{matching_round-1}")
+          glue("process_controlactual_{cohort}_{vaxn}_{matching_round-1}")
         } else {
           NULL
         }
       ) %>% as.list(),
       highly_sensitive = lst(
-        cohort = glue("output/{vaxn}/{cohort}/matchround{matching_round}/extract/input_controlpotential.feather")
+        cohort = glue("output/{cohort}/vax{vaxn}/matchround{matching_round}/extract/input_controlpotential.feather")
       )
     ),
     action(
-      name = glue("process_controlpotential_{vaxn}_{cohort}_{matching_round}"),
+      name = glue("process_controlpotential_{cohort}_{vaxn}_{matching_round}"),
       run = glue("r:latest analysis/matching/process_controlpotential.R"),
-      arguments = c(cohort, matching_round, vaxn),
+      arguments = c(cohort, vaxn, matching_round),
       needs = namelesslst(
-        glue("extract_controlpotential_{vaxn}_{cohort}_{matching_round}"),
+        glue("extract_controlpotential_{cohort}_{vaxn}_{matching_round}"),
       ),
       highly_sensitive = lst(
-        rds = glue("output/{vaxn}/{cohort}/matchround{matching_round}/process/*.rds")
+        rds = glue("output/{cohort}/vax{vaxn}/matchround{matching_round}/process/*.rds")
       )
     ),
     action(
-      name = glue("match_potential_{vaxn}_{cohort}_{matching_round}"),
+      name = glue("match_potential_{cohort}_{vaxn}_{matching_round}"),
       run = glue("r:latest analysis/matching/match_potential.R"),
-      arguments = c(cohort, matching_round, vaxn),
+      arguments = c(cohort, vaxn, matching_round),
       needs = c(
-        glue("process_treated_{vaxn}_{cohort}"),
-        glue("process_controlpotential_{vaxn}_{cohort}_{matching_round}"),
+        glue("process_treated_{cohort}_{vaxn}"),
+        glue("process_controlpotential_{cohort}_{vaxn}_{matching_round}"),
         if (matching_round > 1) {
-          glue("process_controlactual_{vaxn}_{cohort}_{matching_round-1}")
+          glue("process_controlactual_{cohort}_{vaxn}_{matching_round-1}")
         } else {
           NULL
         }
       ) %>% as.list(),
       highly_sensitive = lst(
-        rds = glue("output/{vaxn}/{cohort}/matchround{matching_round}/potential/*.rds"),
-        csv = glue("output/{vaxn}/{cohort}/matchround{matching_round}/potential/*.csv.gz"),
+        rds = glue("output/{cohort}/vax{vaxn}/matchround{matching_round}/potential/*.rds"),
+        csv = glue("output/{cohort}/vax{vaxn}/matchround{matching_round}/potential/*.csv.gz"),
       )
     ),
     action(
-      name = glue("extract_controlactual_{vaxn}_{cohort}_{matching_round}"),
+      name = glue("extract_controlactual_{cohort}_{vaxn}_{matching_round}"),
       run = glue(
         "cohortextractor:latest generate_cohort",
         " --study-definition study_definition_controlactual",
-        " --output-file output/{vaxn}/{cohort}/matchround{matching_round}/extract/input_controlactual.feather",
+        " --output-file output/{cohort}/vax{vaxn}/matchround{matching_round}/extract/input_controlactual.feather",
         " --param cohort={cohort}",
         " --param matching_round={matching_round}",
         " --param vaxn={vaxn}",
       ),
       needs = namelesslst(
-        glue("match_potential_{vaxn}_{cohort}_{matching_round}"),
+        glue("match_potential_{cohort}_{vaxn}_{matching_round}"),
       ),
       highly_sensitive = lst(
-        cohort = glue("output/{vaxn}/{cohort}/matchround{matching_round}/extract/input_controlactual.feather")
+        cohort = glue("output/{cohort}/vax{vaxn}/matchround{matching_round}/extract/input_controlactual.feather")
       )
     ),
     action(
-      name = glue("process_controlactual_{vaxn}_{cohort}_{matching_round}"),
+      name = glue("process_controlactual_{cohort}_{vaxn}_{matching_round}"),
       run = glue("r:latest analysis/matching/process_controlactual.R"),
-      arguments = c(cohort, matching_round, vaxn),
+      arguments = c(cohort, vaxn, matching_round),
       needs = c(
-        glue("process_treated_{vaxn}_{cohort}"),
-        glue("match_potential_{vaxn}_{cohort}_{matching_round}"),
-        glue("extract_controlpotential_{vaxn}_{cohort}_{matching_round}"), # this is only necessary for the dummy data
-        glue("extract_controlactual_{vaxn}_{cohort}_{matching_round}"),
+        glue("process_treated_{cohort}_{vaxn}"),
+        glue("match_potential_{cohort}_{vaxn}_{matching_round}"),
+        glue("extract_controlpotential_{cohort}_{vaxn}_{matching_round}"), # this is only necessary for the dummy data
+        glue("extract_controlactual_{cohort}_{vaxn}_{matching_round}"),
         if (matching_round > 1) {
-          glue("process_controlactual_{vaxn}_{cohort}_{matching_round-1}")
+          glue("process_controlactual_{cohort}_{vaxn}_{matching_round-1}")
         } else {
           NULL
         }
       ) %>% as.list(),
       highly_sensitive = lst(
-        rds = glue("output/{vaxn}/{cohort}/matchround{matching_round}/actual/*.rds"),
-        csv = glue("output/{vaxn}/{cohort}/matchround{matching_round}/actual/*.csv.gz"),
+        rds = glue("output/{cohort}/vax{vaxn}/matchround{matching_round}/actual/*.rds"),
+        csv = glue("output/{cohort}/vax{vaxn}/matchround{matching_round}/actual/*.csv.gz"),
       )
     )
   )
@@ -170,63 +170,63 @@ action_extract_and_match <- function(cohort, vaxn, n_matching_rounds) {
 
     # all treated people
     action(
-      name = glue("extract_treated_{vaxn}_{cohort}"),
+      name = glue("extract_treated_{cohort}_{vaxn}"),
       run = glue(
         "cohortextractor:latest generate_cohort",
         " --study-definition study_definition_treated",
-        " --output-file output/{vaxn}/{cohort}/extract/input_treated.feather",
+        " --output-file output/{cohort}/vax{vaxn}/extract/input_treated.feather",
         " --param cohort={cohort}",
         " --param vaxn={vaxn}",
       ),
       highly_sensitive = lst(
-        extract = glue("output/{vaxn}/{cohort}/extract/input_treated.feather")
+        extract = glue("output/{cohort}/vax{vaxn}/extract/input_treated.feather")
       ),
     ),
 
     # all treated people
     action(
-      name = glue("process_treated_{vaxn}_{cohort}"),
+      name = glue("process_treated_{cohort}_{vaxn}"),
       run = glue("r:latest analysis/treated/process_treated.R"),
       arguments = c(cohort, vaxn),
       needs = namelesslst(
-        glue("extract_treated_{vaxn}_{cohort}")
+        glue("extract_treated_{cohort}_{vaxn}")
       ),
       highly_sensitive = lst(
-        rds = glue("output/{vaxn}/{cohort}/treated/*.rds")
+        rds = glue("output/{cohort}/vax{vaxn}/treated/*.rds")
       ),
     ),
     allrounds,
     action(
-      name = glue("extract_controlfinal_{vaxn}_{cohort}"),
+      name = glue("extract_controlfinal_{cohort}_{vaxn}"),
       run = glue(
         "cohortextractor:latest generate_cohort",
         " --study-definition study_definition_controlfinal",
-        " --output-file output/{vaxn}/{cohort}/extract/input_controlfinal.feather",
+        " --output-file output/{cohort}/vax{vaxn}/extract/input_controlfinal.feather",
         " --param cohort={cohort}",
         " --param n_matching_rounds={n_matching_rounds}",
         " --param vaxn={vaxn}",
       ),
       needs = namelesslst(
-        glue("process_controlactual_{vaxn}_{cohort}_{n_matching_rounds}")
+        glue("process_controlactual_{cohort}_{vaxn}_{n_matching_rounds}")
       ),
       highly_sensitive = lst(
-        extract = glue("output/{vaxn}/{cohort}/extract/input_controlfinal.feather")
+        extract = glue("output/{cohort}/vax{vaxn}/extract/input_controlfinal.feather")
       ),
     ),
     action(
-      name = glue("process_controlfinal_{vaxn}_{cohort}"),
+      name = glue("process_controlfinal_{cohort}_{vaxn}"),
       run = glue("r:latest analysis/matching/process_controlfinal.R"),
       arguments = c(cohort, vaxn),
       needs = c(
         map(
           seq_len(n_matching_rounds),
-          ~ glue("process_controlactual_{vaxn}_{cohort}_", .x)
+          ~ glue("process_controlactual_{cohort}_{vaxn}_", .x)
         ),
-        glue("extract_controlfinal_{vaxn}_{cohort}"),
-        glue("process_treated_{vaxn}_{cohort}")
+        glue("extract_controlfinal_{cohort}_{vaxn}"),
+        glue("process_treated_{cohort}_{vaxn}")
       ),
       highly_sensitive = lst(
-        extract = glue("output/{vaxn}/{cohort}/match/*.rds")
+        extract = glue("output/{cohort}/vax{vaxn}/match/*.rds")
       ),
     )
   )
@@ -238,53 +238,53 @@ action_extract_and_match <- function(cohort, vaxn, n_matching_rounds) {
 
 action_table1 <- function(cohort, vaxn) {
   action(
-    name = glue("table1_{vaxn}_{cohort}"),
+    name = glue("table1_{cohort}_{vaxn}"),
     run = glue("r:latest analysis/matching/table1.R"),
     arguments = c(cohort, vaxn),
     needs = namelesslst(
-      glue("process_controlfinal_{vaxn}_{cohort}"),
+      glue("process_controlfinal_{cohort}_{vaxn}"),
     ),
     moderately_sensitive = lst(
-      csv = glue("output/{vaxn}/{cohort}/table1/*.csv"),
-      # png= glue("output/{vaxn}/{cohort}/table1/*.png"),
+      csv = glue("output/{cohort}/vax{vaxn}/table1/*.csv"),
+      # png= glue("output/{cohort}/vax{vaxn}/table1/*.png"),
     )
   )
 }
 
 
-action_km <- function(cohort, subgroup, outcome, vaxn) {
+action_km <- function(cohort, vaxn, subgroup, outcome) {
   action(
-    name = glue("km_{vaxn}_{cohort}_{subgroup}_{outcome}"),
+    name = glue("km_{cohort}_{vaxn}_{subgroup}_{outcome}"),
     run = glue("r:latest analysis/model/km.R"),
-    arguments = c(cohort, subgroup, outcome, vaxn),
+    arguments = c(cohort, vaxn, subgroup, outcome),
     needs = namelesslst(
-      glue("process_controlfinal_{vaxn}_{cohort}"),
+      glue("process_controlfinal_{cohort}_{vaxn}"),
     ),
     moderately_sensitive = lst(
-      # csv= glue("output/{vaxn}/{cohort}/models/km/{subgroup}/{outcome}/*.csv"),
-      rds = glue("output/{vaxn}/{cohort}/models/km/{subgroup}/{outcome}/*.rds"),
-      png = glue("output/{vaxn}/{cohort}/models/km/{subgroup}/{outcome}/*.png"),
+      # csv= glue("output/{cohort}/vax{vaxn}/models/km/{subgroup}/{outcome}/*.csv"),
+      rds = glue("output/{cohort}/vax{vaxn}/models/km/{subgroup}/{outcome}/*.rds"),
+      png = glue("output/{cohort}/vax{vaxn}/models/km/{subgroup}/{outcome}/*.png"),
     )
   )
 }
 
-action_eventcounts <- function(cohort, subgroup, vaxn) {
+action_eventcounts <- function(cohort, vaxn, subgroup) {
   action(
-    name = glue("eventcounts_{vaxn}_{cohort}_{subgroup}"),
+    name = glue("eventcounts_{cohort}_{vaxn}_{subgroup}"),
     run = glue("r:latest analysis/model/eventcounts.R"),
-    arguments = c(cohort, subgroup, vaxn),
+    arguments = c(cohort, vaxn, subgroup),
     needs = namelesslst(
-      glue("process_controlfinal_{vaxn}_{cohort}"),
+      glue("process_controlfinal_{cohort}_{vaxn}"),
     ),
     moderately_sensitive = lst(
-      rds = glue("output/{vaxn}/{cohort}/models/eventcounts/{subgroup}/*.rds"),
+      rds = glue("output/{cohort}/vax{vaxn}/models/eventcounts/{subgroup}/*.rds"),
     )
   )
 }
 
 action_combine <- function(cohort, vaxn) {
   action(
-    name = glue("combine_{vaxn}_{cohort}"),
+    name = glue("combine_{cohort}_{vaxn}"),
     run = glue("r:latest analysis/model/combine.R"),
     arguments = c(cohort, vaxn),
     needs = splice(
@@ -294,7 +294,7 @@ action_combine <- function(cohort, vaxn) {
             subgroup = c("all", "prior_covid_infection"),
             outcome = c("postest", "emergency", "covidemergency", "covidadmitted", "covidcritcare", "coviddeath", "noncoviddeath"),
           ),
-          "km_{vaxn}_{cohort}_{subgroup}_{outcome}"
+          "km_{cohort}_{vaxn}_{subgroup}_{outcome}"
         )
       ),
       as.list(
@@ -302,25 +302,25 @@ action_combine <- function(cohort, vaxn) {
           .x = expand_grid(
             subgroup = c("all", "prior_covid_infection"),
           ),
-          "eventcounts_{vaxn}_{cohort}_{subgroup}"
+          "eventcounts_{cohort}_{vaxn}_{subgroup}"
         )
       )
     ),
     moderately_sensitive = lst(
-      rds = glue("output/{vaxn}/{cohort}/models/combined/*.csv"),
-      png = glue("output/{vaxn}/{cohort}/models/combined/*.png"),
+      rds = glue("output/{cohort}/vax{vaxn}/models/combined/*.csv"),
+      png = glue("output/{cohort}/vax{vaxn}/models/combined/*.png"),
     )
   )
 }
 
 action_skim <- function(cohort, vaxn) {
   action(
-    name = glue("skim_{vaxn}_{cohort}_matched"),
+    name = glue("skim_{cohort}_{vaxn}_matched"),
     run = "r:latest analysis/data_skim.R",
-    arguments = c(glue("output/{vaxn}/{cohort}/match/data_matched.rds"), glue("output/{vaxn}/{cohort}/skim")),
-    needs = list(glue("process_controlfinal_{vaxn}_{cohort}")),
+    arguments = c(glue("output/{cohort}/vax{vaxn}/match/data_matched.rds"), glue("output/{cohort}/vax{vaxn}/skim")),
+    needs = list(glue("process_controlfinal_{cohort}_{vaxn}")),
     moderately_sensitive = lst(
-      cohort = glue("output/{vaxn}/{cohort}/skim/*.txt")
+      cohort = glue("output/{cohort}/vax{vaxn}/skim/*.txt")
     )
   )
 }
@@ -353,30 +353,30 @@ actions_list <- splice(
     "# # # # # # # # # # # # # # # # # # #",
     "Extract and match"
   ),
-  action_extract_and_match("over12", "vax1", n_matching_rounds),
-  action_skim("over12", "vax1"),
-  action_table1("over12", "vax1"),
+  action_extract_and_match("over12", 1, n_matching_rounds),
+  action_skim("over12", 1),
+  action_table1("over12", 1),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Model"
   ),
-  action_km("over12", "all", "postest", "vax1"),
-  action_km("over12", "all", "emergency", "vax1"),
-  action_km("over12", "all", "covidemergency", "vax1"),
-  action_km("over12", "all", "covidadmitted", "vax1"),
-  action_km("over12", "all", "covidcritcare", "vax1"),
-  action_km("over12", "all", "coviddeath", "vax1"),
-  action_km("over12", "all", "noncoviddeath", "vax1"),
-  action_km("over12", "prior_covid_infection", "postest", "vax1"),
-  action_km("over12", "prior_covid_infection", "emergency", "vax1"),
-  action_km("over12", "prior_covid_infection", "covidemergency", "vax1"),
-  action_km("over12", "prior_covid_infection", "covidadmitted", "vax1"),
-  action_km("over12", "prior_covid_infection", "covidcritcare", "vax1"),
-  action_km("over12", "prior_covid_infection", "coviddeath", "vax1"),
-  action_km("over12", "prior_covid_infection", "noncoviddeath", "vax1"),
-  action_eventcounts("over12", "all", "vax1"),
-  action_eventcounts("over12", "prior_covid_infection", "vax1"),
-  action_combine("over12", "vax1"),
+  action_km("over12", 1, "all", "postest"),
+  action_km("over12", 1, "all", "emergency"),
+  action_km("over12", 1, "all", "covidemergency"),
+  action_km("over12", 1, "all", "covidadmitted"),
+  action_km("over12", 1, "all", "covidcritcare"),
+  action_km("over12", 1, "all", "coviddeath"),
+  action_km("over12", 1, "all", "noncoviddeath"),
+  action_km("over12", 1, "prior_covid_infection", "postest"),
+  action_km("over12", 1, "prior_covid_infection", "emergency"),
+  action_km("over12", 1, "prior_covid_infection", "covidemergency"),
+  action_km("over12", 1, "prior_covid_infection", "covidadmitted"),
+  action_km("over12", 1, "prior_covid_infection", "covidcritcare"),
+  action_km("over12", 1, "prior_covid_infection", "coviddeath"),
+  action_km("over12", 1, "prior_covid_infection", "noncoviddeath"),
+  action_eventcounts("over12", 1, "all"),
+  action_eventcounts("over12", 1, "prior_covid_infection"),
+  action_combine("over12", 1),
 
 
 
@@ -385,26 +385,26 @@ actions_list <- splice(
     "Vax2, Over 12s cohort",
     "# # # # # # # # # # # # # # # # # # #"
   ),
-  action_extract_and_match("over12", "vax2", n_matching_rounds),
-  action_skim("over12", "vax2"),
-  action_table1("over12", "vax2"),
-  action_km("over12", "all", "postest", "vax2"),
-  action_km("over12", "all", "emergency", "vax2"),
-  action_km("over12", "all", "covidemergency", "vax2"),
-  action_km("over12", "all", "covidadmitted", "vax2"),
-  action_km("over12", "all", "covidcritcare", "vax2"),
-  action_km("over12", "all", "coviddeath", "vax2"),
-  action_km("over12", "all", "noncoviddeath", "vax2"),
-  action_km("over12", "prior_covid_infection", "postest", "vax2"),
-  action_km("over12", "prior_covid_infection", "emergency", "vax2"),
-  action_km("over12", "prior_covid_infection", "covidemergency", "vax2"),
-  action_km("over12", "prior_covid_infection", "covidadmitted", "vax2"),
-  action_km("over12", "prior_covid_infection", "covidcritcare", "vax2"),
-  action_km("over12", "prior_covid_infection", "coviddeath", "vax2"),
-  action_km("over12", "prior_covid_infection", "noncoviddeath", "vax2"),
-  action_eventcounts("over12", "all", "vax2"),
-  action_eventcounts("over12", "prior_covid_infection", "vax2"),
-  action_combine("over12", "vax2"),
+  action_extract_and_match("over12", 2, n_matching_rounds),
+  action_skim("over12", 2),
+  action_table1("over12", 2),
+  action_km("over12", 2, "all", "postest"),
+  action_km("over12", 2, "all", "emergency"),
+  action_km("over12", 2, "all", "covidemergency"),
+  action_km("over12", 2, "all", "covidadmitted"),
+  action_km("over12", 2, "all", "covidcritcare"),
+  action_km("over12", 2, "all", "coviddeath"),
+  action_km("over12", 2, "all", "noncoviddeath"),
+  action_km("over12", 2, "prior_covid_infection", "postest"),
+  action_km("over12", 2, "prior_covid_infection", "emergency"),
+  action_km("over12", 2, "prior_covid_infection", "covidemergency"),
+  action_km("over12", 2, "prior_covid_infection", "covidadmitted"),
+  action_km("over12", 2, "prior_covid_infection", "covidcritcare"),
+  action_km("over12", 2, "prior_covid_infection", "coviddeath"),
+  action_km("over12", 2, "prior_covid_infection", "noncoviddeath"),
+  action_eventcounts("over12", 2, "all"),
+  action_eventcounts("over12", 2, "prior_covid_infection"),
+  action_combine("over12", 2),
 
   comment(
     "# # # # # # # # # # # # # # # # # # #",
@@ -415,31 +415,31 @@ actions_list <- splice(
     "# # # # # # # # # # # # # # # # # # #",
     "Extract and match"
   ),
-  action_extract_and_match("under12", "vax1", n_matching_rounds),
-  action_skim("under12", "vax1"),
-  action_table1("under12", "vax1"),
+  action_extract_and_match("under12", 1, n_matching_rounds),
+  action_skim("under12", 1),
+  action_table1("under12", 1),
 
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Model"
   ),
-  action_km("under12", "all", "postest", "vax1"),
-  action_km("under12", "all", "emergency", "vax1"),
-  action_km("under12", "all", "covidemergency", "vax1"),
-  action_km("under12", "all", "covidadmitted", "vax1"),
-  action_km("under12", "all", "covidcritcare", "vax1"),
-  action_km("under12", "all", "coviddeath", "vax1"),
-  action_km("under12", "all", "noncoviddeath", "vax1"),
-  action_km("under12", "prior_covid_infection", "postest", "vax1"),
-  action_km("under12", "prior_covid_infection", "emergency", "vax1"),
-  action_km("under12", "prior_covid_infection", "covidemergency", "vax1"),
-  action_km("under12", "prior_covid_infection", "covidadmitted", "vax1"),
-  action_km("under12", "prior_covid_infection", "covidcritcare", "vax1"),
-  action_km("under12", "prior_covid_infection", "coviddeath", "vax1"),
-  action_km("under12", "prior_covid_infection", "noncoviddeath", "vax1"),
-  action_eventcounts("under12", "all", "vax1"),
-  action_eventcounts("under12", "prior_covid_infection", "vax1"),
-  action_combine("under12", "vax1"),
+  action_km("under12", 1, "all", "postest"),
+  action_km("under12", 1, "all", "emergency"),
+  action_km("under12", 1, "all", "covidemergency"),
+  action_km("under12", 1, "all", "covidadmitted"),
+  action_km("under12", 1, "all", "covidcritcare"),
+  action_km("under12", 1, "all", "coviddeath"),
+  action_km("under12", 1, "all", "noncoviddeath"),
+  action_km("under12", 1, "prior_covid_infection", "postest"),
+  action_km("under12", 1, "prior_covid_infection", "emergency"),
+  action_km("under12", 1, "prior_covid_infection", "covidemergency"),
+  action_km("under12", 1, "prior_covid_infection", "covidadmitted"),
+  action_km("under12", 1, "prior_covid_infection", "covidcritcare"),
+  action_km("under12", 1, "prior_covid_infection", "coviddeath"),
+  action_km("under12", 1, "prior_covid_infection", "noncoviddeath"),
+  action_eventcounts("under12", 1, "all"),
+  action_eventcounts("under12", 1, "prior_covid_infection"),
+  action_combine("under12", 1),
 
    comment(
     "# # # # # # # # # # # # # # # # # # #",
@@ -447,27 +447,27 @@ actions_list <- splice(
     "# # # # # # # # # # # # # # # # # # #"
   ),
 
-  action_extract_and_match("under12", "vax2", n_matching_rounds),
-  action_skim("under12", "vax2"),
-  action_table1("under12", "vax2"),
+  action_extract_and_match("under12", 2, n_matching_rounds),
+  action_skim("under12", 2),
+  action_table1("under12", 2),
 
-  action_km("under12", "all", "postest", "vax2"),
-  action_km("under12", "all", "emergency", "vax2"),
-  action_km("under12", "all", "covidemergency", "vax2"),
-  action_km("under12", "all", "covidadmitted", "vax2"),
-  action_km("under12", "all", "covidcritcare", "vax2"),
-  action_km("under12", "all", "coviddeath", "vax2"),
-  action_km("under12", "all", "noncoviddeath", "vax2"),
-  action_km("under12", "prior_covid_infection", "postest", "vax2"),
-  action_km("under12", "prior_covid_infection", "emergency", "vax2"),
-  action_km("under12", "prior_covid_infection", "covidemergency", "vax2"),
-  action_km("under12", "prior_covid_infection", "covidadmitted", "vax2"),
-  action_km("under12", "prior_covid_infection", "covidcritcare", "vax2"),
-  action_km("under12", "prior_covid_infection", "coviddeath", "vax2"),
-  action_km("under12", "prior_covid_infection", "noncoviddeath", "vax2"),
-  action_eventcounts("under12", "all", "vax2"),
-  action_eventcounts("under12", "prior_covid_infection", "vax2"),
-  action_combine("under12", "vax2"),
+  action_km("under12", 2, "all", "postest"),
+  action_km("under12", 2, "all", "emergency"),
+  action_km("under12", 2, "all", "covidemergency"),
+  action_km("under12", 2, "all", "covidadmitted"),
+  action_km("under12", 2, "all", "covidcritcare"),
+  action_km("under12", 2, "all", "coviddeath"),
+  action_km("under12", 2, "all", "noncoviddeath"),
+  action_km("under12", 2, "prior_covid_infection", "postest"),
+  action_km("under12", 2, "prior_covid_infection", "emergency"),
+  action_km("under12", 2, "prior_covid_infection", "covidemergency"),
+  action_km("under12", 2, "prior_covid_infection", "covidadmitted"),
+  action_km("under12", 2, "prior_covid_infection", "covidcritcare"),
+  action_km("under12", 2, "prior_covid_infection", "coviddeath"),
+  action_km("under12", 2, "prior_covid_infection", "noncoviddeath"),
+  action_eventcounts("under12", 2, "all"),
+  action_eventcounts("under12", 2, "prior_covid_infection"),
+  action_combine("under12", 2),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Move files for release",
@@ -477,14 +477,14 @@ actions_list <- splice(
     name = "release",
     run = glue("r:latest analysis/release_objects.R"),
     needs = namelesslst(
-      glue("table1_vax1_over12"),
-      glue("combine_vax1_over12"),
-      glue("table1_vax1_under12"),
-      glue("combine_vax1_under12"),
-      glue("table1_vax2_over12"),
-      glue("combine_vax2_over12"),
-      glue("table1_vax2_under12"),
-      glue("combine_vax2_under12"),
+      glue("table1_over12_1"),
+      glue("combine_over12_1"),
+      glue("table1_under12_1"),
+      glue("combine_under12_1"),
+      glue("table1_over12_2"),
+      glue("combine_over12_2"),
+      glue("table1_under12_2"),
+      glue("combine_under12_2"),
     ),
     moderately_sensitive = lst(
       txt = glue("output/meta-release/*.txt"),

@@ -17,7 +17,7 @@ fs::dir_create(here("lib", "design"))
 threshold <- 6
 
 # number of matching rounds to perform
-n_matching_rounds <- 6
+n_matching_rounds <- 2
 
 
 # define key dates ----
@@ -40,7 +40,6 @@ study_dates <- lst(
     followupend_date2 = "2022-10-10", # end of follow-up
   )
 )
-
 
 extract_increment <- 14
 

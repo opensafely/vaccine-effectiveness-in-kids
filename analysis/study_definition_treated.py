@@ -16,11 +16,11 @@ from cohortextractor import (
   params
 )
 
-from variables_outcome import week_12_vaccination_date_X 
+from variables_outcome import vaccination_date_X 
 
 cohort = params["cohort"]
-vaxn = params["vaxn"]
-n_vax = int(re.sub(r'[^0-9]', '', vaxn))
+vaxn = int(params["vaxn"])
+
 # import study dates defined in "./analysis/design.R" script
 with open("./lib/design/study-dates.json") as f:
   study_dates = json.load(f)
@@ -32,8 +32,8 @@ start_date_1 = study_dates[cohort]["start_date1"]
 end_date_1 = study_dates[cohort]["end_date1"]
 start_date_2 = study_dates[cohort]["start_date2"]
 end_date_2 = study_dates[cohort]["end_date2"]
-start_date = study_dates[cohort][f"start_date{n_vax}"]
-end_date = study_dates[cohort][f"end_date{n_vax}"]
+start_date = study_dates[cohort][f"start_date{vaxn}"]
+end_date = study_dates[cohort][f"end_date{vaxn}"]
 
 # import study parameters defined in "./analysis/design.R" script  
 with open("./lib/design/study-params.json") as f:
@@ -48,15 +48,15 @@ treatment = study_params[cohort]["treatment"]
 ############################################################
 ## inclusion variables
 from variables_inclusion import generate_inclusion_variables 
-inclusion_variables = generate_inclusion_variables(index_date="covid_vax_any_1_date")
+inclusion_variables = generate_inclusion_variables(index_date=f"covid_vax_any_{vaxn}_date")
 ############################################################
 ## matching variables
 from variables_matching import generate_matching_variables 
-matching_variables = generate_matching_variables(index_date=f"covid_vax_any_{n_vax}_date")
+matching_variables = generate_matching_variables(index_date=f"covid_vax_any_{vaxn}_date")
 ############################################################
 ## outcome variables
 from variables_outcome import generate_outcome_variables 
-outcome_variables = generate_outcome_variables(index_date=f"covid_vax_any_{n_vax}_date")
+outcome_variables = generate_outcome_variables(index_date=f"covid_vax_any_{vaxn}_date")
 ############################################################
 
 
@@ -89,13 +89,13 @@ study = StudyDefinition(
       AND
       NOT child_atrisk
       AND 
-      (covid_vax_any_{n_vax-1}_date >= start_date_{n_vax-1})
+      (covid_vax_any_{vaxn}_date >= start_date_{vaxn})
       AND
-      (covid_vax_any_{n_vax-1}_date <= end_date_{n_vax-1})
+      (covid_vax_any_{vaxn}_date <= end_date_{vaxn})
       AND 
-      (covid_vax_any_{n_vax-1}_date = covid_vax_{treatment}_{n_vax-1}_date)
+      (covid_vax_any_{vaxn-1}_date = covid_vax_{treatment}_{vaxn-1}_date)
        AND
-      (covid_vax_any_{n_vax}_date = covid_vax_{treatment}_{n_vax}_date)
+      (covid_vax_any_{vaxn}_date = covid_vax_{treatment}_{vaxn}_date)
     """,
     # Not including (covid_vax_any_2_date >= covid_vax_any_1_date + 12 weeks) as specfied in the outcomes variables week_12_vaccination_date_X
     # 

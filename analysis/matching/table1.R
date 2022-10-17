@@ -30,16 +30,13 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
-  vaxn <- "vax1"
+  vaxn <- as.integer("1")
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   cohort <- args[[1]]
-  vaxn <- args[[2]]
+  vaxn <- as.integer(args[[2]])
 }
-
-# get vax number
-n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
 
 ## get cohort-specific parameters study dates and parameters ----
 
@@ -50,14 +47,14 @@ params <- study_params[[cohort]]
 
 ## create output directories ----
 
-output_dir <- here("output", vaxn, cohort, "table1")
+output_dir <- here("output", cohort, "vax{vaxn}", "table1")
 fs::dir_create(output_dir)
 
 ## Import data and derive some variables ----
 
-data_matched <- read_rds(ghere("output", vaxn, cohort, "match", "data_matched.rds"))
+data_matched <- read_rds(ghere("output", cohort, "vax{vaxn}", "match", "data_matched.rds"))
 
-data_treatedeligible_matchstatus <- read_rds(here("output", vaxn, cohort, "match", "data_treatedeligible_matchstatus.rds"))
+data_treatedeligible_matchstatus <- read_rds(here("output", cohort, "vax{vaxn}", "match", "data_treatedeligible_matchstatus.rds"))
 
 
 # matching coverage on each day of recruitment period ----
@@ -87,7 +84,7 @@ data_coverage <-
   ) %>%
   group_by(status) %>%
   complete(
-    vax_date = full_seq(c(dates[[c(glue("start_date{n_vax}"))]], dates[[c(glue("end_date{n_vax}"))]]), 1), # go X days before to
+    vax_date = full_seq(c(dates[[c(glue("start_date{vaxn}"))]], dates[[c(glue("end_date{vaxn}"))]]), 1), # go X days before to
     fill = list(n = 0)
   ) %>%
   mutate(

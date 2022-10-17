@@ -37,35 +37,33 @@ args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
-  cohort <- "over12"
+  cohort <- "under12"
+  vaxn <- as.integer("2")
   matching_round <- as.integer("1")
-  vaxn <- "vax2"
+  
 } else {
   removeobjects <- TRUE
   cohort <- args[[1]]
-  matching_round <- as.integer(args[[2]])
-  vaxn <- args[[3]]
+  vaxn <- as.integer(args[[2]])
+  matching_round <- as.integer(args[[3]])
 }
-
-# get vax number
-n_vax <- as.numeric(gsub("[^0-9.-]", "", vaxn))
 
 ## get cohort-specific parameters study dates and parameters ----
 
 dates <- map(study_dates[[cohort]], as.Date)
 params <- study_params[[cohort]]
 
-matching_round_date <- dates[[c(glue("control_extract_dates{n_vax}"))]][matching_round]
+matching_round_date <- dates[[c(glue("control_extract_dates{vaxn}"))]][matching_round]
 
 
 ## create output directory ----
-fs::dir_create(ghere("output", vaxn, cohort, "matchround{matching_round}", "actual"))
+fs::dir_create(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "actual"))
 
 
 # Import and process data ----
 
 ## trial info for potential matches in round X
-data_potential_matchstatus <- read_rds(ghere("output", vaxn, cohort, "matchround{matching_round}", "potential", "data_potential_matchstatus.rds")) %>% filter(matched == 1L)
+data_potential_matchstatus <- read_rds(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "potential", "data_potential_matchstatus.rds")) %>% filter(matched == 1L)
 
 # use externally created dummy data if not running in the server
 if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
@@ -73,13 +71,13 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
 
-  data_studydef_dummy <- read_feather(ghere("output", vaxn, cohort, "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
+  data_studydef_dummy <- read_feather(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), as.Date))
 
   # just reuse previous extraction for dummy run, dummy_control_potential1.feather
   # and change a few variables to simulate new index dates
-  data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{vaxn}_{cohort}.feather")) %>%
+  data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}_{vaxn}.feather")) %>%
     filter(patient_id %in% data_potential_matchstatus[(data_potential_matchstatus$treated == 0L), ]$patient_id) %>%
     mutate(
       region = if_else(runif(n()) < 0.05, sample(x = unique(region), size = n(), replace = TRUE), region),
@@ -169,8 +167,8 @@ data_processed <-
     anycovid_0_date = pmax(postest_0_date, covidemergency_0_date, covidadmitted_0_date, na.rm = TRUE),
     prior_covid_infection = (!is.na(postest_0_date)) | (!is.na(covidadmitted_0_date)) | (!is.na(primary_care_covid_case_0_date)),
     vax_date = case_when(
-      n_vax == 1 ~ covid_vax_any_1_date,
-      n_vax == 2 ~ covid_vax_any_2_date,
+      vaxn == 1 ~ covid_vax_any_1_date,
+      vaxn == 2 ~ covid_vax_any_2_date,
     )
   )
 
@@ -202,7 +200,7 @@ data_control <- data_criteria %>%
 data_treated <-
   left_join(
     data_potential_matchstatus %>% filter(treated == 1L),
-    read_rds(ghere("output", vaxn, cohort, "treated", "data_treatedeligible.rds")) %>% select(-any_of(events_lookup$event_var)),
+    read_rds(ghere("output", cohort, "vax{vaxn}", "treated", "data_treatedeligible.rds")) %>% select(-any_of(events_lookup$event_var)),
     by = "patient_id"
   )
 
@@ -330,7 +328,7 @@ print(glue("{sum(data_successful_matchstatus$treated)} matched-pairs kept out of
 
 if (matching_round > 1) {
   data_matchstatusprevious <-
-    read_rds(ghere("output", vaxn, cohort, "matchround{matching_round-1}", "actual", "data_matchstatus_allrounds.rds"))
+    read_rds(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round-1}", "actual", "data_matchstatus_allrounds.rds"))
 
   data_matchstatus_allrounds <-
     data_successful_matchstatus %>%
@@ -340,7 +338,7 @@ if (matching_round > 1) {
     data_successful_matchstatus
 }
 
-write_rds(data_matchstatus_allrounds, ghere("output", vaxn, cohort, "matchround{matching_round}", "actual", "data_matchstatus_allrounds.rds"), compress = "gz")
+write_rds(data_matchstatus_allrounds, ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "actual", "data_matchstatus_allrounds.rds"), compress = "gz")
 
 
 # output all control patient ids for finalmatched study definition
@@ -349,7 +347,7 @@ data_matchstatus_allrounds %>%
     trial_date = as.character(trial_date)
   ) %>%
   filter(treated == 0L) %>% # only interested in controls as all
-  write_csv(ghere("output", vaxn, cohort, "matchround{matching_round}", "actual", "cumulative_matchedcontrols.csv.gz"))
+  write_csv(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "actual", "cumulative_matchedcontrols.csv.gz"))
 
 ## size of dataset
 print("data_matchstatus_allrounds treated/untreated numbers")
@@ -366,7 +364,7 @@ data_matchstatus_allrounds %>%
   print()
 
 
-write_rds(data_successful_match %>% filter(treated == 0L), ghere("output", vaxn, cohort, "matchround{matching_round}", "actual", "data_successful_matchedcontrols.rds"), compress = "gz")
+write_rds(data_successful_match %>% filter(treated == 0L), ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "actual", "data_successful_matchedcontrols.rds"), compress = "gz")
 
 ## size of dataset
 print("data_successful_match treated/untreated numbers")

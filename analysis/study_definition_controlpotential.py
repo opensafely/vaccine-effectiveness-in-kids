@@ -16,14 +16,14 @@ from cohortextractor import (
   params
 )
 
-from variables_outcome import week_12_vaccination_date_X 
+from variables_outcome import vaccination_date_X 
 
 cohort = params["cohort"]
+vaxn = int(params["vaxn"])
 matching_round = params["matching_round"]
 previousmatching_round = int(matching_round)-1
 index_date = params["index_date"]
-vaxn = params["vaxn"]
-n_vax = int(re.sub(r'[^0-9]', '', vaxn))
+
 
 # import study dates defined in "./analysis/design.R" script
 with open("./lib/design/study-dates.json") as f:
@@ -36,8 +36,8 @@ start_date_1 = study_dates[cohort]["start_date1"]
 end_date_1 = study_dates[cohort]["end_date1"]
 start_date_2 = study_dates[cohort]["start_date2"]
 end_date_2 = study_dates[cohort]["end_date2"]
-start_date = study_dates[cohort][f"start_date{n_vax}"]
-end_date = study_dates[cohort][f"end_date{n_vax}"]
+start_date = study_dates[cohort][f"start_date{vaxn}"]
+end_date = study_dates[cohort][f"end_date{vaxn}"]
 
 
 # import study parameters defined in "./analysis/design.R" script  
@@ -88,11 +88,11 @@ study = StudyDefinition(
       AND
       (NOT child_atrisk)
       AND 
-      (covid_vax_any_{n_vax-1}_date >= start_date_{n_vax-1})
+      (covid_vax_any_{vaxn-1}_date >= start_date_{vaxn-1})
       AND
-      (covid_vax_any_{n_vax-1}_date <= end_date_{n_vax-1})
+      (covid_vax_any_{vaxn-1}_date <= end_date_{vaxn-1})
       AND 
-      (covid_vax_any_{n_vax-1}_date = covid_vax_{treatment}_{n_vax-1}_date)
+      (covid_vax_any_{vaxn-1}_date = covid_vax_{treatment}_{vaxn-1}_date)
     """,
     #NOT (covid_vax_any_1_date <= index_date) # doesn't work for some reason `unknown colunm : index_date`
     #previouslymatched = patients.which_exist_in_file(f_path="output/match/cumulative_matchedcontrols{matching_round}.csv.gz"),
