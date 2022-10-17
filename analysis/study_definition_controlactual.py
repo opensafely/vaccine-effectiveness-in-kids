@@ -119,7 +119,7 @@ study = StudyDefinition(
     name = "covid_vax_any",
     index_date = "1900-01-01",
     n = 1,
-    delay=84,
+    delay=1,
     target_disease_matches="SARS-2 CORONAVIRUS"
   ),
     # pfizer
@@ -129,7 +129,7 @@ study = StudyDefinition(
     # any vaccines occurring before national rollout are later excluded
     index_date = "1900-01-01", 
     n = 2,
-    delay=84,
+    delay=1,
     product_name_matches="COVID-19 mRNA Vaccine Comirnaty 30micrograms/0.3ml dose conc for susp for inj MDV (Pfizer)"
   ),
   
@@ -138,7 +138,7 @@ study = StudyDefinition(
     name = "covid_vax_pfizerC",
     index_date = "1900-01-01",
     n = 2,
-    delay=84,
+    delay=1,
     product_name_matches="COVID-19 mRNA Vaccine Comirnaty Children 5-11yrs 10mcg/0.2ml dose conc for disp for inj MDV (Pfizer)"
   ),
 

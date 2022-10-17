@@ -33,7 +33,7 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
-  vaxn <- as.integer("2")
+  vaxn <- as.integer("1")
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
@@ -303,6 +303,11 @@ data_criteria <- data_processed %>%
         (vax1_date <= dates$end_date1) ~ TRUE,
       TRUE ~ FALSE
     ),
+    vax1_notbeforeeligible = case_when(
+      (vax1_type == params$treatment) &
+        (vax1_date >= dates$start_date1) ~ TRUE,
+      TRUE ~ FALSE
+    ),
     vax2_betweenentrydates = case_when(
       (vax2_type == params$treatment) &
         (vax2_date >= dates$start_date2) &
@@ -311,13 +316,15 @@ data_criteria <- data_processed %>%
     ),
     has_vaxgap12 = vax2_date >= (vax1_date + 17) | is.na(vax2_date), # at least 17 days between first two vaccinations
     has_vaxgap23 = vax3_date >= (vax2_date + 17) | is.na(vax3_date), # at least 17 days between second and third vaccinations
+    has_11weekvaxgap12 = vax2_date >= (vax1_date + 77) | is.na(vax2_date), # at least 17 days between first two vaccinations
     no_recentcovid30 = is.na(anycovid_0_date) | ((vax1_date - anycovid_0_date) > 30),
   )
 
 if (vaxn == 1) {
   data_criteria <- data_criteria %>%
     mutate(include = (
-      vax1_betweenentrydates & has_vaxgap12 &
+      vax1_betweenentrydates & 
+        has_vaxgap12 &
         has_age & has_sex & has_imd & # has_ethnicity &
         has_region &
         no_recentcovid30
@@ -327,8 +334,9 @@ if (vaxn == 1) {
 if (vaxn == 2) {
   data_criteria <- data_criteria %>%
     mutate(include = (
-      vax2_betweenentrydates & vax2_betweenentrydates &
-        has_vaxgap12 & has_vaxgap23 &
+      vax2_betweenentrydates &
+        vax1_notbeforeeligible &
+        has_11weekvaxgap12 & has_vaxgap23 &
         has_age & has_sex & has_imd & # has_ethnicity &
         has_region &
         no_recentcovid30
