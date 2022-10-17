@@ -95,16 +95,17 @@ study = StudyDefinition(
       (covid_vax_any_{vaxn-1}_date = covid_vax_{treatment}_{vaxn-1}_date)
     """,
     #NOT (covid_vax_any_1_date <= index_date) # doesn't work for some reason `unknown colunm : index_date`
+    # NOTE: all all ..._0_date variables are set to be equal so that for vaxn=1 the vaxn-1 logic is true 
     #previouslymatched = patients.which_exist_in_file(f_path="output/match/cumulative_matchedcontrols{matching_round}.csv.gz"),
-  start_date_0 = patients.fixed_value(start_date_0),
-  end_date_0 = patients.fixed_value(end_date_0),  
-  start_date_1 = patients.fixed_value(start_date_1),
-  end_date_1 = patients.fixed_value(end_date_1),  
-  start_date_2 = patients.fixed_value(start_date_2),
-  end_date_2 = patients.fixed_value(end_date_2),  
-  covid_vax_any_0_date = patients.fixed_value(start_date_0),
-  covid_vax_pfizerA_0_date = patients.fixed_value(start_date_0),
-  covid_vax_pfizerC_0_date = patients.fixed_value(start_date_0),
+    start_date_0 = patients.fixed_value(start_date_0),
+    end_date_0 = patients.fixed_value(end_date_0),  
+    start_date_1 = patients.fixed_value(start_date_1),
+    end_date_1 = patients.fixed_value(end_date_1),  
+    start_date_2 = patients.fixed_value(start_date_2),
+    end_date_2 = patients.fixed_value(end_date_2),  
+    covid_vax_any_0_date = patients.fixed_value(start_date_0),
+    covid_vax_pfizerA_0_date = patients.fixed_value(start_date_0),
+    covid_vax_pfizerC_0_date = patients.fixed_value(start_date_0),
   ),
   
   **vaccination_date_X(
