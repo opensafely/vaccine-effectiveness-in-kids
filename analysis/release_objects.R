@@ -26,23 +26,23 @@ for (cohort in c("over12", "under12")) {
   for (vaxn in c(1L, 2L)) {
     # for(cohort in c("over12")){
 
-    input_dir <- ghere("output", cohort, vaxn, "models", "combined")
+    input_dir <- ghere("output", cohort, "vax{vaxn}", "models", "combined")
 
     ## table1 ----
 
-    fs::file_copy(here("output", cohort, vaxn, "table1", "coverage.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_coverage.csv")), overwrite = TRUE)
-    fs::file_copy(here("output", cohort, vaxn, "table1", "table1.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_table1.csv")), overwrite = TRUE)
+    fs::file_copy(here("output", cohort, "vax{vaxn}", "table1", "coverage.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_coverage.csv")), overwrite = TRUE)
+    fs::file_copy(here("output", cohort, "vax{vaxn}", "table1", "table1.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_table1.csv")), overwrite = TRUE)
     # fs::file_copy(here("output", cohort, "table1", "flowchart.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_flowchart.csv")), overwrite = TRUE)
 
     ## KM ----
-    fs::file_copy(fs::path(input_dir, "km_estimates_rounded.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_km_estimates_rounded.csv")), overwrite = TRUE)
-    fs::file_copy(fs::path(input_dir, "contrasts_daily_rounded.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_contrasts_daily_rounded.csv")), overwrite = TRUE)
-    fs::file_copy(fs::path(input_dir, "contrasts_cuts_rounded.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_contrasts_cuts_rounded.csv")), overwrite = TRUE)
-    fs::file_copy(fs::path(input_dir, "contrasts_overall_rounded.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_contrasts_overall_rounded.csv")), overwrite = TRUE)
+    fs::file_copy(fs::path(input_dir, "km_estimates_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_km_estimates_rounded.csv")), overwrite = TRUE)
+    fs::file_copy(fs::path(input_dir, "contrasts_daily_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_contrasts_daily_rounded.csv")), overwrite = TRUE)
+    fs::file_copy(fs::path(input_dir, "contrasts_cuts_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_contrasts_cuts_rounded.csv")), overwrite = TRUE)
+    fs::file_copy(fs::path(input_dir, "contrasts_overall_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_contrasts_overall_rounded.csv")), overwrite = TRUE)
 
     ## event counts ---
 
-    fs::file_copy(fs::path(input_dir, "testcounts_rounded.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_testcounts_rounded.csv")), overwrite = TRUE)
+    fs::file_copy(fs::path(input_dir, "testcounts_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}errrrrrrrrrrrrrrrrrrrrrrrrrrr3ddddddddddddddddddddddddddddddddddddddddd    _testcounts_rounded.csv")), overwrite = TRUE)
   }
 }
 
