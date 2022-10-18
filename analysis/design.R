@@ -137,19 +137,35 @@ maxfup <- max(postbaselinecuts)
 # matching variables ----
 
 # exact variables
-exact_variables <- c(
-  "age_aug21",
-  "region",
-  "sex",
-  "prior_covid_infection",
-  "prior_tests_cat",
-  "imd_Q5",
-  NULL
+exact_variables <- lst(
+  vax1 = c(
+    "age_aug21",
+    "region",
+    "sex",
+    "prior_covid_infection",
+    "prior_tests_cat",
+    "imd_Q5",
+    NULL
+  ),
+  vax2 = c(
+    "age_aug21",
+    "region",
+    "sex",
+    "prior_covid_infection",
+    "prior_tests_cat",
+    "imd_Q5",
+    NULL
+  )
 )
 
 # caliper variables
-caliper_variables <- c(
-  # age = 1,
-  NULL
+caliper_variables <- lst(
+  vax1 = c(
+    NULL
+  ),
+  vax2 = c(
+    time_since_vax1 = 7,
+    NULL
+)
 )
 matching_variables <- c(exact_variables, names(caliper_variables))

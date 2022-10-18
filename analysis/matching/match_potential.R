@@ -39,7 +39,6 @@ if (length(args) == 0) {
   cohort <- "over12"
   vaxn <- as.integer("2")
   matching_round <- as.integer("1")
-  
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
@@ -54,6 +53,11 @@ dates <- map(study_dates[[cohort]], as.Date)
 params <- study_params[[cohort]]
 
 matching_round_date <- dates[[c(glue("control_extract_dates{vaxn}"))]][matching_round]
+
+# get vaccine dose specific matching variable
+caliper_variables <- caliper_variables[c(glue("vax{vaxn}"))][[1]]
+exact_variables <- exact_variables[c(glue("vax{vaxn}"))][[1]]
+
 
 
 ## create output directory ----
@@ -127,7 +131,7 @@ local({
   for (trial in trials) {
     cat("matching trial ", trial, "\n")
     trial_time <- trial - 1
-    trial_date <-dates[[c(glue("start_date{vaxn}"))]] + trial_time
+    trial_date <- dates[[c(glue("start_date{vaxn}"))]] + trial_time
 
 
     # set of people vaccinated on trial day
@@ -143,12 +147,12 @@ local({
         patient_id,
         treated,
         trial_time = trial_time,
-        trial_date = trial_date
+        trial_date = trial_date,
+        time_since_vax1 = as.numeric(trial_date - vax1_date),
       )
 
     # append total treated on trial day i to all previous treated people
     data_treated <- bind_rows(data_treated, data_treated_i)
-
     # set of people still eligible for control inclusion on trial day
     data_control_i <-
       data_eligible %>%
@@ -164,17 +168,17 @@ local({
         patient_id,
         treated,
         trial_time = trial_time,
-        trial_date = trial_date
+        trial_date = trial_date,
+        time_since_vax1 = as.numeric(trial_date - covid_vax_any_1_date),
       )
 
 
     n_treated_all <- nrow(data_treated_i)
-
     if (n_treated_all < 1) {
       message("Skipping trial ", trial, " - No treated people eligible for inclusion.")
       next
     }
-
+    
     matching_candidates_i <-
       bind_rows(data_treated_i, data_control_i) %>%
       left_join(
@@ -182,14 +186,12 @@ local({
           select(
             patient_id,
             treated,
-            all_of(
-              exact_variables # ,
-              # names(caliper_variables)
-            ),
+            all_of(c(
+              exact_variables
+            )),
           ),
         by = c("patient_id", "treated")
       )
-
 
     safely_matchit <- purrr::safely(matchit)
 
@@ -202,12 +204,11 @@ local({
         replace = FALSE,
         estimand = "ATT",
         exact = exact_variables,
-        # caliper = caliper_variables, std.caliper=FALSE,
+        caliper = caliper_variables, std.caliper = FALSE,
         m.order = "data", # data is sorted on (effectively random) patient ID
         # verbose = TRUE,
         ratio = 1L # 1:1 matching
       )[[1]]
-
 
     if (is.null(obj_matchit_i)) {
       message("Skipping trial ", trial, " - No exact matches found.")
@@ -239,12 +240,11 @@ local({
             weight = obj_matchit_i$weights,
             trial_time = trial_time,
             trial_date = trial_date,
+            time_since_vax1 = matching_candidates_i$time_since_vax1
           )
         } %>%
           arrange(match_id, treated)
       }
-
-
 
     # summary info for recruited people
     # - one row per person
@@ -262,12 +262,9 @@ local({
         controlistreated_date = vax_date[treated == 0], # this only works because of the group_by statement above! do not remove group_by statement!
       ) %>%
       ungroup()
-
     n_treated_matched <- sum(data_matched_i$treated)
-
     # append matched data to matches from previous trials
     data_matched <- bind_rows(data_matched, data_matched_i)
-
     # update list of candidate controls to those who have not already been recruited
     candidate_ids <- candidate_ids[!(candidate_ids %in% data_matched_i$patient_id)]
   }
@@ -286,13 +283,16 @@ local({
       control = 1L - treated,
       trial_time,
       trial_date,
-      controlistreated_date
+      controlistreated_date,
+      time_since_vax1
     )
-
+  
   # matching status for all treated people and their controls (if matched).
   # includes: unmatched treated; matched treated; matched control
-  data_matchstatus <<-
+
+   data_matchstatus <<-
     data_treated %>%
+     select(-time_since_vax1) %>%
     left_join(data_matched %>% filter(treated == 1L, matched == 1L), by = c("patient_id", "treated", "trial_time", "trial_date")) %>%
     mutate(
       matched = replace_na(matched, 0L), # 1 if matched, 0 if unmatched
