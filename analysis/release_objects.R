@@ -30,8 +30,8 @@ for (cohort in c("over12", "under12")) {
 
     ## table1 ----
 
-    fs::file_copy(here("output", cohort, "vax{vaxn}", "table1", "coverage.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_coverage.csv")), overwrite = TRUE)
-    fs::file_copy(here("output", cohort, "vax{vaxn}", "table1", "table1.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_table1.csv")), overwrite = TRUE)
+    fs::file_copy(ghere("output", cohort, "vax{vaxn}", "table1", "coverage.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_coverage.csv")), overwrite = TRUE)
+    fs::file_copy(ghere("output", cohort, "vax{vaxn}", "table1", "table1.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_table1.csv")), overwrite = TRUE)
     # fs::file_copy(here("output", cohort, "table1", "flowchart.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_flowchart.csv")), overwrite = TRUE)
 
     ## KM ----
@@ -42,7 +42,7 @@ for (cohort in c("over12", "under12")) {
 
     ## event counts ---
 
-    fs::file_copy(fs::path(input_dir, "testcounts_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}errrrrrrrrrrrrrrrrrrrrrrrrrrr3ddddddddddddddddddddddddddddddddddddddddd    _testcounts_rounded.csv")), overwrite = TRUE)
+    fs::file_copy(fs::path(input_dir, "testcounts_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_testcounts_rounded.csv")), overwrite = TRUE)
   }
 }
 
