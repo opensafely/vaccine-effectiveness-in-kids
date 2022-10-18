@@ -300,7 +300,7 @@ if (matching_round > 1) {
     select(all_of(matchstatus_vars))
 }
 
-write_rds(data_matchstatus_allrounds, ghere("output", cohort, "matchround{matching_round}", "actual", "data_matchstatus_allrounds.rds"), compress = "gz")
+write_rds(data_matchstatus_allrounds, ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "actual", "data_matchstatus_allrounds.rds"), compress = "gz")
 
 
 # output all control patient ids for finalmatched study definition
@@ -309,12 +309,17 @@ data_matchstatus_allrounds %>%
     trial_date = as.character(trial_date)
   ) %>%
   filter(treated == 0L) %>% # only interested in controls as all
-  write_csv(ghere("output", cohort, "matchround{matching_round}", "actual", "cumulative_matchedcontrols.csv.gz"))
+  write_csv(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "actual", "cumulative_matchedcontrols.csv.gz"))
 
 ## size of dataset
 print("data_matchstatus_allrounds treated/untreated numbers")
 table(treated = data_matchstatus_allrounds$treated, useNA = "ifany")
 
+
+
+## size of dataset
+print("data_successful_match treated/untreated numbers")
+table(treated = data_successful_matchstatus$treated, useNA = "ifany")
 
 
 ## duplicate IDs
@@ -325,92 +330,5 @@ data_matchstatus_allrounds %>%
   summarise(ndups = sum(n > 1)) %>%
   print()
 
-my_skim(data_eligible, path = ghere("output", cohort, "matchround{matching_round}", "actual", "data_successful_matchedcontrols_skim.txt"))
-write_rds(data_successful_matchstatus %>% filter(treated == 0L), ghere("output", cohort, "matchround{matching_round}", "actual", "data_successful_matchedcontrols.rds"), compress = "gz")
 
-## size of dataset
-print("data_successful_match treated/untreated numbers")
-table(treated = data_successful_matchstatus$treated, useNA = "ifany")
-
-
-
-
-
-# data_successful_match <-
-#   matching_candidates %>%
-#   # select(
-#   #   patient_id, treated, match_id, trial_date,
-#   #   controlistreated_date,
-#   #   all_of(exact_variables),
-#   #   #all_of(names(caliper_variables))
-#   # ) %>%
-#   inner_join(rematch, by = c("match_id", "trial_date", "matched")) %>%
-#   mutate(
-#     matching_round = matching_round
-#   ) %>%
-#   arrange(trial_date, match_id, treated)
-
-# ###
-
-
-# data_successful_matchstatus <-
-#   data_successful_match %>%
-#   select(patient_id, match_id, trial_date, matching_round, treated, controlistreated_date)
-
-# ## size of dataset
-# print("data_successful_match treated/untreated numbers")
-# table(treated = data_successful_match$treated, useNA = "ifany")
-
-
-# ## how many matches are lost?
-
-# print(glue("{sum(data_successful_matchstatus$treated)} matched-pairs kept out of {sum(data_potential_matchstatus$treated)}
-#            ({round(100*(sum(data_successful_matchstatus$treated) / sum(data_potential_matchstatus$treated)),2)}%)
-#            "))
-
-
-# ## pick up all previous successful matches ----
-
-# if (matching_round > 1) {
-#   data_matchstatusprevious <-
-#     read_rds(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round-1}", "actual", "data_matchstatus_allrounds.rds"))
-
-#   data_matchstatus_allrounds <-
-#     data_successful_matchstatus %>%
-#     bind_rows(data_matchstatusprevious)
-# } else {
-#   data_matchstatus_allrounds <-
-#     data_successful_matchstatus
-# }
-
-# write_rds(data_matchstatus_allrounds, ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "actual", "data_matchstatus_allrounds.rds"), compress = "gz")
-
-
-# # output all control patient ids for finalmatched study definition
-# data_matchstatus_allrounds %>%
-#   mutate(
-#     trial_date = as.character(trial_date)
-#   ) %>%
-#   filter(treated == 0L) %>% # only interested in controls as all
-#   write_csv(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "actual", "cumulative_matchedcontrols.csv.gz"))
-
-# ## size of dataset
-# print("data_matchstatus_allrounds treated/untreated numbers")
-# table(treated = data_matchstatus_allrounds$treated, useNA = "ifany")
-
-
-
-# ## duplicate IDs
-# data_matchstatus_allrounds %>%
-#   group_by(treated, patient_id) %>%
-#   summarise(n = n()) %>%
-#   group_by(treated) %>%
-#   summarise(ndups = sum(n > 1)) %>%
-#   print()
-
-
-# write_rds(data_successful_match %>% filter(treated == 0L), ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "actual", "data_successful_matchedcontrols.rds"), compress = "gz")
-
-# ## size of dataset
-# print("data_successful_match treated/untreated numbers")
-# table(treated = data_successful_match$treated, useNA = "ifany")
+write_rds(data_successful_match %>% filter(treated == 0L), ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "actual", "data_successful_matchedcontrols.rds"), compress = "gz")
