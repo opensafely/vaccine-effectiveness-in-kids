@@ -34,23 +34,25 @@ args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
   # use for interactive testing
   cohort <- "over12"
+  vaxn <- as.integer("2")
   matching_round <- as.integer("2")
 } else {
-  # FIXME replace with actual eventual action variables
   cohort <- args[[1]]
-  matching_round <- as.integer(args[[2]])
+  vaxn <- as.integer(args[[2]])
+  matching_round <- as.integer(args[[3]])
 }
+
 
 ## get cohort-specific parameters study dates and parameters ----
 
 dates <- map(study_dates[[cohort]], as.Date)
 params <- study_params[[cohort]]
 
-matching_round_date <- dates$control_extract_dates[matching_round]
+matching_round_date <- dates[[glue("control_extract_dates{vaxn}")]][matching_round]
 
 
 ## create output directory ----
-fs::dir_create(ghere("output", cohort, "matchround{matching_round}", "process"))
+fs::dir_create(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "process"))
 
 
 
@@ -62,14 +64,16 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
 
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
-  data_studydef_dummy <- read_feather(ghere("output", cohort, "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
+  data_studydef_dummy <- read_feather(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), as.Date))
 
-  data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}.feather")) %>%
-    mutate(
-      msoa = sample(factor(c("1", "2")), size = n(), replace = TRUE) # override msoa so matching success more likely
-    )
+  if (file.exists(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}_{vaxn}.feather"))) {
+    data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}_{vaxn}.feather")) 
+  } else {
+    source(ghere("analysis", "dummy", "dummydata.R"))
+    data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}_{vaxn}.feather")) 
+  }
 
 
   not_in_studydef <- names(data_custom_dummy)[!(names(data_custom_dummy) %in% names(data_studydef_dummy))]
@@ -115,7 +119,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
 
   data_extract <- data_custom_dummy
 } else {
-  data_extract <- read_feather(ghere("output", cohort, "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
+  data_extract <- read_feather(ghere("output", cohort, "vax{vaxn}",  "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), as.Date))
 }
@@ -161,7 +165,13 @@ data_processed <- data_extract %>%
 
     # latest covid event before study start
     anycovid_0_date = pmax(postest_0_date, covidemergency_0_date, covidadmitted_0_date, na.rm = TRUE),
+    vax_date = case_when(
+      vaxn == 1 ~ covid_vax_any_1_date,
+      vaxn == 2 ~ covid_vax_any_2_date,
+    ),
     vax1_date = covid_vax_any_1_date,
+    vax2_date = covid_vax_any_2_date,
+    #vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]])
   )
 
 
@@ -177,7 +187,7 @@ data_criteria <- data_processed %>%
     has_age = !is.na(age),
     has_sex = !is.na(sex) & !(sex %in% c("I", "U")),
     has_imd = imd_Q5 != "Unknown",
-    vaccinated = vax1_date < matching_round_date,
+    vaccinated = vax_date < matching_round_date,
     # has_ethnicity = !is.na(ethnicity_combined),
     has_region = !is.na(region),
     no_recentcovid30 = is.na(anycovid_0_date) | ((matching_round_date - anycovid_0_date) > 30),
@@ -196,4 +206,4 @@ data_controlpotential <- data_criteria %>%
   left_join(data_processed, by = "patient_id") %>%
   droplevels()
 
-write_rds(data_controlpotential, ghere("output", cohort, "matchround{matching_round}", "process", glue("data_controlpotential.rds")), compress = "gz")
+write_rds(data_controlpotential, ghere("output", cohort, "vax{vaxn}",  "matchround{matching_round}", "process", glue("data_controlpotential.rds")), compress = "gz")

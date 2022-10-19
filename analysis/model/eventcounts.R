@@ -1,6 +1,6 @@
 
 # # # # # # # # # # # # # # # # # # # # #
-# Purpose: report count of 
+# Purpose: report count of
 #  - import matched data
 #  - reports rate of tests and positive tests
 #  - The script must be accompanied by two arguments:
@@ -34,12 +34,16 @@ args <- commandArgs(trailingOnly = TRUE)
 if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
-  cohort <- "under12"
-  subgroup <- "prior_covid_infection"
+  cohort <- "over12"
+  vaxn <- as.integer("2")
+  subgroup <- "all"
+  
 } else {
   removeobjects <- TRUE
   cohort <- args[[1]]
-  subgroup <- args[[2]]
+  vaxn <- as.integer(args[[2]])
+  subgroup <- args[[3]]
+  
 }
 
 
@@ -55,11 +59,11 @@ subgroup_sym <- sym(subgroup)
 
 # create output directories ----
 
-output_dir <- ghere("output", cohort, "models", "eventcounts", subgroup)
+output_dir <- ghere("output", cohort, "vax{vaxn}", "models", "eventcounts", subgroup)
 fs::dir_create(output_dir)
 
 
-data_matched <- read_rds(ghere("output", cohort, "match", "data_matched.rds"))
+data_matched <- read_rds(ghere("output", cohort, "vax{vaxn}", "match", "data_matched.rds"))
 
 ## import baseline data, restrict to matched individuals and derive time-to-event variables
 data_matched <-
@@ -76,7 +80,7 @@ data_matched <-
       dereg_date,
       # vax2_date-1, # -1 because we assume vax occurs at the start of the day
       death_date,
-      dates$followupend_date,
+      dates[[c(glue("followupend_date{vaxn}"))]],
       trial_date + maxfup,
       na.rm = TRUE
     ),
@@ -89,10 +93,11 @@ data_matched <-
 data_counts <- data_matched %>%
   group_by(treated, !!subgroup_sym) %>%
   summarise(
-    n=roundmid_any(n(), threshold),
+    n = roundmid_any(n(), threshold),
     persontime = sum(as.numeric(censor_date - (trial_date - 1))),
     test_rate = sum(test_count) / persontime,
     postest_rate = sum(postest_count) / persontime,
   )
 
 write_rds(data_counts, fs::path(output_dir, "testcounts.rds"))
+

@@ -1,33 +1,31 @@
 # this script is sourced from within the process_controlfinal.R script.
 
-library('tidyverse')
-library('arrow')
-library('here')
-library('glue')
-
+library("tidyverse")
+library("arrow")
+library("here")
+library("glue")
 
 # not needed as these are already available from process_controlfinal.R
 
-#source(here("lib", "functions", "utility.R"))
-#source(here("analysis", "design.R"))
+# source(here("lib", "functions", "utility.R"))
+# source(here("analysis", "design.R"))
 
-# dates <- map(study_dates[[cohort]], as.Date)
-# params <- study_params[[cohort]]
+dates <- map(study_dates[[cohort]], as.Date)
+params <- study_params[[cohort]]
 
 
 # get nth largest value from list
-nthmax <- function(x, n=1){
-  dplyr::nth(sort(x, decreasing=TRUE), n)
+nthmax <- function(x, n = 1) {
+  dplyr::nth(sort(x, decreasing = TRUE), n)
 }
 
+start_date <- as.Date(dates[[c(glue("start_date{vaxn}"))]])
+end_date <- as.Date(dates[[c(glue("end_date{vaxn}"))]])
+followupend_date <- as.Date(dates[[c(glue("followupend_date{vaxn}"))]])
+index_date <- as.Date(dates[[c(glue("start_date{vaxn}"))]])
 
-start_date <- as.Date(dates$start_date)
-end_date <- as.Date(dates$end_date)
-followupend_date <- as.Date(dates$followupend_date)
-index_date <- as.Date(dates$start_date)
-
-first_pfizerA_date <- as.Date(dates$start_date)
-first_pfizerC_date <- as.Date(dates$start_date)
+first_pfizerA_date <- as.Date(dates$start_date1)
+first_pfizerC_date <- as.Date(dates$start_date1)
 
 index_day <- 0L
 start_day <- as.integer(start_date - index_date)
@@ -41,25 +39,27 @@ known_variables <- c(
 )
 
 
-data_matchstatus <- read_rds(ghere("output", cohort, "matchround{n_matching_rounds}", "actual", "data_matchstatus_allrounds.rds")) %>% filter(treated==0L)
+data_matchstatus <- read_rds(ghere("output", cohort, "vax{vaxn}", "matchround{n_matching_rounds}", "actual", "data_matchstatus_allrounds.rds")) %>% filter(treated == 0L)
 
 
 # import all datasets of matched controls, including matching variables
-data_matchedcontrols <- 
+data_matchedcontrols <-
   map_dfr(
-    seq_len(n_matching_rounds), 
-    ~{read_rds(ghere("output", cohort, glue("matchround", .x), "actual", glue("data_successful_matchedcontrols.rds")))},
-    .id="matching_round"
+    seq_len(n_matching_rounds),
+    ~ {
+      read_rds(ghere("output", cohort, "vax{vaxn}", glue("matchround", .x), "actual", glue("data_successful_matchedcontrols.rds")))
+    },
+    .id = "matching_round"
   ) %>%
   mutate(
     trial_day = as.integer(trial_date - start_date)
   ) %>%
   select(
     # see study_definition_finalmatched.py for variables to include
-    
+
     # select variables with_value_from_file
     patient_id, trial_day, match_id,
-    
+
     ## select variables in `variables_matching.py`
     ## or not, if they are saved in the "data_Successful_match" output in `matching_filter.R`
     # sex,
@@ -73,14 +73,13 @@ data_matchedcontrols <-
     # postest_0_date,
     # covidadmitted_0_date,
     # covidemergency_0_date,
-    
-    # variables in `variables_outcomes.py` are simulated below
-    
-  )
-  
 
-missing <- function(x, rate){
-  missing_index <- seq_len(length(x))[rbinom(length(x), 1, rate)==1]
+    # variables in `variables_outcomes.py` are simulated below
+  )
+
+
+missing <- function(x, rate) {
+  missing_index <- seq_len(length(x))[rbinom(length(x), 1, rate) == 1]
   x[missing_index] <- NA
   x
 }
@@ -90,33 +89,31 @@ set.seed(10)
 
 dummydata <- data_matchedcontrols %>%
   mutate(
-    dereg_day = missing(as.integer(runif(n=n(), trial_day, trial_day+120)), 0.99),
-    primary_care_covid_case_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.7),
-    covid_test_day = missing(as.integer(runif(n=n(), trial_day, trial_day+90)), 0.7),
-    postest_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.7),
-    emergency_day = missing(as.integer(runif(n=n(), trial_day, trial_day+200)), 0.8),
-    emergencyhosp_day = missing(as.integer(runif(n=n(), trial_day, trial_day+200)), 0.85),
-    covidemergency_day = missing(as.integer(runif(n=n(), trial_day, trial_day+120)), 0.8),
-    covidemergencyhosp_day = missing(as.integer(runif(n=n(), trial_day, trial_day+200)), 0.85),
-    covidadmitted_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.7),
-    covidcritcare_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.8),
-    admitted_unplanned_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.7),
-    death_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.9),
+    dereg_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 120)), 0.99),
+    primary_care_covid_case_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 100)), 0.7),
+    covid_test_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 90)), 0.7),
+    postest_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 100)), 0.7),
+    emergency_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 200)), 0.8),
+    emergencyhosp_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 200)), 0.85),
+    covidemergency_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 120)), 0.8),
+    covidemergencyhosp_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 200)), 0.85),
+    covidadmitted_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 100)), 0.7),
+    covidcritcare_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 100)), 0.8),
+    admitted_unplanned_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 100)), 0.7),
+    death_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 100)), 0.9),
     coviddeath_day = missing(death_day, 0.7),
-    
     test_count = rpois(n = n(), 1),
     postest_count = rpois(n = n(), 0.1),
-    
   )
 
 
 dummydata_processed <- dummydata %>%
-  #convert logical to integer as study defs output 0/1 not TRUE/FALSE
+  # convert logical to integer as study defs output 0/1 not TRUE/FALSE
   # mutate(across(where(is.logical), ~ as.integer(.))) %>%
-  #convert integer days to dates since index date and rename vars
+  # convert integer days to dates since index date and rename vars
   mutate(across(ends_with("_day"), ~ as.Date(as.character(index_date + .)))) %>%
-  rename_with(~str_replace(., "_day", "_date"), ends_with("_day"))
+  rename_with(~ str_replace(., "_day", "_date"), ends_with("_day"))
 
 
 fs::dir_create(here("lib", "dummydata"))
-write_feather(dummydata_processed, sink = here("lib", "dummydata", glue("dummy_controlfinal_{cohort}.feather")))
+write_feather(dummydata_processed, sink = here("lib", "dummydata", glue("dummy_controlfinal_{cohort}_{vaxn}.feather")))

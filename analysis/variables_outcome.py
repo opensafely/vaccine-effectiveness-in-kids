@@ -4,7 +4,7 @@ import codelists
 
 
 
-def vaccination_date_X(name, index_date, n, product_name_matches=None, target_disease_matches=None):
+def vaccination_date_X(name, index_date, n, delay=1, product_name_matches=None, target_disease_matches=None):
   # vaccination date, given product_name
   def var_signature(
     name,
@@ -27,14 +27,13 @@ def vaccination_date_X(name, index_date, n, product_name_matches=None, target_di
   for i in range(2, n+1):
     variables.update(var_signature(
       f"{name}_{i}_date", 
-      f"{name}_{i-1}_date + 1 days",
-      # pick up subsequent vaccines occurring one day or later -- people with unrealistic dosing intervals are later excluded
+      f"{name}_{i-1}_date + {delay} days",
       product_name_matches,
       target_disease_matches
     ))
   return variables
 
-
+  
 def generate_outcome_variables(index_date):
   outcome_variables = dict(
   

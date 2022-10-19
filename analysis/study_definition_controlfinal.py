@@ -4,6 +4,7 @@ import codelists
 
 # import json module
 import json
+import re
 
 from cohortextractor import (
   StudyDefinition,
@@ -20,15 +21,21 @@ from variables_outcome import vaccination_date_X
 
 cohort = params["cohort"]
 n_matching_rounds = params["n_matching_rounds"]
+vaxn = params["vaxn"]
 
 # import study dates defined in "./analysis/design.R" script
 with open("./lib/design/study-dates.json") as f:
   study_dates = json.load(f)
 
 # change these in design.R if necessary
-start_date = study_dates[cohort]["start_date"]
-end_date = study_dates[cohort]["end_date"]
-
+start_date_0 = study_dates[cohort]["start_date1"]
+end_date_0 = study_dates[cohort]["end_date1"]
+start_date_1 = study_dates[cohort]["start_date1"]
+end_date_1 = study_dates[cohort]["end_date1"]
+start_date_2 = study_dates[cohort]["start_date2"]
+end_date_2 = study_dates[cohort]["end_date2"]
+start_date = study_dates[cohort][f"start_date{vaxn}"]
+end_date = study_dates[cohort][f"end_date{vaxn}"]
 
 # import study parameters defined in "./analysis/design.R" script  
 with open("./lib/design/study-params.json") as f:
@@ -62,11 +69,11 @@ study = StudyDefinition(
   index_date = start_date,
   
   # This line defines the study population
-  population = patients.which_exist_in_file(f_path=f"output/{cohort}/matchround{n_matching_rounds}/actual/cumulative_matchedcontrols.csv.gz"),
+  population = patients.which_exist_in_file(f_path=f"output/{cohort}/vax{vaxn}/matchround{n_matching_rounds}/actual/cumulative_matchedcontrols.csv.gz"),
 
-  trial_date = patients.with_value_from_file(f_path=f"output/{cohort}/matchround{n_matching_rounds}/actual/cumulative_matchedcontrols.csv.gz", returning="trial_date", returning_type="date", date_format='YYYY-MM-DD'),
+  trial_date = patients.with_value_from_file(f_path=f"output/{cohort}/vax{vaxn}/matchround{n_matching_rounds}/actual/cumulative_matchedcontrols.csv.gz", returning="trial_date", returning_type="date", date_format='YYYY-MM-DD'),
   
-  match_id = patients.with_value_from_file(f_path=f"output/{cohort}/matchround{n_matching_rounds}/actual/cumulative_matchedcontrols.csv.gz", returning="match_id", returning_type="int"),
+  match_id = patients.with_value_from_file(f_path=f"output/{cohort}/vax{vaxn}/matchround{n_matching_rounds}/actual/cumulative_matchedcontrols.csv.gz", returning="match_id", returning_type="int"),
   
   
   ###############################################################################
