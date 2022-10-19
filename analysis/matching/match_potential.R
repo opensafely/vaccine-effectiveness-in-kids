@@ -38,7 +38,7 @@ if (length(args) == 0) {
   removeobjects <- FALSE
   cohort <- "over12"
   vaxn <- as.integer("2")
-  matching_round <- as.integer("1")
+  matching_round <- as.integer("2")
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE

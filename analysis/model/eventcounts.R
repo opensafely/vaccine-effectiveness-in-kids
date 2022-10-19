@@ -35,7 +35,7 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
-  vaxn <- as.integer("1")
+  vaxn <- as.integer("2")
   subgroup <- "all"
   
 } else {

@@ -35,7 +35,7 @@ if (length(args) == 0) {
   # use for interactive testing
   cohort <- "over12"
   vaxn <- as.integer("2")
-  matching_round <- as.integer("1")
+  matching_round <- as.integer("2")
 } else {
   cohort <- args[[1]]
   vaxn <- as.integer(args[[2]])

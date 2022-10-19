@@ -34,7 +34,7 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
-  vaxn <- as.integer("1")
+  vaxn <- as.integer("2")
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
@@ -140,7 +140,7 @@ data_control <-
       ~ {
         read_rds(ghere("output", cohort,  "vax{vaxn}", glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))
       }
-    ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date), # remove to avoid clash with already-stored variables
+    ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date,-time_since_vax1), # remove to avoid clash with already-stored variables
     by = c("patient_id")
   ) %>%
   # merge with outcomes data

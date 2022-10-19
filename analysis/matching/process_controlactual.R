@@ -39,7 +39,7 @@ if (length(args) == 0) {
   removeobjects <- FALSE
   cohort <- "over12"
   vaxn <- as.integer("2")
-  matching_round <- as.integer("1")
+  matching_round <- as.integer("2")
 } else {
   removeobjects <- TRUE
   cohort <- args[[1]]
@@ -265,7 +265,7 @@ data_successful_match <-
 
 ###
 
-matchstatus_vars <- c("patient_id", "match_id", "trial_date", "matching_round", "treated", "controlistreated_date")
+matchstatus_vars <- c("patient_id", "match_id", "trial_date", "matching_round", "treated", "controlistreated_date", "time_since_vax1")
 
 data_successful_matchstatus <-
   data_successful_match %>%
@@ -288,7 +288,7 @@ print(glue("{sum(data_successful_matchstatus$treated)} matched-pairs kept out of
 
 if (matching_round > 1) {
   data_matchstatusprevious <-
-    read_rds(ghere("output", cohort, "matchround{matching_round-1}", "actual", "data_matchstatus_allrounds.rds"))
+    read_rds(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round-1}", "actual", "data_matchstatus_allrounds.rds"))
 
   data_matchstatus_allrounds <-
     data_successful_matchstatus %>%

@@ -30,7 +30,7 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
-  vaxn <- as.integer("1")
+  vaxn <- as.integer("2")
 } else {
   # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
@@ -122,7 +122,8 @@ var_labels <- list(
   imd_Q5 ~ "Deprivation",
   region ~ "Region",
   prior_tests_cat ~ "Number of SARS-CoV-2 tests",
-  prior_covid_infection ~ "Prior documented SARS-CoV-2 infection"
+  prior_covid_infection ~ "Prior documented SARS-CoV-2 infection",
+  time_since_vax1 ~ "Time since first vaccination (days)"
 ) %>%
   set_names(., map_chr(., all.vars))
 
