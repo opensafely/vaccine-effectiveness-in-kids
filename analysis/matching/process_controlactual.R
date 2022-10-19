@@ -205,8 +205,11 @@ data_control <- data_criteria %>%
 
 data_treated <-
   left_join(
-    data_potential_matchstatus %>% filter(treated == 1L),
-    read_rds(ghere("output", cohort, "vax{vaxn}", "treated", "data_treatedeligible.rds")) %>% select(-any_of(events_lookup$event_var)),
+    data_potential_matchstatus %>% 
+      filter(treated == 1L),
+    read_rds(ghere("output", cohort, "vax{vaxn}", "treated", "data_treatedeligible.rds")) %>%
+      # remove all outcome variables that appear in variables_outcome.py
+      select(-any_of(events_lookup$event_var), -any_of(c("test_count", "postest_count"))),
     by = "patient_id"
   )
 

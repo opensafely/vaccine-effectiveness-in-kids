@@ -129,6 +129,24 @@ data_treated <-
   )
 
 
+## check controls are all unique---
+
+match_dups <- data_matchstatus %>% filter(treated==0L) %>%
+  arrange(patient_id, matching_round) %>%
+  group_by(patient_id) %>%
+  mutate(
+   n_id = n()
+  ) %>%
+  filter(
+    n_id>1
+  ) %>%
+  select(patient_id, matching_round, match_id, trial_date)
+
+
+print("number of duplicate matches: \\n")
+nrow(match_dups)
+# should be zero
+
 # import final dataset of matched controls, including matching variables
 # alternative to this is re-extracting everything in the study definition
 data_control <-
@@ -140,7 +158,7 @@ data_control <-
       ~ {
         read_rds(ghere("output", cohort,  "vax{vaxn}", glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))
       }
-    ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date), # remove to avoid clash with already-stored variables
+    ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date, -matching_round), # remove to avoid clash with already-stored variables
     by = c("patient_id")
   ) %>%
   # merge with outcomes data

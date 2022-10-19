@@ -32,7 +32,6 @@ if (length(args) == 0) {
   cohort <- "over12"
   vaxn <- as.integer("2")
 } else {
-  # FIXME replace with actual eventual action variables
   removeobjects <- TRUE
   cohort <- args[[1]]
   vaxn <- as.integer(args[[2]])
@@ -155,13 +154,13 @@ raw_stats <- tab_summary_baseline$meta_data %>%
 
 raw_stats_redacted <- raw_stats %>%
   mutate(
-    n = roundmid_any(n, 6),
-    N = roundmid_any(N, 6),
+    n = roundmid_any(n, threshold),
+    N = roundmid_any(N, threshold),
     p = n / N,
-    N_miss = roundmid_any(N_miss, 6),
-    N_obs = roundmid_any(N_obs, 6),
+    N_miss = roundmid_any(N_miss, threshold),
+    N_obs = roundmid_any(N_obs, threshold),
     p_miss = N_miss / N_obs,
-    N_nonmiss = roundmid_any(N_nonmiss, 6),
+    N_nonmiss = roundmid_any(N_nonmiss, threshold),
     p_nonmiss = N_nonmiss / N_obs,
     var_label = factor(var_label, levels = map_chr(var_labels[-c(1, 2)], ~ last(as.character(.)))),
     variable_levels = replace_na(as.character(variable_levels), "")
