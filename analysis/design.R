@@ -17,7 +17,7 @@ fs::dir_create(here("lib", "design"))
 threshold <- 6
 
 # number of matching rounds to perform
-n_matching_rounds <- 2
+n_matching_rounds <- 6
 
 
 # define key dates ----
