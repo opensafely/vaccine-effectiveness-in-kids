@@ -276,7 +276,8 @@ data_processed <- data_processed %>%
       vaxn == 1 ~ vax1_date,
       vaxn == 2 ~ vax2_date,
       vaxn == 3 ~ vax3_date,
-    )
+    ),
+    #vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]])
   ) %>%
   select(
     -starts_with("covid_vax_"),

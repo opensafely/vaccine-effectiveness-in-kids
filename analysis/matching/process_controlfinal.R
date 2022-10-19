@@ -140,7 +140,7 @@ data_control <-
       ~ {
         read_rds(ghere("output", cohort,  "vax{vaxn}", glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))
       }
-    ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date,-time_since_vax1), # remove to avoid clash with already-stored variables
+    ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date), # remove to avoid clash with already-stored variables
     by = c("patient_id")
   ) %>%
   # merge with outcomes data
@@ -166,7 +166,7 @@ data_matched <-
   ) %>%
   # derive some variables
   mutate(
-
+    
     # earliest covid event after study start
     anycovid_date = pmin(postest_date, covidemergency_date, covidadmitted_date, covidcritcare_date, coviddeath_date, na.rm = TRUE),
     noncoviddeath_date = if_else(!is.na(death_date) & is.na(coviddeath_date), death_date, as.Date(NA_character_)),
@@ -175,6 +175,14 @@ data_matched <-
       is.na(death_date) ~ "not covid-related",
       TRUE ~ NA_character_
     ),
+    vax_date = case_when(
+      vaxn == 1 ~ covid_vax_any_1_date,
+      vaxn == 2 ~ covid_vax_any_2_date,
+    ),
+    vax1_date = covid_vax_any_1_date,
+    vax2_date = covid_vax_any_2_date,
+    #vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]]),
+    time_since_vax1 = as.integer(trial_date - vax1_date),
   )
 
 

@@ -123,7 +123,7 @@ var_labels <- list(
   region ~ "Region",
   prior_tests_cat ~ "Number of SARS-CoV-2 tests",
   prior_covid_infection ~ "Prior documented SARS-CoV-2 infection",
-  time_since_vax1 ~ "Time since first vaccination (days)"
+  time_since_vax1 ~ "Dose 1/2 interval (days)"
 ) %>%
   set_names(., map_chr(., all.vars))
 

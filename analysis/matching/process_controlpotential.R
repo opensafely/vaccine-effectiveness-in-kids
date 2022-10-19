@@ -168,7 +168,10 @@ data_processed <- data_extract %>%
     vax_date = case_when(
       vaxn == 1 ~ covid_vax_any_1_date,
       vaxn == 2 ~ covid_vax_any_2_date,
-    )
+    ),
+    vax1_date = covid_vax_any_1_date,
+    vax2_date = covid_vax_any_2_date,
+    #vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]])
   )
 
 

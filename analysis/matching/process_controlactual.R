@@ -55,8 +55,8 @@ params <- study_params[[cohort]]
 matching_round_date <- dates[[c(glue("control_extract_dates{vaxn}"))]][matching_round]
 
 # get vaccine dose specific matching variable
-caliper_variables <- caliper_variables[c(glue("vax{vaxn}"))][[1]]
-exact_variables <- exact_variables[c(glue("vax{vaxn}"))][[1]]
+caliper_variables <- caliper_variables[[glue("vax{vaxn}")]]
+exact_variables <- exact_variables[[glue("vax{vaxn}")]]
 
 
 ## create output directory ----
@@ -169,11 +169,13 @@ data_processed <-
     # latest covid event before study start
     anycovid_0_date = pmax(postest_0_date, covidemergency_0_date, covidadmitted_0_date, na.rm = TRUE),
     prior_covid_infection = (!is.na(postest_0_date)) | (!is.na(covidadmitted_0_date)) | (!is.na(primary_care_covid_case_0_date)),
-    vax1_date = covid_vax_any_1_date,
     vax_date = case_when(
       vaxn == 1 ~ covid_vax_any_1_date,
       vaxn == 2 ~ covid_vax_any_2_date,
-    )
+    ),
+    vax1_date = covid_vax_any_1_date,
+    vax2_date = covid_vax_any_2_date,
+    #vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]])
   )
 
 # Define selection criteria ----
@@ -265,7 +267,7 @@ data_successful_match <-
 
 ###
 
-matchstatus_vars <- c("patient_id", "match_id", "trial_date", "matching_round", "treated", "controlistreated_date", "time_since_vax1")
+matchstatus_vars <- c("patient_id", "match_id", "trial_date", "matching_round", "treated", "controlistreated_date")
 
 data_successful_matchstatus <-
   data_successful_match %>%

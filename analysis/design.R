@@ -164,7 +164,7 @@ caliper_variables <- lst(
     NULL
   ),
   vax2 = c(
-    time_since_vax1 = 7,
+    vax1_date = 7,
     NULL
 )
 )
