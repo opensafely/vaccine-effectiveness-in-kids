@@ -132,7 +132,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
     # they're joined in the study def using `with_values_from_file`
     left_join(data_potential_matchstatus %>% filter(treated == 0L), by = c("patient_id"))
 } else {
-  data_extract <- read_feather(ghere("output", cohort, "matchround{matching_round}", "extract", glue("input_controlactual.feather"))) %>%
+  data_extract <- read_feather(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "extract", glue("input_controlactual.feather"))) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), as.Date)) %>%
     mutate(treated = 0L) %>%
