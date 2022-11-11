@@ -38,7 +38,7 @@ if (length(args) == 0) {
   # use for interactive testing
   removeobjects <- FALSE
   cohort <- "over12"
-  vaxn <- as.integer("2")
+  vaxn <- as.integer("1")
   matching_round <- as.integer("2")
 } else {
   removeobjects <- TRUE
@@ -142,7 +142,8 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
 }
 
 # trial_date, match_id, matched, control
-#
+# add placeholder covid_vax_any_2_date if missing
+data_extract<-add_cols(data_extract,"covid_vax_any_2_date")
 
 data_processed <-
   data_extract %>%
