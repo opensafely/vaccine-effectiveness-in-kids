@@ -2205,6 +2205,8 @@ actions:
     - combine_under12_1
     - table1_over12_2
     - combine_over12_2
+    - table1_under12_2
+    - combine_under12_2
     outputs:
       moderately_sensitive:
         txt: output/meta-release/*.txt

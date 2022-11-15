@@ -22,32 +22,8 @@ source(here("analysis", "design.R"))
 output_dir <- here("output", "release")
 fs::dir_create(output_dir)
 
-for (cohort in c("over12")) {
+for (cohort in c("over12", "under12")) {
   for (vaxn in c(1L, 2L)) {
-    # for(cohort in c("over12")){
-
-    input_dir <- ghere("output", cohort, "vax{vaxn}", "models", "combined")
-
-    ## table1 ----
-
-    fs::file_copy(ghere("output", cohort, "vax{vaxn}", "table1", "coverage.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_coverage.csv")), overwrite = TRUE)
-    fs::file_copy(ghere("output", cohort, "vax{vaxn}", "table1", "table1.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_table1.csv")), overwrite = TRUE)
-    # fs::file_copy(ghere("output", cohort, "vax{vaxn}", "table1", "flowchart.csv"), fs::path(output_dir, glue("{vaxn}_{cohort}_flowchart.csv")), overwrite = TRUE)
-
-    ## KM ----
-    fs::file_copy(fs::path(input_dir, "km_estimates_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_km_estimates_rounded.csv")), overwrite = TRUE)
-    fs::file_copy(fs::path(input_dir, "contrasts_daily_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_contrasts_daily_rounded.csv")), overwrite = TRUE)
-    fs::file_copy(fs::path(input_dir, "contrasts_cuts_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_contrasts_cuts_rounded.csv")), overwrite = TRUE)
-    fs::file_copy(fs::path(input_dir, "contrasts_overall_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_contrasts_overall_rounded.csv")), overwrite = TRUE)
-
-    ## event counts ---
-
-    fs::file_copy(fs::path(input_dir, "testcounts_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_testcounts_rounded.csv")), overwrite = TRUE)
-  }
-}
-
-for (cohort in c("under12")) {
-  for (vaxn in c(1L)) {
     # for(cohort in c("over12")){
 
     input_dir <- ghere("output", cohort, "vax{vaxn}", "models", "combined")

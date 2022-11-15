@@ -31,10 +31,3 @@ fct_recoderelevel <- function(x, lookup){
   stopifnot(!is.na(names(lookup)))
   factor(x, levels=lookup, labels=names(lookup))
 }
-
-### adds column populated with NA if named column doesn't exist 
-add_cols <- function(df, cols) {
-  add <- cols[!cols %in% names(df)]
-  if(length(add) !=0 ) df[add] <- as.Date(NA)
-  return(df)
-}
