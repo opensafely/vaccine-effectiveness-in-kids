@@ -325,6 +325,30 @@ action_skim <- function(cohort, vaxn) {
   )
 }
 
+action_skim_treated <- function(cohort, vaxn) {
+  action(
+    name = glue("skim_{cohort}_{vaxn}_treated"),
+    run = "r:latest analysis/data_skim.R",
+    arguments = c(glue("output/{cohort}/vax{vaxn}/treated/data_treatedeligible.rds"), glue("output/{cohort}/vax{vaxn}/skim")),
+    needs = list(glue("process_treated_{cohort}_{vaxn}")),
+    moderately_sensitive = lst(
+      cohort = glue("output/{cohort}/vax{vaxn}/skim/*.txt")
+    )
+  )
+}
+
+action_skim_control <- function(cohort, vaxn,matching_round) {
+  action(
+    name = glue("skim_{cohort}_{vaxn}_control"),
+    run = "r:latest analysis/data_skim.R",
+    arguments = c(glue("output/{cohort}/vax{vaxn}/matchround{matching_round}/process/data_controlpotential.rds"), glue("output/{cohort}/vax{vaxn}/skim")),
+    needs = list(glue("process_controlpotential_{cohort}_{vaxn}_{matching_round}")),
+    moderately_sensitive = lst(
+      cohort = glue("output/{cohort}/vax{vaxn}/skim/*.txt")
+    )
+  )
+}
+
 
 # specify project ----
 
@@ -354,6 +378,8 @@ actions_list <- splice(
     "Extract and match"
   ),
   action_extract_and_match("over12", 1, n_matching_rounds),
+  action_skim_treated("over12", 1),
+  action_skim_control("over12", 1, 1),
   action_skim("over12", 1),
   action_table1("over12", 1),
   comment(
