@@ -376,21 +376,21 @@ actions:
 
   skim_over12_1_treated:
     run: r:latest analysis/data_skim.R output/over12/vax1/treated/data_treatedeligible.rds
-      output/over12/vax1/skim
+      output/over12/vax1/skim/treated
     needs:
     - process_treated_over12_1
     outputs:
       moderately_sensitive:
-        cohort: output/over12/vax1/skim/*.txt
+        cohort: output/over12/vax1/skim/treated/*.txt
 
   skim_over12_1_control:
     run: r:latest analysis/data_skim.R output/over12/vax1/matchround1/process/data_controlpotential.rds
-      output/over12/vax1/skim
+      output/over12/vax1/skim/control
     needs:
     - process_controlpotential_over12_1_1
     outputs:
       moderately_sensitive:
-        cohort: output/over12/vax1/skim/*.txt
+        cohort: output/over12/vax1/skim/control/*.txt
 
   skim_over12_1_matched:
     run: r:latest analysis/data_skim.R output/over12/vax1/match/data_matched.rds output/over12/vax1/skim

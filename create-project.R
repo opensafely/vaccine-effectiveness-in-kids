@@ -329,10 +329,10 @@ action_skim_treated <- function(cohort, vaxn) {
   action(
     name = glue("skim_{cohort}_{vaxn}_treated"),
     run = "r:latest analysis/data_skim.R",
-    arguments = c(glue("output/{cohort}/vax{vaxn}/treated/data_treatedeligible.rds"), glue("output/{cohort}/vax{vaxn}/skim")),
+    arguments = c(glue("output/{cohort}/vax{vaxn}/treated/data_treatedeligible.rds"), glue("output/{cohort}/vax{vaxn}/skim/treated")),
     needs = list(glue("process_treated_{cohort}_{vaxn}")),
     moderately_sensitive = lst(
-      cohort = glue("output/{cohort}/vax{vaxn}/skim/*.txt")
+      cohort = glue("output/{cohort}/vax{vaxn}/skim/treated/*.txt")
     )
   )
 }
@@ -341,10 +341,10 @@ action_skim_control <- function(cohort, vaxn,matching_round) {
   action(
     name = glue("skim_{cohort}_{vaxn}_control"),
     run = "r:latest analysis/data_skim.R",
-    arguments = c(glue("output/{cohort}/vax{vaxn}/matchround{matching_round}/process/data_controlpotential.rds"), glue("output/{cohort}/vax{vaxn}/skim")),
+    arguments = c(glue("output/{cohort}/vax{vaxn}/matchround{matching_round}/process/data_controlpotential.rds"), glue("output/{cohort}/vax{vaxn}/skim/control")),
     needs = list(glue("process_controlpotential_{cohort}_{vaxn}_{matching_round}")),
     moderately_sensitive = lst(
-      cohort = glue("output/{cohort}/vax{vaxn}/skim/*.txt")
+      cohort = glue("output/{cohort}/vax{vaxn}/skim/control/*.txt")
     )
   )
 }
