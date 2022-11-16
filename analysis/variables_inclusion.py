@@ -5,15 +5,15 @@ import codelists
 
 specific_atrisk_date = "2020-07-01"
 
-def generate_inclusion_variables(index_date):
+def generate_inclusion_variables(baseline_date):
     inclusion_variables = dict(
     
     registered=patients.registered_as_of(
-        index_date,
+        baseline_date,
     ), 
 
     has_died=patients.died_from_any_cause(
-      on_or_before=index_date,
+      on_or_before=baseline_date,
       returning="binary_flag",
     ),
 
@@ -22,7 +22,7 @@ def generate_inclusion_variables(index_date):
     ),
     
     age = patients.age_as_of( 
-        f"{index_date} - 1 day",
+        f"{baseline_date} - 1 day",
     ),
     
     child_atrisk=patients.satisfying(
@@ -35,7 +35,7 @@ def generate_inclusion_variables(index_date):
         """,
         HHLD_IMDEF=patients.with_these_clinical_events(
             hhld_imdef_cod,
-            on_or_before="index_date - 1 day",
+            on_or_before=f"{baseline_date} - 1 day",
         ),
         nulldate=patients.fixed_value("1902-01-01"),
         ATRISK_GROUP=patients.satisfying(
@@ -73,19 +73,19 @@ def generate_inclusion_variables(index_date):
                 IMMDX=patients.with_these_clinical_events(
                     immdx_cov_cod,
                     find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
+                    on_or_before=f"{baseline_date} - 1 day",
                 ),
                 ### any Immunosuppression medication codes is recorded
                 IMMRX=patients.with_these_clinical_events(
                     immrx_cod,
                     find_last_match_in_period=True,
-                    between=[specific_atrisk_date, "index_date - 1 day"],
+                    between=[specific_atrisk_date, f"{baseline_date} - 1 day"],
                 ),
                 ### Receiving chemotherapy or radiotherapy
                 DXT_CHEMO=patients.with_these_clinical_events(
                     dxt_chemo_cod,
                     find_last_match_in_period=True,
-                    between=["index_date - 6 months", "index_date - 1 day"],
+                    between=[f"{baseline_date} - 6 months", f"{baseline_date} - 1 day"],
                 ),
             ),
             # Patients with Chronic Kidney Disease
@@ -116,13 +116,13 @@ def generate_inclusion_variables(index_date):
                 CKD_COV=patients.with_these_clinical_events(
                     ckd_cov_cod,
                     find_first_match_in_period=True,
-                    on_or_before="index_date - 1 day",
+                    on_or_before=f"{baseline_date} - 1 day",
                 ),
                 ### Chronic kidney disease codes - all stages
                 CKD15=patients.with_these_clinical_events(
                     ckd15_cod,
                     find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
+                    on_or_before=f"{baseline_date} - 1 day",
                 ),
                 ### date of Chronic kidney disease codes-stages 3 – 5
                 CKD35_DAT=patients.with_these_clinical_events(
@@ -130,14 +130,14 @@ def generate_inclusion_variables(index_date):
                     returning="date",
                     find_last_match_in_period=True,
                     date_format="YYYY-MM-DD",
-                    on_or_before="index_date - 1 day",
+                    on_or_before=f"{baseline_date} - 1 day",
                 ),
                 ### date of Chronic kidney disease codes - all stages
                 CKD15_DAT=patients.with_these_clinical_events(
                     ckd15_cod,
                     returning="date",
                     date_format="YYYY-MM-DD",
-                    on_or_before="index_date - 1 day",
+                    on_or_before=f"{baseline_date} - 1 day",
                     find_last_match_in_period=True,
                 ),
             ),
@@ -165,25 +165,25 @@ def generate_inclusion_variables(index_date):
                     ASTADM=patients.with_these_clinical_events(
                         astadm_cod,
                         find_last_match_in_period=True,
-                        between=["index_date - 730 days", "index_date - 1 day"],
+                        between=[f"{baseline_date} - 730 days", f"{baseline_date} - 1 day"],
                     ),
                     ### Asthma Diagnosis code
                     AST=patients.with_these_clinical_events(
                         ast_cod,
                         find_first_match_in_period=True,
-                        on_or_before="index_date - 1 day",
+                        on_or_before=f"{baseline_date} - 1 day",
                     ),
                     ### Asthma - inhalers in last 12 months
                     ASTRXM1=patients.with_these_medications(
                         astrxm1_cod,
                         returning="binary_flag",
-                        between=["index_date - 365 days", "index_date - 1 day"],
+                        between=[f"{baseline_date} - 365 days", f"{baseline_date} - 1 day"],
                     ),
                     ### Asthma - systemic oral steroid prescription codes in last 24 months
                     ASTRXM2=patients.with_these_medications(
                         astrxm2_cod,
                         returning="number_of_matches_in_period",
-                        between=["index_date - 730 days", "index_date - 1 day"],
+                        between=[f"{baseline_date} - 730 days", f"{baseline_date} - 1 day"],
                     ),
                 ),
                 ### Chronic Respiratory Disease
@@ -191,7 +191,7 @@ def generate_inclusion_variables(index_date):
                     resp_cov_cod,
                     find_first_match_in_period=True,
                     returning="binary_flag",
-                    on_or_before="index_date - 1 day",
+                    on_or_before=f"{baseline_date} - 1 day",
                 ),
             ),
             ### Patients with Diabetes
@@ -214,7 +214,7 @@ def generate_inclusion_variables(index_date):
                     diab_cod,
                     returning="date",
                     find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
+                    on_or_before=f"{baseline_date} - 1 day",
                     date_format="YYYY-MM-DD",
                 ),
                 ### Date of Diabetes resolved codes
@@ -222,7 +222,7 @@ def generate_inclusion_variables(index_date):
                     dmres_cod,
                     returning="date",
                     find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
+                    on_or_before=f"{baseline_date} - 1 day",
                     date_format="YYYY-MM-DD",
                 ),
                 ### Addison’s disease & Pan-hypopituitary diagnosis codes
@@ -230,7 +230,7 @@ def generate_inclusion_variables(index_date):
                     addis_cod,
                     find_last_match_in_period=True,
                     returning="binary_flag",
-                    on_or_before="index_date - 1 day",
+                    on_or_before=f"{baseline_date} - 1 day",
                 ),
                 ### Patients who are currently pregnant with gestational diabetes
                 GDIAB_GROUP=patients.satisfying(
@@ -244,7 +244,7 @@ def generate_inclusion_variables(index_date):
                         gdiab_cod,
                         find_last_match_in_period=True,
                         returning="binary_flag",
-                        between=["index_date - 254 days", "index_date - 1 day"],
+                        between=[f"{baseline_date} - 254 days", f"{baseline_date} - 1 day"],
                     ),
                     ### Patients who are currently pregnant
                     PREG1_GROUP=patients.satisfying(
@@ -259,14 +259,14 @@ def generate_inclusion_variables(index_date):
                         PREG=patients.with_these_clinical_events(
                             preg_cod,
                             returning="binary_flag",
-                            between=["index_date - 254 days", "index_date - 1 day"],
+                            between=[f"{baseline_date} - 254 days", f"{baseline_date} - 1 day"],
                         ),
                         ### Pregnancy or Delivery codes recorded in the 8.5 months before audit run date
                         PREGDEL_DAT=patients.with_these_clinical_events(
                             pregdel_cod,
                             returning="date",
                             find_last_match_in_period=True,
-                            between=["index_date - 254 days", "index_date - 1 day"],
+                            between=[f"{baseline_date} - 254 days", f"{baseline_date} - 1 day"],
                             date_format="YYYY-MM-DD",
                         ),
                         ### Date of pregnancy codes recorded in the 8.5 months before audit run date
@@ -274,7 +274,7 @@ def generate_inclusion_variables(index_date):
                             preg_cod,
                             returning="date",
                             find_last_match_in_period=True,
-                            between=["index_date - 254 days", "index_date - 1 day"],
+                            between=[f"{baseline_date} - 254 days", f"{baseline_date} - 1 day"],
                             date_format="YYYY-MM-DD",
                         ),
                     ),
@@ -285,35 +285,35 @@ def generate_inclusion_variables(index_date):
                 cld_cod,
                 find_first_match_in_period=True,
                 returning="binary_flag",
-                on_or_before="index_date - 1 day",
+                on_or_before=f"{baseline_date} - 1 day",
             ),
             ### Patients with CNS Disease (including Stroke/TIA)
             CNS_GROUP=patients.with_these_clinical_events(
                 cns_cov_cod,
                 find_first_match_in_period=True,
                 returning="binary_flag",
-                on_or_before="index_date - 1 day",
+                on_or_before=f"{baseline_date} - 1 day",
             ),
             ### Chronic heart disease codes
             CHD_COV=patients.with_these_clinical_events(
                 chd_cov_cod,
                 find_first_match_in_period=True,
                 returning="binary_flag",
-                on_or_before="index_date - 1 day",
+                on_or_before=f"{baseline_date} - 1 day",
             ),
             ### Asplenia or Dysfunction of the Spleen codes
             SPLN_COV=patients.with_these_clinical_events(
                 spln_cov_cod,
                 find_first_match_in_period=True,
                 returning="binary_flag",
-                on_or_before="index_date - 1 day",
+                on_or_before=f"{baseline_date} - 1 day",
             ),
             ### Wider Learning Disability
             LEARNDIS=patients.with_these_clinical_events(
                 learndis_cod,
                 find_last_match_in_period=True,
                 returning="binary_flag",
-                on_or_before="index_date - 1 day",
+                on_or_before=f"{baseline_date} - 1 day",
             ),
             ### Patients with Severe Mental Health
             SEVMENT_GROUP=patients.satisfying(
@@ -329,7 +329,7 @@ def generate_inclusion_variables(index_date):
                     sev_mental_cod,
                     returning="date",
                     find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
+                    on_or_before=f"{baseline_date} - 1 day",
                     date_format="YYYY-MM-DD",
                 ),
                 ### date of Remission codes relating to Severe Mental Illness
@@ -337,7 +337,7 @@ def generate_inclusion_variables(index_date):
                     smhres_cod,
                     returning="date",
                     find_last_match_in_period=True,
-                    on_or_before="index_date - 1 day",
+                    on_or_before=f"{baseline_date} - 1 day",
                     date_format="YYYY-MM-DD",
                 ),
             ),

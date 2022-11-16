@@ -48,15 +48,15 @@ treatment = study_params[cohort]["treatment"]
 ############################################################
 ## inclusion variables
 from variables_inclusion import generate_inclusion_variables 
-inclusion_variables = generate_inclusion_variables(index_date=f"covid_vax_any_{vaxn}_date")
+inclusion_variables = generate_inclusion_variables(baseline_date=f"covid_vax_any_{vaxn}_date")
 ############################################################
 ## matching variables
 from variables_matching import generate_matching_variables 
-matching_variables = generate_matching_variables(index_date=f"covid_vax_any_{vaxn}_date")
+matching_variables = generate_matching_variables(baseline_date=f"covid_vax_any_{vaxn}_date")
 ############################################################
 ## outcome variables
 from variables_outcome import generate_outcome_variables 
-outcome_variables = generate_outcome_variables(index_date=f"covid_vax_any_{vaxn}_date")
+outcome_variables = generate_outcome_variables(baseline_date=f"covid_vax_any_{vaxn}_date")
 ############################################################
 
 
@@ -112,7 +112,7 @@ study = StudyDefinition(
   
   **vaccination_date_X(
     name = "covid_vax_any",
-    index_date = "1900-01-01",
+    on_or_after = "1900-01-01",
     n = 3,
     delay = 1,
     target_disease_matches="SARS-2 CORONAVIRUS"
@@ -123,7 +123,7 @@ study = StudyDefinition(
     name = "covid_vax_pfizerA",
     # use 1900 to capture all possible recorded covid vaccinations, including date errors
     # any vaccines occurring before national rollout are later excluded
-    index_date = "1900-01-01", 
+    on_or_after = "1900-01-01", 
     n = 3,
     delay = 1,
     product_name_matches="COVID-19 mRNA Vaccine Comirnaty 30micrograms/0.3ml dose conc for susp for inj MDV (Pfizer)"
@@ -132,7 +132,7 @@ study = StudyDefinition(
   # pfizer approved for use in children (5-11)
   **vaccination_date_X(
     name = "covid_vax_pfizerC",
-    index_date = "1900-01-01",
+    on_or_after = "1900-01-01",
     n = 3,
     delay = 1,
     product_name_matches="COVID-19 mRNA Vaccine Comirnaty Children 5-11yrs 10mcg/0.2ml dose conc for disp for inj MDV (Pfizer)"

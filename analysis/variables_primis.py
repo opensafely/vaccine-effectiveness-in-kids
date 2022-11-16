@@ -3,7 +3,7 @@ from codelists import *
 import json
 import codelists
 
-def generate_primis_variables(index_date,prefix):
+def generate_primis_variables(baseline_date,prefix):
     primis_variables = dict(
      # From PRIMIS
 
@@ -17,31 +17,31 @@ def generate_primis_variables(index_date,prefix):
     # # astadm=patients.with_these_clinical_events(
     # #   codelists.astadm,
     # #   returning="binary_flag",
-    # #   on_or_before="index_date - 1 day",
+    # #   on_or_before=f"{baseline_date} - 1 day",
     # # ),
     # # # Asthma Diagnosis code
     # # ast = patients.with_these_clinical_events(
     # #   codelists.ast,
     # #   returning="binary_flag",
-    # #   on_or_before="index_date - 1 day",
+    # #   on_or_before=f"{baseline_date} - 1 day",
     # # ),
     # # # Asthma systemic steroid prescription code in month 1
     # # astrxm1=patients.with_these_medications(
     # #   codelists.astrx,
     # #   returning="binary_flag",
-    # #   between=["index_date - 30 days", "index_date - 1 day"],
+    # #   between=[f"{baseline_date} - 30 days", f"{baseline_date} - 1 day"],
     # # ),
     # # # Asthma systemic steroid prescription code in month 2
     # # astrxm2=patients.with_these_medications(
     # #   codelists.astrx,
     # #   returning="binary_flag",
-    # #   between=["index_date - 60 days", "index_date - 31 days"],
+    # #   between=[f"{baseline_date} - 60 days", f"{baseline_date} - 31 days"],
     # # ),
     # # Asthma systemic steroid prescription code in month 3
     # astrxm3=patients.with_these_medications(
     #   codelists.astrx,
     #   returning="binary_flag",
-    #   between= ["index_date - 90 days", "index_date - 61 days"],
+    #   between= [f"{baseline_date} - 90 days", f"{baseline_date} - 61 days"],
     # ),
 
     # ),
@@ -50,7 +50,7 @@ def generate_primis_variables(index_date,prefix):
     chronic_neuro_disease=patients.with_these_clinical_events(
     codelists.cns_cov,
     returning="binary_flag",
-    on_or_before="index_date - 1 day",
+    on_or_before=f"{baseline_date} - 1 day",
     ),
 
     # # Chronic Respiratory Disease
@@ -59,7 +59,7 @@ def generate_primis_variables(index_date,prefix):
     # resp_cov=patients.with_these_clinical_events(
     #   codelists.resp_cov,
     #   returning="binary_flag",
-    #   on_or_before="index_date - 1 day",
+    #   on_or_before=f"{baseline_date} - 1 day",
     # ),
     # ),
 
@@ -73,7 +73,7 @@ def generate_primis_variables(index_date,prefix):
       codelists.bmi_stage,
       returning="date",
       find_last_match_in_period=True,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       date_format="YYYY-MM-DD",
     ),
 
@@ -82,7 +82,7 @@ def generate_primis_variables(index_date,prefix):
       returning="date",
       find_last_match_in_period=True,
       ignore_missing_values=True,
-      between= ["bmi_stage_date", "index_date - 1 day"],
+      between= ["bmi_stage_date", f"{baseline_date} - 1 day"],
       date_format="YYYY-MM-DD",
     ),
 
@@ -91,7 +91,7 @@ def generate_primis_variables(index_date,prefix):
       returning="date",
       ignore_missing_values=True,
       find_last_match_in_period=True,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       date_format="YYYY-MM-DD",
     ),
 
@@ -100,7 +100,7 @@ def generate_primis_variables(index_date,prefix):
       returning="numeric_value",
       ignore_missing_values=True,
       find_last_match_in_period=True,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
     ),
 
     ),
@@ -112,7 +112,7 @@ def generate_primis_variables(index_date,prefix):
       codelists.diab,
       returning="date",
       find_last_match_in_period=True,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       date_format="YYYY-MM-DD",
     ),
 
@@ -120,7 +120,7 @@ def generate_primis_variables(index_date,prefix):
       codelists.dmres,
       returning="date",
       find_last_match_in_period=True,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       date_format="YYYY-MM-DD",
     ),
     ),
@@ -133,7 +133,7 @@ def generate_primis_variables(index_date,prefix):
       codelists.sev_mental,
       returning="date",
       find_last_match_in_period=True,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       date_format="YYYY-MM-DD",
     ),
     # Remission codes relating to Severe Mental Illness
@@ -141,7 +141,7 @@ def generate_primis_variables(index_date,prefix):
       codelists.smhres,
       returning="date",
       find_last_match_in_period=True,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       date_format="YYYY-MM-DD",
     ),
     ),
@@ -151,7 +151,7 @@ def generate_primis_variables(index_date,prefix):
     chronic_heart_disease=patients.with_these_clinical_events(
       codelists.chd_cov,
       returning="binary_flag",
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
     ),
 
     chronic_kidney_disease=patients.satisfying(
@@ -165,7 +165,7 @@ def generate_primis_variables(index_date,prefix):
       codelists.ckd15,
       returning="date",
       find_last_match_in_period=True,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       date_format="YYYY-MM-DD",
     ),
 
@@ -174,7 +174,7 @@ def generate_primis_variables(index_date,prefix):
       codelists.ckd35,
       returning="date",
       find_last_match_in_period=True,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       date_format="YYYY-MM-DD",
     ),
 
@@ -182,7 +182,7 @@ def generate_primis_variables(index_date,prefix):
     ckd=patients.with_these_clinical_events(
       codelists.ckd_cov,
       returning="binary_flag",
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
     ),
     ),
 
@@ -191,7 +191,7 @@ def generate_primis_variables(index_date,prefix):
     chronic_liver_disease=patients.with_these_clinical_events(
     codelists.cld,
     returning="binary_flag",
-    on_or_before="index_date - 1 day",
+    on_or_before=f"{baseline_date} - 1 day",
     ),
 
 
@@ -202,13 +202,13 @@ def generate_primis_variables(index_date,prefix):
     # immdx=patients.with_these_clinical_events(
     #   codelists.immdx_cov,
     #   returning="binary_flag",
-    #   on_or_before="index_date - 1 day",
+    #   on_or_before=f"{baseline_date} - 1 day",
     # ),
     # # Immunosuppression medication codes
     # immrx=patients.with_these_medications(
     #   codelists.immrx,
     #   returning="binary_flag",
-    #   between=["index_date - 182 days", "index_date - 1 day"]
+    #   between=[f"{baseline_date} - 182 days", f"{baseline_date} - 1 day"]
     # ),
     # ),
 
@@ -216,14 +216,14 @@ def generate_primis_variables(index_date,prefix):
     asplenia=patients.with_these_clinical_events(
     codelists.spln_cov,
     returning="binary_flag",
-    on_or_before="index_date - 1 day",
+    on_or_before=f"{baseline_date} - 1 day",
     ),
 
     # Wider Learning Disability
     # learndis=patients.with_these_clinical_events(
     # codelists.learndis,
     # returning="binary_flag",
-    # on_or_before="index_date - 1 day",
+    # on_or_before=f"{baseline_date} - 1 day",
     # ),
 
 
@@ -232,7 +232,7 @@ def generate_primis_variables(index_date,prefix):
     #   codelists.hhld_imdef,
     #   returning="date",
     #   find_last_match_in_period=True,
-    #   on_or_before="index_date - 1 day",
+    #   on_or_before=f"{baseline_date} - 1 day",
     #   date_format="YYYY-MM-DD",
     # ),
     #
@@ -247,7 +247,7 @@ def generate_primis_variables(index_date,prefix):
     #     codelists.cancer_haem_icd10,
     #     codelists.cancer_unspec_icd10,
     #   ),
-    #   between=["index_date - 3 years", "index_date - 1 day"],
+    #   between=[f"{baseline_date} - 3 years", f"{baseline_date} - 1 day"],
     #   returning="binary_flag",
     # ),
     cancer_primary_care=patients.with_these_clinical_events( 
@@ -255,7 +255,7 @@ def generate_primis_variables(index_date,prefix):
         codelists.cancer_nonhaem_snomed,
         codelists.cancer_haem_snomed
       ),
-      between=["index_date - 3 years", "index_date - 1 day"],
+      between=[f"{baseline_date} - 3 years", f"{baseline_date} - 1 day"],
       returning="binary_flag",
     ), 
     ),
