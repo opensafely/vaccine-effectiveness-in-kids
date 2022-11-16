@@ -4,7 +4,7 @@ import json
 import codelists
 
 
-def generate_matching_variables(index_date):
+def generate_matching_variables(baseline_date):
   matching_variables = dict(
 
     sex=patients.sex(
@@ -35,7 +35,7 @@ def generate_matching_variables(index_date):
   #   ),
   
     practice_id=patients.registered_practice_as_of(
-      f"{index_date} - 1 day",
+      f"{baseline_date} - 1 day",
       returning="pseudo_id",
       return_expectations={
         "int": {"distribution": "normal", "mean": 1000, "stddev": 100},
@@ -46,7 +46,7 @@ def generate_matching_variables(index_date):
     # msoa
     
     msoa=patients.address_as_of(
-      f"{index_date} - 1 day",
+      f"{baseline_date} - 1 day",
       returning="msoa",
       return_expectations={
         "rate": "universal",
@@ -59,7 +59,7 @@ def generate_matching_variables(index_date):
     # stp is an NHS administration region based on geography
   
     stp=patients.registered_practice_as_of(
-      f"{index_date} - 1 day",
+      f"{baseline_date} - 1 day",
       returning="stp_code",
       return_expectations={
         "rate": "universal",
@@ -82,7 +82,7 @@ def generate_matching_variables(index_date):
     # NHS administrative region
   
     region=patients.registered_practice_as_of(
-      f"{index_date} - 1 day",
+      f"{baseline_date} - 1 day",
       returning="nuts1_region_name",
       return_expectations={
         "rate": "universal",
@@ -117,7 +117,7 @@ def generate_matching_variables(index_date):
       },
     
       imd=patients.address_as_of(
-        f"{index_date} - 1 day",
+        f"{baseline_date} - 1 day",
         returning="index_of_multiple_deprivation",
         round_to_nearest=100,
         return_expectations={
@@ -135,7 +135,7 @@ def generate_matching_variables(index_date):
       ),
       returning="date",
       date_format="YYYY-MM-DD",
-      on_or_before=f"{index_date} - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       find_last_match_in_period=True,
     ),
 
@@ -143,7 +143,7 @@ def generate_matching_variables(index_date):
     # covid_test_0_date=patients.with_test_result_in_sgss(
     #   pathogen="SARS-CoV-2",
     #   test_result="any",
-    #   on_or_before=f"{index_date} - 1 day",
+    #   on_or_before=f"{baseline_date} - 1 day",
     #   returning="date",
     #   date_format="YYYY-MM-DD",
     #   find_last_match_in_period=True,
@@ -157,7 +157,7 @@ def generate_matching_variables(index_date):
         test_result="positive",
         returning="date",
         date_format="YYYY-MM-DD",
-        on_or_before=f"{index_date} - 1 day",
+        on_or_before=f"{baseline_date} - 1 day",
         find_last_match_in_period=True,
         restrict_to_earliest_specimen_date=False,
     ),
@@ -165,7 +165,7 @@ def generate_matching_variables(index_date):
   prior_covid_test_frequency=patients.with_test_result_in_sgss(
     pathogen="SARS-CoV-2",
     test_result="any",
-    between=["index_date - 182 days", "index_date - 1 day"], # 182 days = 26 weeks
+    between=[f"{baseline_date} - 182 days", f"{baseline_date} - 1 day"], # 182 days = 26 weeks
     returning="number_of_matches_in_period", 
     date_format="YYYY-MM-DD",
     restrict_to_earliest_specimen_date=False,
@@ -175,7 +175,7 @@ def generate_matching_variables(index_date):
     # emergency attendance for covid
     covidemergency_0_date=patients.attended_emergency_care(
       returning="date_arrived",
-      on_or_before=f"{index_date} - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       with_these_diagnoses = codelists.covid_emergency,
       date_format="YYYY-MM-DD",
       find_last_match_in_period=True,
@@ -186,7 +186,7 @@ def generate_matching_variables(index_date):
       returning="date_admitted",
       with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],
       with_these_diagnoses=codelists.covid_icd10,
-      on_or_before=f"{index_date} - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       date_format="YYYY-MM-DD",
       find_last_match_in_period=True,
     ),

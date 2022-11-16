@@ -50,7 +50,7 @@ treatment = study_params[cohort]["treatment"]
 ############################################################
 ## outcome variables
 from variables_outcome import generate_outcome_variables 
-outcome_variables = generate_outcome_variables(index_date="trial_date")
+outcome_variables = generate_outcome_variables(baseline_date="trial_date")
 ############################################################
 
 

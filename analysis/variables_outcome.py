@@ -4,7 +4,7 @@ import codelists
 
 
 
-def vaccination_date_X(name, index_date, n, delay=1, product_name_matches=None, target_disease_matches=None):
+def vaccination_date_X(name, on_or_after, n, delay=1, product_name_matches=None, target_disease_matches=None):
   # vaccination date, given product_name
   def var_signature(
     name,
@@ -23,7 +23,7 @@ def vaccination_date_X(name, index_date, n, delay=1, product_name_matches=None, 
       ),
     }
     
-  variables = var_signature(f"{name}_1_date", index_date, product_name_matches, target_disease_matches)
+  variables = var_signature(f"{name}_1_date", on_or_after, product_name_matches, target_disease_matches)
   for i in range(2, n+1):
     variables.update(var_signature(
       f"{name}_{i}_date", 
@@ -34,12 +34,12 @@ def vaccination_date_X(name, index_date, n, delay=1, product_name_matches=None, 
   return variables
 
   
-def generate_outcome_variables(index_date):
+def generate_outcome_variables(baseline_date):
   outcome_variables = dict(
   
     # deregistration date
     dereg_date=patients.date_deregistered_from_all_supported_practices(
-      on_or_after=index_date,
+      on_or_after=baseline_date,
       date_format="YYYY-MM-DD",
     ),
   
@@ -52,7 +52,7 @@ def generate_outcome_variables(index_date):
       ),
       returning="date",
       date_format="YYYY-MM-DD",
-      on_or_after=index_date,
+      on_or_after=baseline_date,
       find_first_match_in_period=True,
     ),
     
@@ -61,7 +61,7 @@ def generate_outcome_variables(index_date):
     covid_test_date=patients.with_test_result_in_sgss(
       pathogen="SARS-CoV-2",
       test_result="any",
-      on_or_after=index_date,
+      on_or_after=baseline_date,
       find_first_match_in_period=True,
       restrict_to_earliest_specimen_date=False,
       returning="date",
@@ -74,7 +74,7 @@ def generate_outcome_variables(index_date):
         test_result="positive",
         returning="date",
         date_format="YYYY-MM-DD",
-        on_or_after=index_date,
+        on_or_after=baseline_date,
         find_first_match_in_period=True,
         restrict_to_earliest_specimen_date=False,
     ),
@@ -83,7 +83,7 @@ def generate_outcome_variables(index_date):
     covidemergency_date=patients.attended_emergency_care(
       returning="date_arrived",
       date_format="YYYY-MM-DD",
-      on_or_after=index_date,
+      on_or_after=baseline_date,
       with_these_diagnoses = codelists.covid_emergency,
       find_first_match_in_period=True,
     ),
@@ -92,7 +92,7 @@ def generate_outcome_variables(index_date):
     covidemergencyhosp_date=patients.attended_emergency_care(
       returning="date_arrived",
       date_format="YYYY-MM-DD",
-      on_or_after=index_date,
+      on_or_after=baseline_date,
       find_first_match_in_period=True,
       with_these_diagnoses = codelists.covid_emergency,
       discharged_to = codelists.discharged_to_hospital,
@@ -103,7 +103,7 @@ def generate_outcome_variables(index_date):
     # respemergency_date=patients.attended_emergency_care(
     #   returning="date_arrived",
     #   date_format="YYYY-MM-DD",
-    #   on_or_after=index_date,
+    #   on_or_after=baseline_date,
     #   with_these_diagnoses = codelists.resp_emergency,
     #   find_first_match_in_period=True,
     # ),
@@ -113,7 +113,7 @@ def generate_outcome_variables(index_date):
     # respemergencyhosp_date=patients.attended_emergency_care(
     #   returning="date_arrived",
     #   date_format="YYYY-MM-DD",
-    #   on_or_after=index_date,
+    #   on_or_after=baseline_date,
     #   find_first_match_in_period=True,
     #   with_these_diagnoses = codelists.resp_emergency,
     #   discharged_to = codelists.discharged_to_hospital,
@@ -122,7 +122,7 @@ def generate_outcome_variables(index_date):
     # any emergency attendance
     emergency_date=patients.attended_emergency_care(
       returning="date_arrived",
-      on_or_after=index_date,
+      on_or_after=baseline_date,
       date_format="YYYY-MM-DD",
       find_first_match_in_period=True,
     ),
@@ -130,7 +130,7 @@ def generate_outcome_variables(index_date):
     # emergency attendance resulting in discharge to hospital
     emergencyhosp_date=patients.attended_emergency_care(
       returning="date_arrived",
-      on_or_after=index_date,
+      on_or_after=baseline_date,
       date_format="YYYY-MM-DD",
       find_last_match_in_period=True,
       discharged_to = codelists.discharged_to_hospital,
@@ -140,7 +140,7 @@ def generate_outcome_variables(index_date):
     # unplanned hospital admission
     admitted_unplanned_date=patients.admitted_to_hospital(
       returning="date_admitted",
-      on_or_after=index_date,
+      on_or_after=baseline_date,
       # see https://github.com/opensafely-core/cohort-extractor/pull/497 for codes
       # see https://docs.opensafely.org/study-def-variables/#sus for more info
       with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],
@@ -152,7 +152,7 @@ def generate_outcome_variables(index_date):
     # # planned hospital admission
     # admitted_planned_date=patients.admitted_to_hospital(
     #   returning="date_admitted",
-    #   on_or_after=index_date,
+    #   on_or_after=baseline_date,
     #   # see https://github.com/opensafely-core/cohort-extractor/pull/497 for codes
     #   # see https://docs.opensafely.org/study-def-variables/#sus for more info
     #   with_admission_method=["11", "12", "13", "81"],
@@ -166,7 +166,7 @@ def generate_outcome_variables(index_date):
       returning="date_admitted",
       with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],
       with_these_diagnoses=codelists.covid_icd10,
-      on_or_after=index_date,
+      on_or_after=baseline_date,
       date_format="YYYY-MM-DD",
       find_first_match_in_period=True,
     ),
@@ -176,7 +176,7 @@ def generate_outcome_variables(index_date):
       with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],
       with_these_diagnoses=codelists.covid_icd10,
       with_at_least_one_day_in_critical_care=True,
-      on_or_after=index_date,
+      on_or_after=baseline_date,
       date_format="YYYY-MM-DD",
       find_first_match_in_period=True,
     ),
@@ -195,14 +195,14 @@ def generate_outcome_variables(index_date):
     ),
     
     
-    # censor_date = patients.minimum_of("death_date", "dereg_date", f"{index_date} + 140 days"), # 140 is the maximum days of follow up, specified in design.R
-    # once the above censor_date variable is possible, then replace `f"{index_date} + 140 days"` with `censor_date` below
+    # censor_date = patients.minimum_of("death_date", "dereg_date", f"{baseline_date} + 140 days"), # 140 is the maximum days of follow up, specified in design.R
+    # once the above censor_date variable is possible, then replace `f"{baseline_date} + 140 days"` with `censor_date` below
     
     test_count = patients.with_test_result_in_sgss(
       pathogen = "SARS-CoV-2",
       test_result = "any",
       returning = "number_of_matches_in_period",
-      between = [index_date, f"{index_date} + 140 days"],
+      between = [baseline_date, f"{baseline_date} + 140 days"],
       restrict_to_earliest_specimen_date=False
     ),
 
@@ -210,7 +210,7 @@ def generate_outcome_variables(index_date):
       pathogen = "SARS-CoV-2",
       test_result = "positive",
       returning = "number_of_matches_in_period",
-      between = [index_date, f"{index_date} + 140 days"],
+      between = [baseline_date, f"{baseline_date} + 140 days"],
       restrict_to_earliest_specimen_date=False
     ),
     

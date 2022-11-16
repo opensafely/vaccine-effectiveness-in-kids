@@ -3,12 +3,12 @@ from codelists import *
 import codelists
 
 
-def generate_jcvi_variables(index_date):
+def generate_jcvi_variables(baseline_date):
     jcvi_variables = dict(
     cev_ever = patients.with_these_clinical_events(
       codelists.shield,
       returning="binary_flag",
-      on_or_before = "index_date - 1 day",
+      on_or_before = f"{baseline_date} - 1 day",
       find_last_match_in_period = True,
     ),
     
@@ -21,13 +21,13 @@ def generate_jcvi_variables(index_date):
       midazolam = patients.with_these_medications(
         codelists.midazolam,
         returning="binary_flag",
-        on_or_before = "index_date - 1 day",
+        on_or_before = f"{baseline_date} - 1 day",
       ),
       
       endoflife_coding = patients.with_these_clinical_events(
         codelists.eol,
         returning="binary_flag",
-        on_or_before = "index_date - 1 day",
+        on_or_before = f"{baseline_date} - 1 day",
         find_last_match_in_period = True,
       ),
           
@@ -41,25 +41,25 @@ def generate_jcvi_variables(index_date):
           
       housebound_date=patients.with_these_clinical_events( 
         codelists.housebound, 
-        on_or_before="index_date - 1 day",
+        on_or_before=f"{baseline_date} - 1 day",
         find_last_match_in_period = True,
         returning="date",
         date_format="YYYY-MM-DD",
       ),   
       no_longer_housebound=patients.with_these_clinical_events( 
         codelists.no_longer_housebound, 
-        between=["housebound_date", "index_date - 1 day"],
+        between=["housebound_date", f"{baseline_date} - 1 day"],
       ),
       moved_into_care_home=patients.with_these_clinical_events(
         codelists.carehome,
-        between=["housebound_date", "index_date - 1 day"],
+        between=["housebound_date", f"{baseline_date} - 1 day"],
       ),
     ),
   
     prior_covid_test_frequency=patients.with_test_result_in_sgss(
       pathogen="SARS-CoV-2",
       test_result="any",
-      between=["index_date - 182 days", "index_date - 1 day"], # 182 days = 26 weeks
+      between=[f"{baseline_date} - 182 days", f"{baseline_date} - 1 day"], # 182 days = 26 weeks
       returning="number_of_matches_in_period", 
       date_format="YYYY-MM-DD",
       restrict_to_earliest_specimen_date=False,
@@ -68,11 +68,11 @@ def generate_jcvi_variables(index_date):
   # # overnight hospital admission at time of 3rd / booster dose
   # inhospital = patients.satisfying(
   
-  #   "discharged_0_date >= index_date",
+  #   "discharged_0_date >= baseline_date",
     
   #   discharged_0_date=patients.admitted_to_hospital(
   #     returning="date_discharged",
-  #     on_or_before="index_date", # this is the admission date
+  #     on_or_before=f"{baseline_date}", # this is the admission date
   #     # see https://github.com/opensafely-core/cohort-extractor/pull/497 for codes
   #     # see https://docs.opensafely.org/study-def-variables/#sus for more info
   #     with_admission_method = ['11', '12', '13', '21', '2A', '22', '23', '24', '25', '2D', '28', '2B', '81'],
@@ -117,17 +117,17 @@ def generate_jcvi_variables(index_date):
     ###  any immunosuppressant read code is recorded
     immdx_1=patients.with_these_clinical_events(
       codelists.immdx_cov_cod,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
     ),
     ### any immunosuppression medication codes is recorded
     immrx_1=patients.with_these_clinical_events(
       codelists.immrx_cod,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
     ),
     ### receiving chemotherapy or radiotherapy
     dxt_chemo = patients.with_these_clinical_events(
       codelists.dxt_chemo_cod ,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
     ),
     ),
     # patients with chronic kidney disease
@@ -144,19 +144,19 @@ def generate_jcvi_variables(index_date):
     ### chronic kidney disease diagnostic codes
     ckd_cov = patients.with_these_clinical_events(
       codelists.ckd_cov_cod,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
     ),
     ### chronic kidney disease codes - all stages
     ckd15 = patients.with_these_clinical_events(
       codelists.ckd15_cod,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
     ),
     ### date of chronic kidney disease codes-stages 3 – 5  
     ckd35_dat=patients.with_these_clinical_events(
       codelists.ckd35_cod,
     returning="date",
     date_format="YYYY-MM-DD",
-    on_or_before="index_date - 1 day",
+    on_or_before=f"{baseline_date} - 1 day",
     find_first_match_in_period=True,
     ),
     ### date of chronic kidney disease codes - all stages
@@ -164,7 +164,7 @@ def generate_jcvi_variables(index_date):
       codelists.ckd15_cod,
     returning="date",
     date_format="YYYY-MM-DD",
-    on_or_before="index_date - 1 day",
+    on_or_before=f"{baseline_date} - 1 day",
     find_first_match_in_period=True,
     ),
     ),
@@ -191,31 +191,31 @@ def generate_jcvi_variables(index_date):
         ### asthma admission codes
         astadm_1 = patients.with_these_clinical_events(
             codelists.astadm_cod,
-            on_or_before="index_date - 1 day",
+            on_or_before=f"{baseline_date} - 1 day",
         ),  
         ### asthma diagnosis code
         ast_1 = patients.with_these_clinical_events(
             codelists.ast_cod,
-            on_or_before="index_date - 1 day",
+            on_or_before=f"{baseline_date} - 1 day",
         ),  
         ### asthma - inhalers in last 12 months
         astrxm1_1=patients.with_these_medications(
             codelists.astrx_cod,
             returning="binary_flag",
-            between=["index_date - 30 days", "index_date - 1 day"],
+            between=[f"{baseline_date} - 30 days", f"{baseline_date} - 1 day"],
           ),
         ### asthma - systemic oral steroid prescription codes in last 24 months
         astrxm2_1=patients.with_these_medications(
             codelists.astrx_cod,
             returning="binary_flag",
-            between=["index_date - 60 days", "index_date - 31 days"],
+            between=[f"{baseline_date} - 60 days", f"{baseline_date} - 31 days"],
           ),
       ),
     ### chronic respiratory disease
     resp_cov_1 =patients.with_these_clinical_events(
         codelists.resp_cov_cod,
         returning="binary_flag",
-        on_or_before="index_date - 1 day",
+        on_or_before=f"{baseline_date} - 1 day",
     ),
     ),
     ### patients with diabetes
@@ -232,7 +232,7 @@ def generate_jcvi_variables(index_date):
         codelists.diab_cod,
         returning="date",
         find_last_match_in_period=True,
-        on_or_before="index_date - 1 day",
+        on_or_before=f"{baseline_date} - 1 day",
         date_format="YYYY-MM-DD",
       ),
       ### date of diabetes resolved codes
@@ -240,14 +240,14 @@ def generate_jcvi_variables(index_date):
         codelists.dmres_cod,
         returning="date",
         find_last_match_in_period=True,
-        on_or_before="index_date - 1 day",
+        on_or_before=f"{baseline_date} - 1 day",
         date_format="YYYY-MM-DD",
       ),
       ### addison’s disease & pan-hypopituitary diagnosis codes
       addis = patients.with_these_clinical_events(
         codelists.addis_cod,
         returning="binary_flag",
-        on_or_before="index_date - 1 day",
+        on_or_before=f"{baseline_date} - 1 day",
       ),
       ### patients who are currently pregnant with gestational diabetes 
       gdiab_group = patients.satisfying(
@@ -260,7 +260,7 @@ def generate_jcvi_variables(index_date):
         gdiab =  patients.with_these_clinical_events(
           codelists.gdiab_cod,
           returning="binary_flag",
-          on_or_before="index_date - 1 day",
+          on_or_before=f"{baseline_date} - 1 day",
         ),
         ### patients who are currently pregnant 
         preg1_group = patients.satisfying(
@@ -274,14 +274,14 @@ def generate_jcvi_variables(index_date):
             codelists.preg_cod,
             returning="binary_flag",
               ### pregnancy in the previous 44 weeks 
-            between=["index_date - 308 days", "index_date - 1 days"],
+            between=[f"{baseline_date} - 308 days", f"{baseline_date} - 1 days"],
             ),
             ### pregnancy or delivery codes 
             pregdel_dat=patients.with_these_clinical_events(
             codelists.pregdel_cod,
             returning="date",
             find_last_match_in_period=True,
-            on_or_before="index_date - 1 day",
+            on_or_before=f"{baseline_date} - 1 day",
             date_format="YYYY-MM-DD",
             ),
             ### date of pregnancy codes recorded
@@ -289,7 +289,7 @@ def generate_jcvi_variables(index_date):
             codelists.preg_cod,
             returning="date",
             find_last_match_in_period=True,
-            on_or_before="index_date - 1 day",
+            on_or_before=f"{baseline_date} - 1 day",
             date_format="YYYY-MM-DD",
             ),
         ),
@@ -299,31 +299,31 @@ def generate_jcvi_variables(index_date):
     cld = patients.with_these_clinical_events(
       codelists.cld_cod,
       returning="binary_flag",
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
     ),
     ### patients with cns disease (including stroke/tia)
     cns_group= patients.with_these_clinical_events(
       codelists.cns_cov_cod,
       returning="binary_flag",
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
     ),  
     ### chronic heart disease codes
     chd_cov = patients.with_these_clinical_events(
       codelists.chd_cov_cod,
       returning="binary_flag",
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
     ),  
     ### asplenia or dysfunction of the spleen codes
     spln_cov= patients.with_these_clinical_events(
         codelists.spln_cov_cod,
         returning="binary_flag",
-        on_or_before="index_date - 1 day",
+        on_or_before=f"{baseline_date} - 1 day",
     ),  
     ### wider learning disability
     learndis_1 = patients.with_these_clinical_events(
         codelists.learndis_cod,
         returning="binary_flag",
-        on_or_before="index_date - 1 day",
+        on_or_before=f"{baseline_date} - 1 day",
     ),
     ### patients with severe mental health
     sevment_group = patients.satisfying(
@@ -335,7 +335,7 @@ def generate_jcvi_variables(index_date):
         codelists.sev_mental_cod,
         returning="date",
         find_last_match_in_period=True,
-        on_or_before="index_date - 1 day",
+        on_or_before=f"{baseline_date} - 1 day",
         date_format="YYYY-MM-DD",
     ),
     ### date of remission codes relating to severe mental illness
@@ -343,7 +343,7 @@ def generate_jcvi_variables(index_date):
       codelists.smhres_cod,
       returning="date",
       find_last_match_in_period=True,
-      on_or_before="index_date - 1 day",
+      on_or_before=f"{baseline_date} - 1 day",
       date_format="YYYY-MM-DD",
     ),
     ),
@@ -359,7 +359,7 @@ def generate_jcvi_variables(index_date):
     severely_clinically_vulnerable = patients.with_these_clinical_events(
     codelists.shield,
     returning="binary_flag",
-    on_or_before = "index_date - 1 day",
+    on_or_before = f"{baseline_date} - 1 day",
     find_last_match_in_period = True,
     ),
 
@@ -372,7 +372,7 @@ def generate_jcvi_variables(index_date):
     ### NOT SHIELDED GROUP (medium and low risk) - only flag if later than 'shielded'
     less_vulnerable = patients.with_these_clinical_events(
     codelists.nonshield,
-    between=["date_severely_clinically_vulnerable + 1 day", "index_date - 1 day",],
+    between=["date_severely_clinically_vulnerable + 1 day", f"{baseline_date} - 1 day",],
     ),
     ),
     )

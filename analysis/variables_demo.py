@@ -2,16 +2,16 @@ from cohortextractor import patients
 from codelists import *
 import codelists
 
-def generate_demo_variables(index_date):
+def generate_demo_variables(baseline_date):
   demo_variables = dict(
 
     has_follow_up_previous_6weeks=patients.registered_with_one_practice_between(
-      start_date="index_date - 42 days",
-      end_date="index_date",
+      start_date=f"{baseline_date} - 42 days",
+      end_date=baseline_date,
     ),
     
     age=patients.age_as_of( 
-      "index_date - 1 day",
+      f"{baseline_date} - 1 day",
     ),
     
     ageband=patients.categorised_as(
@@ -49,7 +49,7 @@ def generate_demo_variables(index_date):
         # set maximum to avoid any impossibly extreme values being classified as obese
       },
       bmi_value=patients.most_recent_bmi(
-        on_or_after="index_date - 5 years",
+        on_or_after=f"{baseline_date} - 5 years",
         minimum_age_at_measurement=16
       ),
       return_expectations={
@@ -72,7 +72,7 @@ def generate_demo_variables(index_date):
     # practice pseudo id
   
     # practice_id=patients.registered_practice_as_of(
-    #   "index_date - 1 day",
+    #   f"{baseline_date} - 1 day",
     #   returning="pseudo_id",
     #   return_expectations={
     #     "int": {"distribution": "normal", "mean": 1000, "stddev": 100},
@@ -83,7 +83,7 @@ def generate_demo_variables(index_date):
     # msoa
     
     msoa=patients.address_as_of(
-      "index_date - 1 day",
+      f"{baseline_date} - 1 day",
       returning="msoa",
       return_expectations={
         "rate": "universal",
@@ -96,7 +96,7 @@ def generate_demo_variables(index_date):
     # stp is an NHS administration region based on geography
   
     stp=patients.registered_practice_as_of(
-      "index_date - 1 day",
+      f"{baseline_date} - 1 day",
       returning="stp_code",
       return_expectations={
         "rate": "universal",
@@ -119,7 +119,7 @@ def generate_demo_variables(index_date):
     # NHS administrative region
   
     region=patients.registered_practice_as_of(
-      "index_date - 1 day",
+      f"{baseline_date} - 1 day",
       returning="nuts1_region_name",
       return_expectations={
         "rate": "universal",
@@ -155,7 +155,7 @@ def generate_demo_variables(index_date):
         "category": {"ratios": {"Unknown": 0.02, "1 (most deprived)": 0.18, "2": 0.2, "3": 0.2, "4": 0.2, "5 (least deprived)": 0.2}},
       },
       imd=patients.address_as_of(
-      "index_date - 1 day",
+      f"{baseline_date} - 1 day",
       returning="index_of_multiple_deprivation",
       round_to_nearest=100,
       return_expectations={
@@ -168,7 +168,7 @@ def generate_demo_variables(index_date):
     #rurality
     
     rural_urban=patients.address_as_of(
-      "index_date - 1 day",
+      f"{baseline_date} - 1 day",
       returning="rural_urban_classification",
       return_expectations={
         "rate": "universal",
@@ -189,7 +189,7 @@ def generate_demo_variables(index_date):
       "care_home='1'",
       
       care_home = patients.care_home_status_as_of(
-        "index_date - 1 day",
+        f"{baseline_date} - 1 day",
         categorised_as={
             "1": "IsPotentialCareHome",
             "": "DEFAULT",  # use empty string
@@ -200,7 +200,7 @@ def generate_demo_variables(index_date):
     # Patients in long-stay nursing and residential care
     care_home_code=patients.with_these_clinical_events(
         codelists.carehome,
-        on_or_before="index_date - 1 day",
+        on_or_before=f"{baseline_date} - 1 day",
         returning="binary_flag",
         return_expectations={"incidence": 0.01},
     ),
