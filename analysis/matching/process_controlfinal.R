@@ -206,6 +206,18 @@ data_matched <-
 
 write_rds(data_matched, ghere("output", cohort,  "vax{vaxn}", "match", glue("data_matched.rds")), compress = "gz")
 
+### Treated
+data_matched %>%
+  filter(treated==1L) %>%
+  select(patient_id,trial_date)  %>%
+  write_csv(ghere("output", cohort, "vax{vaxn}", "match", glue("data_matched_treated.csv.gz")))
+
+### Control
+data_matched %>%
+  filter(treated==0L) %>%
+  select(patient_id,trial_date)  %>%
+  write_csv(ghere("output", cohort, "vax{vaxn}", "match", glue("data_matched_control.csv.gz")))
+
 # matching status of all treated, eligible people ----
 
 data_treatedeligible_matchstatus <-

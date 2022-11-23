@@ -17,7 +17,7 @@ fs::dir_create(here("lib", "design"))
 threshold <- 6
 
 # number of matching rounds to perform
-n_matching_rounds <- 6
+n_matching_rounds <- 2
 
 
 # define key dates ----
@@ -70,6 +70,22 @@ study_params <- lst(
 
 # write to json so that both R and python (study defs) can easily pick up
 jsonlite::write_json(study_params, path = here("lib", "design", "study-params.json"), auto_unbox = TRUE, pretty = TRUE)
+
+fup_params <- lst(
+  "baselinedays" = 14,
+  "postbaselinedays" = 28,
+  "postbaselineperiods" = 6,
+  "postbaselinecuts" = c(0, 14, 42, 70, 98, 126, 154, 182),
+  "maxfup" = 182,
+  "prebaselineperiods" = 3,
+  "n_any" = 10,
+  "n_pos" = 5,
+  "covidtestcuts" = c(-84, -56, -28, 0, 14, 42, 70, 98, 126, 154, 182)
+)
+
+
+
+jsonlite::write_json(fup_params, path = here("lib", "design", "fup-params.json"), auto_unbox = TRUE, pretty = TRUE)
 
 # define outcomes ----
 
@@ -169,3 +185,4 @@ caliper_variables <- lst(
 )
 )
 matching_variables <- c(exact_variables, names(caliper_variables))
+

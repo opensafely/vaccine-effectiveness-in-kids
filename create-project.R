@@ -59,6 +59,18 @@ namelesslst <- function(...) {
   unname(lst(...))
 }
 
+## create a list of actions
+lapply_actions <- function(X, FUN) {
+  unlist(
+    lapply(
+      X,
+      FUN
+    ),
+    recursive = FALSE
+  )
+}
+
+
 ## actions for a single matching round ----
 
 
@@ -226,7 +238,8 @@ action_extract_and_match <- function(cohort, vaxn, n_matching_rounds) {
         glue("process_treated_{cohort}_{vaxn}")
       ),
       highly_sensitive = lst(
-        extract = glue("output/{cohort}/vax{vaxn}/match/*.rds")
+        extract = glue("output/{cohort}/vax{vaxn}/match/*.rds"),
+        extract_csv = glue("output/{cohort}/vax{vaxn}/match/*.csv.gz"),
       ),
     )
   )
@@ -251,6 +264,61 @@ action_table1 <- function(cohort, vaxn) {
   )
 }
 
+action_covid_test <-function(cohort, vaxn){
+  splice(
+    lapply_actions(
+      c("treated", "control"),
+        function(arm)
+        action(
+          name = glue("extract_covidtests_{cohort}_{vaxn}_{arm}"),
+          run = glue(
+            "cohortextractor:latest generate_cohort", 
+            " --study-definition study_definition_covidtests", 
+            " --output-file output/{cohort}/vax{vaxn}/covidtests/extract/input_covidtests_{arm}.feather",
+            " --param cohort={cohort}",
+            " --param vaxn={vaxn}",
+            " --param arm={arm}"
+          ),
+          needs = namelesslst(
+            glue("process_controlfinal_{cohort}_{vaxn}")
+          ),
+          highly_sensitive = lst(
+            extract = glue("output/{cohort}/vax{vaxn}/covidtests/extract/input_covidtests_{arm}.feather")
+          )
+        )
+    ),
+    action(
+      name = glue("process_covidtests_{cohort}_{vaxn}"),
+      run = "r:latest analysis/covidtests/process_covidtests.R",
+      arguments = c(cohort, vaxn),
+      needs = namelesslst(
+        glue("process_controlfinal_{cohort}_{vaxn}"),
+        glue("extract_covidtests_{cohort}_{vaxn}_treated"),
+        glue("extract_covidtests_{cohort}_{vaxn}_control")
+      ),
+      highly_sensitive = lst(
+        extract = glue("output/{cohort}/vax{vaxn}/covidtests/process/*.rds"),
+      ),
+      moderately_sensitive = lst(
+        skim = glue("output/{cohort}/vax{vaxn}/covidtests/extract/*.txt"),
+        png = glue("output/{cohort}/vax{vaxn}/covidtests/checks/*.png")
+      )
+    ),
+  
+    action(
+      name = glue("summarise_covidtests_{cohort}_{vaxn}"),
+      run = "r:latest analysis/covidtests/summarise_covidtests.R",
+      arguments = c(cohort, vaxn, "all"), # may want to look in subgroups later, but for now just "all"
+      needs = namelesslst(
+        glue("process_covidtests_{cohort}_{vaxn}")
+      ),
+      moderately_sensitive = lst(
+        csv = glue("output/{cohort}/vax{vaxn}/covidtests/summary/all/*.csv"),
+        png = glue("output/{cohort}/vax{vaxn}/covidtests/summary/all/*.png")
+      )
+    )
+  )
+}
 
 action_km <- function(cohort, vaxn, subgroup, outcome) {
   action(
@@ -403,10 +471,13 @@ actions_list <- splice(
   action_eventcounts("over12", 1, "all"),
   action_eventcounts("over12", 1, "prior_covid_infection"),
   action_combine("over12", 1),
-
-
-
-      comment(
+  comment(
+    "# # # # # # # # # # # # # # # # # # #",
+    "Covid tests data",
+    "# # # # # # # # # # # # # # # # # # #"
+  ),
+  action_covid_test("over12", 1),
+  comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Vax2, Over 12s cohort",
     "# # # # # # # # # # # # # # # # # # #"
@@ -431,6 +502,12 @@ actions_list <- splice(
   action_eventcounts("over12", 2, "all"),
   action_eventcounts("over12", 2, "prior_covid_infection"),
   action_combine("over12", 2),
+  comment(
+    "# # # # # # # # # # # # # # # # # # #",
+    "Covid tests data",
+    "# # # # # # # # # # # # # # # # # # #"
+  ),
+  action_covid_test("over12", 2),
 
   comment(
     "# # # # # # # # # # # # # # # # # # #",
@@ -466,6 +543,12 @@ actions_list <- splice(
   action_eventcounts("under12", 1, "all"),
   action_eventcounts("under12", 1, "prior_covid_infection"),
   action_combine("under12", 1),
+    comment(
+    "# # # # # # # # # # # # # # # # # # #",
+    "Covid tests data",
+    "# # # # # # # # # # # # # # # # # # #"
+  ),
+  action_covid_test("under12", 1),
 
    comment(
     "# # # # # # # # # # # # # # # # # # #",
@@ -494,6 +577,12 @@ actions_list <- splice(
   action_eventcounts("under12", 2, "all"),
   action_eventcounts("under12", 2, "prior_covid_infection"),
   action_combine("under12", 2),
+  comment(
+    "# # # # # # # # # # # # # # # # # # #",
+    "Covid tests data",
+    "# # # # # # # # # # # # # # # # # # #"
+  ),
+  action_covid_test("under12", 2),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Move files for release",
