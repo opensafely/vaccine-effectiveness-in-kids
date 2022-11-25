@@ -80,8 +80,6 @@ def covidtest_n_X(name, index_date, cuts, test_result):
 ####################################################################################################
 def covidtest_returning_X(
   name, index_date, shift, n, test_result, 
-  # find_first_match_in_period, 
-  restrict_to_earliest_specimen_date, 
   returning,
   return_expectations=None
   ):
@@ -92,14 +90,14 @@ def covidtest_returning_X(
         pathogen="SARS-CoV-2",
         test_result=test_result,
         on_or_after=on_or_after,
-        # find_first_match_in_period=find_first_match_in_period,
-        restrict_to_earliest_specimen_date=restrict_to_earliest_specimen_date,
+        find_first_match_in_period=True,
+        restrict_to_earliest_specimen_date=False,
         returning=returning,
         date_format="YYYY-MM-DD",
         return_expectations=return_expectations
       ),
     }
-    
+
   # specify sign based on shift
   if shift < 0: sign="-"
   else: sign="+" 

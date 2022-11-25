@@ -17,7 +17,6 @@ covidtestcuts = fup_params["covidtestcuts"]
 n_any = int(fup_params["n_any"])
 n_pos = int(fup_params["n_pos"])
 
-
 def generate_covidtests_variables(index_date):
   covidtests_variables = dict(
 
@@ -41,20 +40,18 @@ def generate_covidtests_variables(index_date):
     **covidtest_returning_X(
         name="anytest",
         index_date=index_date,
-        shift=covidtestcuts[1],
+        shift=int(covidtestcuts[0]),
         n=n_any,
         test_result="any",
-        restrict_to_earliest_specimen_date=False,
         returning="date",
     ),
     ## whether tests were symptomatic
     **covidtest_returning_X(
         name="anytest",
         index_date=index_date,
-        shift=covidtestcuts[1],
+        shift=int(covidtestcuts[0]),
         n=n_any,
         test_result="any",
-        restrict_to_earliest_specimen_date=False,
         returning="symptomatic",
         return_expectations = {
             "incidence" : 1,
@@ -66,10 +63,9 @@ def generate_covidtests_variables(index_date):
     **covidtest_returning_X(
         name="postest",
         index_date=index_date,
-        shift=covidtestcuts[1],
+        shift=int(covidtestcuts[0]),
         n=n_pos,
-        test_result="any",
-        restrict_to_earliest_specimen_date=False,
+        test_result="positive",
         returning="date",
     ),
 

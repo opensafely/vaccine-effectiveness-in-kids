@@ -21,13 +21,6 @@ library('glue')
 ## import local functions and parameters ---
 
 source(here("analysis", "design.R"))
-covidtestcuts <-fup_params$covidtestcuts
-prebaselineperiods <-fup_params$prebaselineperiods
-postbaselinedays<-fup_params$postbaselinedays
-postbaselineperiods<-fup_params$postbaselineperiods
-baselinedays<-fup_params$baselinedays
-n_any<-fup_params$n_any
-n_pos<-fup_params$n_pos
 
 source(here("lib", "functions", "utility.R"))
 source(here("lib", "functions", "survival.R"))
@@ -50,7 +43,6 @@ fs::dir_create(file.path(outdir, "extract"))
 fs::dir_create(file.path(outdir, "process"))
 fs::dir_create(file.path(outdir, "checks"))
 
-end_date<-study_dates[[cohort]][[glue("end_date{vaxn}")]]
 # import data ----
 
 studydef_path <- file.path(outdir, "extract", "input_covidtests_{arm}.feather")
@@ -236,7 +228,7 @@ data_split <- local({
       censor_date = pmin(
         dereg_date,
         death_date,
-        end_date,
+        study_dates$testend_date,
         trial_date - 1 + maxfup,
         controlistreated_date - 1,
         na.rm = TRUE
