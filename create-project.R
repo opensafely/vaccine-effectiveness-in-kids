@@ -594,12 +594,16 @@ actions_list <- splice(
     needs = namelesslst(
       glue("table1_over12_1"),
       glue("combine_over12_1"),
+      glue("summarise_covidtests_over12_1"),
       glue("table1_under12_1"),
       glue("combine_under12_1"),
+      glue("summarise_covidtests_under12_1"),
       glue("table1_over12_2"),
       glue("combine_over12_2"),
+      glue("summarise_covidtests_over12_2"),
       glue("table1_under12_2"),
       glue("combine_under12_2"),
+      glue("summarise_covidtests_under12_2"),
     ),
     moderately_sensitive = lst(
       txt = glue("output/meta-release/*.txt"),

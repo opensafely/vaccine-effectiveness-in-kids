@@ -43,6 +43,10 @@ for (cohort in c("over12", "under12")) {
     ## event counts ---
 
     fs::file_copy(fs::path(input_dir, "testcounts_rounded.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_testcounts_rounded.csv")), overwrite = TRUE)
+
+    ## covidtests ---
+    fs::file_copy(ghere("output", cohort, "vax{vaxn}", "covidtests", "summary", "all", "covid_test_rates.csv"),, fs::path(output_dir, glue("{cohort}_{vaxn}_covid_test_rates.csv")), overwrite = TRUE)
+
   }
 }
 
