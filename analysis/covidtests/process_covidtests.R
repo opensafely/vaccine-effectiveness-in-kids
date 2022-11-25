@@ -228,7 +228,7 @@ data_split <- local({
       censor_date = pmin(
         dereg_date,
         death_date,
-        study_dates$testend_date,
+#        study_dates$testend_date,
         trial_date - 1 + maxfup,
         controlistreated_date - 1,
         na.rm = TRUE

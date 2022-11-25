@@ -174,7 +174,7 @@ fup_params <- lst(
   # length of baseline period
   baselinedays = 14,
   # length of follow-up period
-  postbaselinedays = 14,
+  postbaselinedays = 28,
   # number of follow-up periods
   postbaselineperiods = 9,
   # where to split follow-up time after recruitment
