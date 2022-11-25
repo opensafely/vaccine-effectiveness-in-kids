@@ -1,11 +1,11 @@
 {
   "baselinedays": 14,
-  "postbaselinedays": 28,
-  "postbaselineperiods": 6,
-  "postbaselinecuts": [0, 14, 42, 70, 98, 126, 154, 182],
-  "maxfup": 182,
+  "postbaselinedays": 14,
+  "postbaselineperiods": 9,
+  "postbaselinecuts": [0, 14, 28, 42, 56, 70, 84, 98, 112, 126, 140],
+  "maxfup": 140,
   "prebaselineperiods": 3,
+  "covidtestcuts": [-42, -28, -14, 0, 14, 28, 42, 56, 70, 84, 98, 112, 126, 140],
   "n_any": 10,
-  "n_pos": 5,
-  "covidtestcuts": [-84, -56, -28, 0, 14, 42, 70, 98, 126, 154, 182]
+  "n_pos": 5
 }

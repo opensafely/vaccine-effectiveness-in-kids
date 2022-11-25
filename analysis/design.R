@@ -17,7 +17,7 @@ fs::dir_create(here("lib", "design"))
 threshold <- 6
 
 # number of matching rounds to perform
-n_matching_rounds <- 2
+n_matching_rounds <- 6
 
 
 # define key dates ----
@@ -38,7 +38,8 @@ study_dates <- lst(
     start_date2 = "2022-06-27", # 12 weeks after the start of vaccine eligibility for non-high-risk 5-11 year olds monday 4 APril 2022, child pfizer dose licensed
     end_date2 = "2022-09-26", # end of recruitment (14 weeks later)
     followupend_date2 = "2022-10-10", # end of follow-up
-  )
+  ),
+  testend_date = "2022-03-31", # last day of public testing in England
 )
 
 extract_increment <- 14
@@ -68,24 +69,6 @@ study_params <- lst(
   )
 )
 
-# write to json so that both R and python (study defs) can easily pick up
-jsonlite::write_json(study_params, path = here("lib", "design", "study-params.json"), auto_unbox = TRUE, pretty = TRUE)
-
-fup_params <- lst(
-  "baselinedays" = 14,
-  "postbaselinedays" = 28,
-  "postbaselineperiods" = 6,
-  "postbaselinecuts" = c(0, 14, 42, 70, 98, 126, 154, 182),
-  "maxfup" = 182,
-  "prebaselineperiods" = 3,
-  "n_any" = 10,
-  "n_pos" = 5,
-  "covidtestcuts" = c(-84, -56, -28, 0, 14, 42, 70, 98, 126, 154, 182)
-)
-
-
-
-jsonlite::write_json(fup_params, path = here("lib", "design", "fup-params.json"), auto_unbox = TRUE, pretty = TRUE)
 
 # define outcomes ----
 
@@ -185,4 +168,34 @@ caliper_variables <- lst(
 )
 )
 matching_variables <- c(exact_variables, names(caliper_variables))
+
+
+fup_params <- lst(
+  # length of baseline period
+  baselinedays = 14,
+  # length of follow-up period
+  postbaselinedays = 14,
+  # number of follow-up periods
+  postbaselineperiods = 9,
+  # where to split follow-up time after recruitment
+  postbaselinecuts = c(0, baselinedays, baselinedays + (1:postbaselineperiods)*postbaselinedays),
+  # maximum follow-up
+  maxfup = max(postbaselinecuts), 
+  # the following params are for covidtests only
+  # number of prebaseline periods to summarise test behaviour
+  prebaselineperiods = 3,
+  covidtestcuts = c(seq(-prebaselineperiods*postbaselinedays, -postbaselinedays, postbaselinedays), postbaselinecuts),
+  # number of recurring events for the covidtests study definition
+  n_any = 10,
+  n_pos = 5
+)
+
+jsonlite::write_json(fup_params, path = here("lib", "design", "fup-params.json"), auto_unbox = TRUE, pretty = TRUE)
+
+
+# split into named objects until scripts updated
+for(i in 1:length(fup_params)){
+  assign(names(fup_params)[i],fup_params[[i]])
+} 
+
 
