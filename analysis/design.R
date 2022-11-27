@@ -125,13 +125,36 @@ recoder <-
   )
 
 
-## follow-up time ----
+fup_params <- lst(
+  # length of baseline period
+  baselinedays = 14,
+  # length of follow-up period
+  postbaselinedays = 14,
+  # number of follow-up periods
+  postbaselineperiods = 9,
+  # where to split follow-up time after recruitment
+  postbaselinecuts = c(0, baselinedays, baselinedays + (1:postbaselineperiods)*postbaselinedays),
+  # maximum follow-up
+  maxfup = max(postbaselinecuts), 
+  # the following params are for covidtests only
+  # number of prebaseline periods to summarise test behaviour
+  prebaselineperiods = 3,
+  covidtestcuts = c(seq(-prebaselineperiods*postbaselinedays, -postbaselinedays, postbaselinedays), postbaselinecuts),
+  # number of recurring events for the covidtests study definition
+  n_any = 10,
+  n_pos = 5
+)
 
-# where to split follow-up time after recruitment
-postbaselinecuts <- seq(0, 20 * 7, 14)
+jsonlite::write_json(fup_params, path = here("lib", "design", "fup-params.json"), auto_unbox = TRUE, pretty = TRUE)
 
-# maximum follow-up
-maxfup <- max(postbaselinecuts)
+
+# split into named objects until scripts updated
+for(i in 1:length(fup_params)){
+  assign(names(fup_params)[i],fup_params[[i]])
+} 
+
+
+
 
 # matching variables ----
 
@@ -168,34 +191,4 @@ caliper_variables <- lst(
 )
 )
 matching_variables <- c(exact_variables, names(caliper_variables))
-
-
-fup_params <- lst(
-  # length of baseline period
-  baselinedays = 14,
-  # length of follow-up period
-  postbaselinedays = 28,
-  # number of follow-up periods
-  postbaselineperiods = 9,
-  # where to split follow-up time after recruitment
-  postbaselinecuts = c(0, baselinedays, baselinedays + (1:postbaselineperiods)*postbaselinedays),
-  # maximum follow-up
-  maxfup = max(postbaselinecuts), 
-  # the following params are for covidtests only
-  # number of prebaseline periods to summarise test behaviour
-  prebaselineperiods = 3,
-  covidtestcuts = c(seq(-prebaselineperiods*postbaselinedays, -postbaselinedays, postbaselinedays), postbaselinecuts),
-  # number of recurring events for the covidtests study definition
-  n_any = 10,
-  n_pos = 5
-)
-
-jsonlite::write_json(fup_params, path = here("lib", "design", "fup-params.json"), auto_unbox = TRUE, pretty = TRUE)
-
-
-# split into named objects until scripts updated
-for(i in 1:length(fup_params)){
-  assign(names(fup_params)[i],fup_params[[i]])
-} 
-
 
