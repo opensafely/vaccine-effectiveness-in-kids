@@ -50,18 +50,18 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("")) {
     mutate(all="all") %>%
     group_by(treated, anytest_cut, !!subgroup_sym) %>%
     summarise(
-      n = roundmid_any(n(), threshold),
-      total_persondays = sum(persondays),
-      anytest_rate = sum(sum_anytest) / total_persondays,
-      symptomatic_rate = sum(sum_symptomatic) / total_persondays,
-      postest_rate = sum(sum_postest) / total_persondays,
-      firstpostest_rate = sum(sum_firstpostest) / total_persondays,
-      lftonly_rate = sum(sum_lftonly) / total_persondays,
-      pcronly_rate = sum(sum_pcronly) / total_persondays,
-      both_rate = sum(sum_both) / total_persondays,
+      n =  roundmid_any(n(), threshold),
+      total_persondays = case_when(n>6 ~sum(persondays)),
+      anytest_rate = case_when(n>6 ~sum(sum_anytest) / total_persondays),
+      symptomatic_rate =case_when(n>6 ~ sum(sum_symptomatic) / total_persondays),
+      postest_rate =case_when(n>6 ~ sum(sum_postest) / total_persondays),
+      firstpostest_rate = case_when(n>6 ~sum(sum_firstpostest) / total_persondays),
+      lftonly_rate = case_when(n>6 ~sum(sum_lftonly) / total_persondays),
+      pcronly_rate = case_when(n>6 ~sum(sum_pcronly) / total_persondays),
+      both_rate =case_when(n>6 ~ sum(sum_both) / total_persondays),
       .groups = "keep"
-    )
-
+    ) %>%
+    mutate(n =case_when(n>6 ~ n ))
   write_csv(data_rates, fs::path(output_dir, "covidtest_rates.csv"))
 
 }
@@ -93,7 +93,7 @@ data_rates %>%
   ) +
   theme_bw() +
   theme(
-    axis.text.x = element_text(angle = 90),
+    axis.text.x = element_text(angle = 90,vjust=0.5),
     legend.position = c(0.9, 0.15)
     )
 ggsave(
