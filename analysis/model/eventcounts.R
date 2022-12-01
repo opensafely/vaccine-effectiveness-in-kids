@@ -81,10 +81,10 @@ data_matched <-
       # vax2_date-1, # -1 because we assume vax occurs at the start of the day
       death_date,
       dates[[c(glue("followupend_date{vaxn}"))]],
-      trial_date + maxfup,
+      trial_date + maxfup - 1,
       na.rm = TRUE
     ),
-    censor_date = trial_date + maxfup # use this to overwrite above definition until issue with `patients.minimum_of()` and date arithmetic is fixed
+    censor_date = trial_date + maxfup - 1 # use this to overwrite above definition until issue with `patients.minimum_of()` and date arithmetic is fixed
   )
 
 # report number of tests ----

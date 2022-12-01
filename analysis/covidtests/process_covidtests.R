@@ -235,7 +235,7 @@ data_split <- local({
       ),
       tte_censor = as.integer(censor_date-(trial_date-1)),
       ind_outcome = 0
-      # censor_date = trial_date + maxfup # use this to overwrite above definition until issue with `patients.minimum_of()` and date arithmetic is fixed
+      # censor_date = trial_date + maxfup -1 # use this to overwrite above definition until issue with `patients.minimum_of()` and date arithmetic is fixed
     ) %>%
     select(patient_id, trial_date, treated, censor_date, tte_censor) %>%
     group_by(patient_id, trial_date) %>%

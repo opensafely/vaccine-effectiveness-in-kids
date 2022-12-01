@@ -92,7 +92,7 @@ data_matched <-
       # vax2_date-1, # -1 because we assume vax occurs at the start of the day
       death_date,
       dates[[c(glue("followupend_date{vaxn}"))]],
-      trial_date + maxfup,
+      trial_date + maxfup - 1,
       na.rm = TRUE
     ),
     matchcensor_date = pmin(censor_date, controlistreated_date - 1, na.rm = TRUE), # new censor date based on whether control gets treated or not
