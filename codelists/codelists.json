@@ -383,6 +383,12 @@
       "url": "https://codelists.opensafely.org/codelist/primis-covid19-vacc-uptake/hhld_imdef/3245a12c/",
       "downloaded_at": "2022-07-11 14:37:20.792275Z",
       "sha": "a2c6445f6de7fb8670cd73e0c641e6e00f6b808b"
+    },
+    "opensafely-fractures.csv": {
+      "id": "opensafely/fractures/086e92fc",
+      "url": "https://codelists.opensafely.org/codelist/opensafely/fractures/086e92fc/",
+      "downloaded_at": "2022-12-15 10:04:26.596425Z",
+      "sha": "0c73d4faea48e0e5cc410cc8a4373e287196dcdc"
     }
   }
 }
