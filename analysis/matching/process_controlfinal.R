@@ -201,6 +201,7 @@ data_matched <-
     vax2_date = covid_vax_any_2_date,
     #vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]]),
     time_since_vax1 = as.integer(trial_date - vax1_date),
+    fracture_date = pmin(fractureemergency_date, fractureadmitted_date, fracturedeath_date, na.rm=TRUE),
   )
 
 

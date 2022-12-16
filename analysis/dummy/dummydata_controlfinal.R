@@ -104,6 +104,9 @@ dummydata <- data_matchedcontrols %>%
     coviddeath_day = missing(death_day, 0.7),
     test_count = rpois(n = n(), 1),
     postest_count = rpois(n = n(), 0.1),
+    fractureemergency_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.9),
+    fractureadmitted_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.9),
+    fracturedeath_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.9)
   )
 
 

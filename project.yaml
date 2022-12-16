@@ -475,6 +475,15 @@ actions:
         rds: output/over12/vax1/models/km/all/noncoviddeath/*.rds
         png: output/over12/vax1/models/km/all/noncoviddeath/*.png
 
+  km_over12_1_all_fracture:
+    run: r:latest analysis/model/km.R over12 1 all fracture
+    needs:
+    - process_controlfinal_over12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax1/models/km/all/fracture/*.rds
+        png: output/over12/vax1/models/km/all/fracture/*.png
+
   km_over12_1_prior_covid_infection_postest:
     run: r:latest analysis/model/km.R over12 1 prior_covid_infection postest
     needs:
@@ -538,6 +547,15 @@ actions:
         rds: output/over12/vax1/models/km/prior_covid_infection/noncoviddeath/*.rds
         png: output/over12/vax1/models/km/prior_covid_infection/noncoviddeath/*.png
 
+  km_over12_1_prior_covid_infection_fracture:
+    run: r:latest analysis/model/km.R over12 1 prior_covid_infection fracture
+    needs:
+    - process_controlfinal_over12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax1/models/km/prior_covid_infection/fracture/*.rds
+        png: output/over12/vax1/models/km/prior_covid_infection/fracture/*.png
+
   eventcounts_over12_1_all:
     run: r:latest analysis/model/eventcounts.R over12 1 all
     needs:
@@ -564,6 +582,7 @@ actions:
     - km_over12_1_all_covidcritcare
     - km_over12_1_all_coviddeath
     - km_over12_1_all_noncoviddeath
+    - km_over12_1_all_fracture
     - km_over12_1_prior_covid_infection_postest
     - km_over12_1_prior_covid_infection_emergency
     - km_over12_1_prior_covid_infection_covidemergency
@@ -571,6 +590,7 @@ actions:
     - km_over12_1_prior_covid_infection_covidcritcare
     - km_over12_1_prior_covid_infection_coviddeath
     - km_over12_1_prior_covid_infection_noncoviddeath
+    - km_over12_1_prior_covid_infection_fracture
     - eventcounts_over12_1_all
     - eventcounts_over12_1_prior_covid_infection
     outputs:
@@ -1064,6 +1084,15 @@ actions:
         rds: output/over12/vax2/models/km/all/noncoviddeath/*.rds
         png: output/over12/vax2/models/km/all/noncoviddeath/*.png
 
+  km_over12_2_all_fracture:
+    run: r:latest analysis/model/km.R over12 2 all fracture
+    needs:
+    - process_controlfinal_over12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax2/models/km/all/fracture/*.rds
+        png: output/over12/vax2/models/km/all/fracture/*.png
+
   km_over12_2_prior_covid_infection_postest:
     run: r:latest analysis/model/km.R over12 2 prior_covid_infection postest
     needs:
@@ -1127,6 +1156,15 @@ actions:
         rds: output/over12/vax2/models/km/prior_covid_infection/noncoviddeath/*.rds
         png: output/over12/vax2/models/km/prior_covid_infection/noncoviddeath/*.png
 
+  km_over12_2_prior_covid_infection_fracture:
+    run: r:latest analysis/model/km.R over12 2 prior_covid_infection fracture
+    needs:
+    - process_controlfinal_over12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax2/models/km/prior_covid_infection/fracture/*.rds
+        png: output/over12/vax2/models/km/prior_covid_infection/fracture/*.png
+
   eventcounts_over12_2_all:
     run: r:latest analysis/model/eventcounts.R over12 2 all
     needs:
@@ -1153,6 +1191,7 @@ actions:
     - km_over12_2_all_covidcritcare
     - km_over12_2_all_coviddeath
     - km_over12_2_all_noncoviddeath
+    - km_over12_2_all_fracture
     - km_over12_2_prior_covid_infection_postest
     - km_over12_2_prior_covid_infection_emergency
     - km_over12_2_prior_covid_infection_covidemergency
@@ -1160,6 +1199,7 @@ actions:
     - km_over12_2_prior_covid_infection_covidcritcare
     - km_over12_2_prior_covid_infection_coviddeath
     - km_over12_2_prior_covid_infection_noncoviddeath
+    - km_over12_2_prior_covid_infection_fracture
     - eventcounts_over12_2_all
     - eventcounts_over12_2_prior_covid_infection
     outputs:
@@ -1659,6 +1699,15 @@ actions:
         rds: output/under12/vax1/models/km/all/noncoviddeath/*.rds
         png: output/under12/vax1/models/km/all/noncoviddeath/*.png
 
+  km_under12_1_all_fracture:
+    run: r:latest analysis/model/km.R under12 1 all fracture
+    needs:
+    - process_controlfinal_under12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax1/models/km/all/fracture/*.rds
+        png: output/under12/vax1/models/km/all/fracture/*.png
+
   km_under12_1_prior_covid_infection_postest:
     run: r:latest analysis/model/km.R under12 1 prior_covid_infection postest
     needs:
@@ -1722,6 +1771,15 @@ actions:
         rds: output/under12/vax1/models/km/prior_covid_infection/noncoviddeath/*.rds
         png: output/under12/vax1/models/km/prior_covid_infection/noncoviddeath/*.png
 
+  km_under12_1_prior_covid_infection_fracture:
+    run: r:latest analysis/model/km.R under12 1 prior_covid_infection fracture
+    needs:
+    - process_controlfinal_under12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax1/models/km/prior_covid_infection/fracture/*.rds
+        png: output/under12/vax1/models/km/prior_covid_infection/fracture/*.png
+
   eventcounts_under12_1_all:
     run: r:latest analysis/model/eventcounts.R under12 1 all
     needs:
@@ -1748,6 +1806,7 @@ actions:
     - km_under12_1_all_covidcritcare
     - km_under12_1_all_coviddeath
     - km_under12_1_all_noncoviddeath
+    - km_under12_1_all_fracture
     - km_under12_1_prior_covid_infection_postest
     - km_under12_1_prior_covid_infection_emergency
     - km_under12_1_prior_covid_infection_covidemergency
@@ -1755,6 +1814,7 @@ actions:
     - km_under12_1_prior_covid_infection_covidcritcare
     - km_under12_1_prior_covid_infection_coviddeath
     - km_under12_1_prior_covid_infection_noncoviddeath
+    - km_under12_1_prior_covid_infection_fracture
     - eventcounts_under12_1_all
     - eventcounts_under12_1_prior_covid_infection
     outputs:
@@ -2249,6 +2309,15 @@ actions:
         rds: output/under12/vax2/models/km/all/noncoviddeath/*.rds
         png: output/under12/vax2/models/km/all/noncoviddeath/*.png
 
+  km_under12_2_all_fracture:
+    run: r:latest analysis/model/km.R under12 2 all fracture
+    needs:
+    - process_controlfinal_under12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax2/models/km/all/fracture/*.rds
+        png: output/under12/vax2/models/km/all/fracture/*.png
+
   km_under12_2_prior_covid_infection_postest:
     run: r:latest analysis/model/km.R under12 2 prior_covid_infection postest
     needs:
@@ -2312,6 +2381,15 @@ actions:
         rds: output/under12/vax2/models/km/prior_covid_infection/noncoviddeath/*.rds
         png: output/under12/vax2/models/km/prior_covid_infection/noncoviddeath/*.png
 
+  km_under12_2_prior_covid_infection_fracture:
+    run: r:latest analysis/model/km.R under12 2 prior_covid_infection fracture
+    needs:
+    - process_controlfinal_under12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax2/models/km/prior_covid_infection/fracture/*.rds
+        png: output/under12/vax2/models/km/prior_covid_infection/fracture/*.png
+
   eventcounts_under12_2_all:
     run: r:latest analysis/model/eventcounts.R under12 2 all
     needs:
@@ -2338,6 +2416,7 @@ actions:
     - km_under12_2_all_covidcritcare
     - km_under12_2_all_coviddeath
     - km_under12_2_all_noncoviddeath
+    - km_under12_2_all_fracture
     - km_under12_2_prior_covid_infection_postest
     - km_under12_2_prior_covid_infection_emergency
     - km_under12_2_prior_covid_infection_covidemergency
@@ -2345,6 +2424,7 @@ actions:
     - km_under12_2_prior_covid_infection_covidcritcare
     - km_under12_2_prior_covid_infection_coviddeath
     - km_under12_2_prior_covid_infection_noncoviddeath
+    - km_under12_2_prior_covid_infection_fracture
     - eventcounts_under12_2_all
     - eventcounts_under12_2_prior_covid_infection
     outputs:

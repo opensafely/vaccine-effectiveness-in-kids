@@ -281,22 +281,35 @@ for(cohort in c("over12", "under12")){
         missing_rate = ~0.7
       ),
       emergency_day = bn_node(
-        ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
         missing_rate = ~0.8
       ),
       emergencyhosp_day = bn_node(
-        ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
         missing_rate = ~0.85
       ),
       covidemergency_day = bn_node(
-        ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
         missing_rate = ~0.8
       ),
       covidemergencyhosp_day = bn_node(
-        ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
         missing_rate = ~0.85
       ),
-    
+      # fracture negative control outcomes
+      fractureemergency_day = bn_node(
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
+        missing_rate = ~0.8
+      ),
+      fractureadmitted_day = bn_node(
+        ~ as.integer(runif(n = ..n, vax_day,vax_day + 100)),
+        missing_rate = ~0.8
+      ),
+      fracturedeath_day = bn_node(
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
+        missing_rate = ~0.8
+      ),
+      
       # respemergency_day = bn_node(
       #   ~as.integer(runif(n=..n, vax_day, vax_day+100)),
       #   missing_rate = ~0.95
