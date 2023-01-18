@@ -349,6 +349,8 @@ data_anytest_sum <- data_anytest_long %>%
     .groups="keep"
     ) %>%
   ungroup() %>%
+  full_join(data_split %>%
+              distinct(patient_id, trial_date, treated)) %>%
   complete(
     nesting(patient_id, trial_date, treated), anytest_cut,
     fill=list(
@@ -363,6 +365,7 @@ data_anytest_sum <- data_anytest_long %>%
       sum_both=0
     )
   ) %>%
+  drop_na(anytest_cut) %>%
   # join the total number of tests per period (extracted with returning="number_of_matches_in_period" in study definition)
   left_join(
     data_extract %>%
