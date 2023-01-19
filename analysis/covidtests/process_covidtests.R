@@ -406,7 +406,7 @@ data_anytest_sum <- data_anytest_long %>%
       as.integer(postbaselinedays),
       persondays
     ))) %>%
-  arrange(patient_id, treated, treated_date, anytest_cut)
+  arrange(patient_id, treated, trial_date, anytest_cut)
 
 
 
