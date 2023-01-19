@@ -347,13 +347,14 @@ data_anytest_sum <- data_anytest_long %>%
     sum_pcronly=sum(firstpostest_category=="PCR_Only" & !censor, na.rm = TRUE),
     sum_both=sum(firstpostest_category=="LFT_WithPCR" & !censor, na.rm = TRUE),
     .groups="keep"
-    ) %>%
+  ) %>%
   ungroup() %>%
-  full_join(data_split %>%
-              distinct(patient_id, trial_date, treated)) %>%
-  complete(
-    nesting(patient_id, trial_date, treated), anytest_cut,
-    fill=list(
+  full_join(
+    expand(data_split, nesting(patient_id, trial_date, treated), fup_cut),
+    by = c("patient_id", "trial_date", "treated", "anytest_cut"= "fup_cut")
+  ) %>%
+  replace_na(
+    replace=list(
       sum_anytest_uncensored=0,
       sum_postest_uncensored=0,
       sum_anytest=0,
@@ -365,7 +366,6 @@ data_anytest_sum <- data_anytest_long %>%
       sum_both=0
     )
   ) %>%
-  drop_na(anytest_cut) %>%
   # join the total number of tests per period (extracted with returning="number_of_matches_in_period" in study definition)
   left_join(
     data_extract %>%
@@ -405,7 +405,9 @@ data_anytest_sum <- data_anytest_long %>%
       period=="prebaseline",
       as.integer(postbaselinedays),
       persondays
-    )))
+    ))) %>%
+  arrange(patient_id, treated, treated_date, anytest_cut)
+
 
 
 # checks ----
@@ -519,3 +521,4 @@ data_anytest_sum %>%
   select(-ends_with("uncensored")) %>%
   select(patient_id, trial_date, treated, anytest_cut, persondays, starts_with("sum_")) %>%
   write_rds(file.path(outdir, "process", "data_anytest_sum.rds"), compress = "gz")
+
