@@ -43,8 +43,8 @@ This study uses a sequential trials approach, where on each day of the study ent
     -   [`eventcounts.R`](analysis/model/eventcounts.R) reports the event counts within each covariate level.
     -   [`combine.R`](analysis/model/combine.R) combines km estimates from different outcomes. The script uses the `cohort`, `outcome`, and `subgroup` arguments as above 
 - covidtests
-    - [process_covidtests.R](analysis/covidtests/process_covidtests.R) reads in testing data (generates dummy data if not running on real data), processes testing data, performs sense checks and plots the distribution of the testing behaviour variables. The script uses the `cohort`, `vaxn` arguments
-    - [summarise_covidtests.R](analysis/covidtests/summarise_covidtests.R) calculates and plots the covid testing rate for both study arms. The script uses the `cohort`, `vaxn` arguments.
+    - [`process_covidtests.R`](analysis/covidtests/process_covidtests.R) reads in testing data (generates dummy data if not running on real data), processes testing data, performs sense checks and plots the distribution of the testing behaviour variables. The script uses the `cohort`, `vaxn` arguments
+    - [`summarise_covidtests.R`](analysis/covidtests/summarise_covidtests.R) calculates and plots the covid testing rate for both study arms. The script uses the `cohort`, `vaxn` arguments.
 - moving and releasing files
     - [`release_objects.R`](analysis/release_objects.R) gathers level 4 files ("moderately sensitive") and places them in a single directory for easy review and release
 
