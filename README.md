@@ -15,17 +15,14 @@ This study uses a sequential trials approach, where on each day of the study ent
     -   The [`lib/`](./lib) directory contains preliminary (pre data extract) scripts, useful functions, and dummy data.
     -   The remaining folders mostly contain the R scripts that process, describe, and analyse the extracted database data.
 
--   Non-disclosive model outputs, including tables, figures, etc, are on the [`OpenSAFELY Jobs`](https://jobs.opensafely.org/university-of-bristol/investigating-the-effectiveness-of-the-covid-19-vaccination-programme-in-the-uk/vaccine-effectiveness-in-children/releases/) site.
+-   Non-disclosive model outputs, including tables, figures, etc, will be made available on the [`OpenSAFELY Jobs`](https://jobs.opensafely.org/university-of-bristol/investigating-the-effectiveness-of-the-covid-19-vaccination-programme-in-the-uk/vaccine-effectiveness-in-children/releases/) site.
 
 -   The [`project.yaml`](./project.yaml) defines run-order and dependencies for all the analysis scripts. **This file should *not* be edited directly**. To make changes to the yaml, edit and run the [`create-project.R`](./create-project.R) script instead.
 
 ## R scripts
--   [`design.R`](analysis/R/design.R) defines some common design elements used throughout the study, such as follow-up dates, model outcomes, and covariates.
--   [`dummydata.R`](analysis/R/dummydata.R) contains the script used to generate dummy data. This is used instead of the usual dummy data specified in the study definition, because it is then possible to impose some more useful structure in the data, such as ensuring nobody has a first dose of both the Pfizer and Astra-Zeneca vaccines. If the study definition is updated, this script must also be updated to ensure variable names and types match.
--   [`data_process.R`](analysis/R/data_process.R) imports the extracted database data (or dummy data), standardises some variables and derives some new ones.
--   [`data_process_long.R`](analysis/data_process_long.R) imports the processed data and creates one-row-per-patient-per-event datasets for the time-varying covariates.
--   [`data_selection.R`](./analysis/data_selection.R) filters out participants who should not be included in the main analysis, and creates a small table used for the inclusion/exclusion flowchart.
--   [`vax_date.R`](./analysis/R/vax_date.R) plots vaccination counts by JCVI group and region.
+-   [`design.R`](analysis/design.R) defines some common design elements used throughout the study, such as follow-up dates, model outcomes, and covariates.
+-   [`dummydata.R`](analysis/dummydata/) contains the scripts used to generate dummy data. This is used instead of the usual dummy data specified in the study definition, because it is then possible to impose some more useful structure in the data, such as ensuring nobody has a first dose of both the Pfizer and another vaccine. If the study definition is updated, this script must also be updated to ensure variable names and types match.
+-   [`process_treated.R`](analysis/treated/process_treated.R), [`process_controlfinal.R`](analysis/matching/process_controlfinal.R), [`process_controlactual.R`](analysis/matching/process_controlactual.R) and [`process_controlpotential.R`](analysis/matching/process_controlpotential.R) import the extracted database data (or dummy data), standardises some variables and derives some new ones.
 -   [`match_seqtrialcox.R`](./analysis/match_seqtrialcox.R) runs the matching algorithm to pair boosted people with unboosted people. It outputs a matched dataset (with unmatched boosts dropped) and other matching diagnostics. The script takes one argument:
     -   `treatment`, either _pfizer_ or _moderna_, indicating the brand of the booster vaccine of interest.
 -   [`merge_seqtrialcox.R`](./analysis/merge_seqtrialcox.R) merges in additional covariate information for each trial arm as at the recruitment date, and summarises Table 1 type cohort characteristics, stratified by treatment arm. The script also uses the `treatment` argument to pick up the matching data from the previous script.
