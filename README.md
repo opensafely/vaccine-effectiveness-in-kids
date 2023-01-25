@@ -15,7 +15,7 @@ This study uses a sequential trials approach, where on each day of the study ent
     -   The [`lib/`](./lib) directory contains preliminary (pre data extract) scripts, useful functions, and dummy data.
     -   The remaining folders mostly contain the R scripts that process, describe, and analyse the extracted database data.
 
--   Non-disclosive model outputs, including tables, figures, etc, are in the [`released_outputs/`](./released_outputs) directory.
+-   Non-disclosive model outputs, including tables, figures, etc, are on the [`OpenSAFELY Jobs`](https://jobs.opensafely.org/university-of-bristol/investigating-the-effectiveness-of-the-covid-19-vaccination-programme-in-the-uk/vaccine-effectiveness-in-children/releases/) site.
 
 -   The [`project.yaml`](./project.yaml) defines run-order and dependencies for all the analysis scripts. **This file should *not* be edited directly**. To make changes to the yaml, edit and run the [`create-project.R`](./create-project.R) script instead.
 
