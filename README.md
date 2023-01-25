@@ -26,9 +26,9 @@ This study uses a sequential trials approach, where on each day of the study ent
 -   The [`project.yaml`](./project.yaml) defines run-order and dependencies for all the analysis scripts. **This file should *not* be edited directly**. To make changes to the yaml, edit and run the [`create-project.R`](./create-project.R) script instead.
 
 ## R scripts
-- metadata
+- metadata and dummy data
     -   [`design.R`](analysis/design.R) defines some common design elements used throughout the study, such as follow-up dates, model outcomes, and covariates.
-    -   [`dummydata.R`](analysis/dummydata/) contains the scripts used to generate dummy data. This is used instead of the usual dummy data specified in the study definition, because it is then possible to impose some more useful structure in the data, such as ensuring nobody has a first dose of both the Pfizer and another vaccine. If the study definition is updated, this script must also be updated to ensure variable names and types match.
+    -   [`/dummy`](analysis/dummy/) contains the scripts `dummydata.R` and `dummydata_controlfinal.R` used to generate dummy data. This is used instead of the usual dummy data specified in the study definition, because it is then possible to impose some more useful structure in the data, such as ensuring nobody has a first dose of both the Pfizer and another vaccine. If the study definition is updated, this script must also be updated to ensure variable names and types match.
 - extracting and matching
     -   [`process_treated.R`](analysis/treated/process_treated.R), [`process_controlfinal.R`](analysis/matching/process_controlfinal.R), [`process_controlactual.R`](analysis/matching/process_controlactual.R) and [`process_controlpotential.R`](analysis/matching/process_controlpotential.R) import the extracted database data (or dummy data), standardises some variables and derives some new ones.
     -   [`match_potential.R`](./analysis/matching/match_potential.R) runs the matching algorithm to pair boosted people with unboosted people. It outputs a matched dataset (with unmatched boosts dropped) and other matching diagnostics. The script takes three arguments:
