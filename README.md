@@ -1,12 +1,19 @@
 # Vaccine effectiveness in children
-This study estimated the effectiveness of a first dose vaccination of the BNT162b2 vaccine, amongst children aged 5-15 who were not previously eligible for vaccination due to clinical vulnerability. 
+[View on OpenSAFELY](https://jobs.opensafely.org/university-of-bristol/investigating-the-effectiveness-of-the-covid-19-vaccination-programme-in-the-uk/vaccine-effectiveness-in-children/)
 
-This study uses a sequential trials approach, where on each day of the study entry period, vaccinated individuals are closely matched with unvaccinated individuals on key characteristics without replacement. The control child is randomly sampled from among eligible children who have not received their first dose on that day and have not been selected as controls on a previous day. Controls are matched using factors defined below.
+Details of the purpose and any published outputs from this project can be found at the link above.
 
+The contents of this repository MUST NOT be considered an accurate or valid representation of the study or its purpose. This repository may reflect an incomplete or incorrect analysis with no further ongoing work. The content has ONLY been made public to support the OpenSAFELY open science and transparency principles and to support the sharing of re-usable code for other subsequent users. No clinical, policy or safety conclusions must be drawn from the contents of this repository.
+
+About the OpenSAFELY framework
+The OpenSAFELY framework is a Trusted Research Environment (TRE) for electronic health records research in the NHS, with a focus on public accountability and research quality.
+
+Read more at OpenSAFELY.org.
+
+Licences
+As standard, research projects have a MIT license.
 
 ## Repository navigation
--   The [protocol is in the OpenSAFELY Google drive](https://docs.google.com/document/d/1XirX2kv4ose9FWblvoxzvm2sNLI7yNJdcFXuuQN-WME/edit#heading=h.w4nicb6ji17m) (restricted access only).
-
 -   If you are interested in how we defined our codelists, look in the [`codelists/`](./codelists/) directory.
 
 -   Analysis scripts are in the [`analysis/`](./analysis) directory.
@@ -47,13 +54,3 @@ This study uses a sequential trials approach, where on each day of the study ent
     - [`summarise_covidtests.R`](analysis/covidtests/summarise_covidtests.R) calculates and plots the covid testing rate for both study arms. The script uses the `cohort`, `vaxn` arguments.
 - moving and releasing files
     - [`release_objects.R`](analysis/release_objects.R) gathers level 4 files ("moderately sensitive") and places them in a single directory for easy review and release
-
-## Manuscript
-Pre-print available on MedRxiv soon.
-
-## About the OpenSAFELY framework
-The OpenSAFELY framework is a secure analytics platform for electronic health records research in the NHS.
-
-Instead of requesting access for slices of patient data and transporting them elsewhere for analysis, the framework supports developing analytics against dummy data, and then running against the real data within the same infrastructure that the data is stored. Read more at [OpenSAFELY.org.](https://opensafely.org/)
-
-Developers and epidemiologists interested in the framework should review the [OpenSAFELY documentation](https://docs.opensafely.org/)
