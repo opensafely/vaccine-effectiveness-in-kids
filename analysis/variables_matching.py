@@ -3,10 +3,13 @@ from codelists import *
 import json
 import codelists
 
+############################################################
+## childhood vax variables
+from variables_childhood_vaccs import childhood_vaccs 
+childhood_vacc_variables = childhood_vaccs()
 
 def generate_matching_variables(baseline_date):
   matching_variables = dict(
-
     sex=patients.sex(
       return_expectations={
         "rate": "universal",
@@ -190,9 +193,99 @@ def generate_matching_variables(baseline_date):
       date_format="YYYY-MM-DD",
       find_last_match_in_period=True,
     ),
-  
-  
-
+    vax_compliant = patients.satisfying(
+        """
+        type_dTaP_IPV
+        AND
+        type_DTaP_IPV_Hib
+        AND
+        type_Pneumococcal
+        AND
+        type_Hib_MenC
+        AND
+        type_MMR
+        AND
+        type_PCV
+        AND
+        type_Td_IPV
+        """,
+      type_dTaP_IPV = patients.satisfying(
+          """
+          Boostrix_IPV
+          OR
+          DTaP_IPV
+          OR
+          dTP_Polio
+          OR
+          Infanrix_IPV
+          OR
+          Repevax
+          """,
+          **childhood_vacc_variables
+    ),
+    type_DTaP_IPV_Hib = patients.satisfying(
+          """
+          dTP_Polio_Hib
+          OR
+          DTaP_IPV_Hib
+          OR
+          dTP_Polio
+          OR
+          Infanix_Quinta_5
+          OR
+          Infanrix_IPV_HIB
+          OR
+          Pediacel
+          """,
+    ),
+    type_Pneumococcal = patients.satisfying(
+      """
+      Pneumococcal
+      """
+    ),
+    type_Hib_MenC = patients.satisfying(
+          """
+          HIB_Meningitis_C
+          OR
+          Menitorix
+          """,
+      ),
+      
+      type_MMR = patients.satisfying(
+          """
+          Measles_Mumps_Rubella
+          OR
+          MMR_II
+          OR
+          MMRvaxPRO
+          OR
+          Priorix
+          """,
+      ),
+      
+      type_PCV = patients.satisfying(
+          """
+          Pneumococcal_polysaccharide_conjugated_vaccine
+          OR
+          Prevenar
+          OR
+          Prevenar_13
+          """,
+      ),
+      
+      type_Td_IPV = patients.satisfying(
+          """
+          DT_Polio
+          OR
+          Td_IPV
+          OR
+          Tetanus_Diphtheria_LD_and_Polio
+          OR
+          Revaxis
+          """,
+          ),
+    ), 
   )
+
   return matching_variables
 
