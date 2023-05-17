@@ -170,6 +170,7 @@ exact_variables <- lst(
     "prior_tests_cat",
     "imd_Q5",
     "vax_compliant",
+    "type_MMR",
     NULL
   ),
   vax2 = c(
@@ -180,6 +181,7 @@ exact_variables <- lst(
     "prior_tests_cat",
     "imd_Q5",
     "vax_compliant",
+    "type_MMR",
     NULL
   )
 )

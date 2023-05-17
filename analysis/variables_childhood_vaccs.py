@@ -9,8 +9,8 @@ def childhood_vaccs():
     def childhood_vacc(
         product_name
     ):
-        name = product_name.replace(" (PCV)","").replace(" + ", "_").replace(" - ", "_").replace("/", "_").replace("-", "_").replace(" ", "_").replace("+", "_")
-
+        ## format product names for consistency
+        name = product_name.replace(" (PCV)","").replace(" + ", "_").replace(" - ", "_").replace("/", "_").replace("-", "_").replace(" ", "_").replace("+", "_").replace("(", "").replace(")", "")
         return {
         name: patients.with_tpp_vaccination_record(
             product_name_matches=product_name,

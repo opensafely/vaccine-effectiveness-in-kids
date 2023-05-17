@@ -193,21 +193,33 @@ def generate_matching_variables(baseline_date):
       date_format="YYYY-MM-DD",
       find_last_match_in_period=True,
     ),
+    type_MMR = patients.satisfying(
+          """
+          Measles_Mumps_Rubella
+          OR
+          MMR_II
+          OR
+          MMRvaxPRO
+          OR
+          Priorix
+          """,
+          **childhood_vacc_variables
+    ),
     vax_compliant = patients.satisfying(
         """
         type_dTaP_IPV
         AND
+        (
+        type_DTaP_IPV_Hib_HepB
+        OR
         type_DTaP_IPV_Hib
-        AND
-        type_Pneumococcal
+        )
         AND
         type_Hib_MenC
         AND
         type_MMR
         AND
         type_PCV
-        AND
-        type_Td_IPV
         """,
       type_dTaP_IPV = patients.satisfying(
           """
@@ -221,15 +233,12 @@ def generate_matching_variables(baseline_date):
           OR
           Repevax
           """,
-          **childhood_vacc_variables
     ),
-    type_DTaP_IPV_Hib = patients.satisfying(
+    type_DTaP_IPV_Hib = patients.satisfying( # Infanix_Quinta_5 refers to Infanrix Quinta 5. The spelling mistake is made on the TPP backend. 
           """
           dTP_Polio_Hib
           OR
           DTaP_IPV_Hib
-          OR
-          dTP_Polio
           OR
           Infanix_Quinta_5
           OR
@@ -238,10 +247,16 @@ def generate_matching_variables(baseline_date):
           Pediacel
           """,
     ),
-    type_Pneumococcal = patients.satisfying(
-      """
-      Pneumococcal
-      """
+    type_DTaP_IPV_Hib_HepB = patients.satisfying( 
+          """
+          DTaP_IPV_Hib_HepB
+          OR
+          Infanrix_Hexa
+          OR
+          V419_PR51
+          OR
+          Vaxelis
+          """,
     ),
     type_Hib_MenC = patients.satisfying(
           """
@@ -250,21 +265,11 @@ def generate_matching_variables(baseline_date):
           Menitorix
           """,
       ),
-      
-      type_MMR = patients.satisfying(
-          """
-          Measles_Mumps_Rubella
-          OR
-          MMR_II
-          OR
-          MMRvaxPRO
-          OR
-          Priorix
-          """,
-      ),
-      
+         
       type_PCV = patients.satisfying(
           """
+          Pneumococcal
+          OR
           Pneumococcal_polysaccharide_conjugated_vaccine
           OR
           Prevenar
@@ -285,6 +290,7 @@ def generate_matching_variables(baseline_date):
           """,
           ),
     ), 
+
   )
 
   return matching_variables
