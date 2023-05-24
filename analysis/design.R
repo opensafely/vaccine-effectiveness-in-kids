@@ -169,7 +169,7 @@ exact_variables <- lst(
     "prior_covid_infection",
     "prior_tests_cat",
     "imd_Q5",
-    "vax_compliant",
+    "vax_compliant_exl_mmr",
     "type_MMR",
     NULL
   ),
@@ -180,7 +180,7 @@ exact_variables <- lst(
     "prior_covid_infection",
     "prior_tests_cat",
     "imd_Q5",
-    "vax_compliant",
+    "vax_compliant_exl_mmr",
     "type_MMR",
     NULL
   )

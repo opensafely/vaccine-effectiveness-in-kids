@@ -205,7 +205,7 @@ def generate_matching_variables(baseline_date):
           """,
           **childhood_vacc_variables
     ),
-    vax_compliant = patients.satisfying(
+    vax_compliant_exl_mmr = patients.satisfying(
         """
         type_dTaP_IPV
         AND
@@ -216,8 +216,6 @@ def generate_matching_variables(baseline_date):
         )
         AND
         type_Hib_MenC
-        AND
-        type_MMR
         AND
         type_PCV
         """,

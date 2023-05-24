@@ -140,7 +140,7 @@ for(cohort in c("over12", "under12")){
         p = c(0.2, 0.2, 0.2, 0.2, 0.19, 0.01)
       )),
 
-      vax_compliant = bn_node(~ rcat(
+      vax_compliant_exl_mmr = bn_node(~ rcat(
         n = ..n,
         levels = c(TRUE,FALSE),
         p = c(0.8, 0.2)
