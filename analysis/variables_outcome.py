@@ -251,7 +251,32 @@ def generate_outcome_variables(baseline_date):
       between = [baseline_date, f"{baseline_date} + 140 days"],
       restrict_to_earliest_specimen_date=False
     ),
-    
+      # fracture outcomes (negative control)
+    # a+e attendance due to fractures
+    fractureemergency_date=patients.attended_emergency_care(
+      returning="date_arrived",
+      date_format="YYYY-MM-DD",
+      on_or_after=baseline_date,
+      with_these_diagnoses = codelists.fractures_snomedECDS,
+      find_first_match_in_period=True,
+    ),
+
+    # admission due to fractures
+    fractureadmitted_date=patients.admitted_to_hospital(
+      returning="date_admitted",
+      on_or_after=baseline_date,
+      with_these_diagnoses=codelists.fractures_icd10,
+      with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],
+      date_format="YYYY-MM-DD",
+      find_first_match_in_period=True,
+    ),
+
+    # death due to fractures
+    fracturedeath_date=patients.with_these_codes_on_death_certificate(
+      codelists.fractures_icd10,
+      returning="date_of_death",
+      date_format="YYYY-MM-DD",
+    ),
   )
 
 
