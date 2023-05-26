@@ -97,6 +97,44 @@ def generate_outcome_variables(baseline_date):
       with_these_diagnoses = codelists.covid_emergency,
       discharged_to = codelists.discharged_to_hospital,
     ),
+
+    # emergency attendance for pericarditis, as per discharge diagnosis
+    pericarditisemergency_date=patients.attended_emergency_care(
+      returning="date_arrived",
+      date_format="YYYY-MM-DD",
+      on_or_after=baseline_date,
+      with_these_diagnoses = ["3238004","373945007"], # 3238004 Pericarditis; 373945007	Pericardial effusion
+      find_first_match_in_period=True,
+    ),
+
+    # admitted for pericarditis
+    pericarditisadmitted_date=patients.admitted_to_hospital(
+      returning="date_admitted",
+      with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],
+      with_these_diagnoses=codelist(["I30"], system="icd10"),
+      on_or_after=baseline_date,
+      date_format="YYYY-MM-DD",
+      find_first_match_in_period=True,
+    ),
+    
+    # emergency attendance for myocarditis, as per discharge diagnosis
+    myocarditisemergency_date=patients.attended_emergency_care(
+      returning="date_arrived",
+      date_format="YYYY-MM-DD",
+      on_or_after=baseline_date,
+      with_these_diagnoses = ["50920009"],# 50920009	Myocarditis
+      find_first_match_in_period=True,
+    ),
+
+    # admitted for myocarditis
+    myocarditisadmitted_date=patients.admitted_to_hospital(
+      returning="date_admitted",
+      with_admission_method=["21", "22", "23", "24", "25", "2A", "2B", "2C", "2D", "28"],
+      with_these_diagnoses=codelist(["I514","I41","I40"], system="icd10"),
+      on_or_after=baseline_date,
+      date_format="YYYY-MM-DD",
+      find_first_match_in_period=True,
+    ),
     
     # emergency attendance for respiratory illness
     # FIXME -- need to define codelist
@@ -240,5 +278,7 @@ def generate_outcome_variables(baseline_date):
       date_format="YYYY-MM-DD",
     ),
   )
+
+
   
   return outcome_variables

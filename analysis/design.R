@@ -99,9 +99,11 @@ events_lookup <- tribble(
   
 
   # safety
-  "emergencyhosp", "emergencyhosp_date", "Admission from A&E",
-  "admitted", "admitted_unplanned_date", "Unplanned hospitalisation",
+  # "emergencyhosp", "emergencyhosp_date", "Admission from A&E",
   "emergency", "emergency_date", "A&E attendance",
+  "admitted_unplanned", "admitted_unplanned_date", "Unplanned hospitalisation",
+  "pericarditis","pericarditis_date","A&E attendance or hospital admittance with pericarditis",
+  "myocarditis","myocarditis_date","A&E attendance or hospital admittance with myocarditis",
 )
 
 
@@ -172,6 +174,8 @@ exact_variables <- lst(
     "prior_covid_infection",
     "prior_tests_cat",
     "imd_Q5",
+    "vax_compliant_exl_mmr",
+    "type_MMR",
     NULL
   ),
   vax2 = c(
@@ -181,6 +185,8 @@ exact_variables <- lst(
     "prior_covid_infection",
     "prior_tests_cat",
     "imd_Q5",
+    "vax_compliant_exl_mmr",
+    "type_MMR",
     NULL
   )
 )

@@ -1,0 +1,29 @@
+﻿VaccinationName,Type
+Boostrix-IPV,dTaP/IPV
+DTaP/IPV,DTaP/IPV
+dTP + Polio,dTaP/IPV
+Infanrix-IPV,DTaP/IPV
+Repevax,dTaP/IPV
+DTaP/IPV/Hib,DTaP/IPV/Hib
+dTP + Polio + Hib,dTaP/IPV/Hib
+Infanix Quinta 5,DTaP/IPV/Hib
+Infanrix-IPV+HIB,DTaP/IPV/Hib
+Pediacel,DTaP/IPV/Hib
+DTaP/IPV/Hib/HepB,DTaP/IPV/Hib/HepB
+Infanrix Hexa,DTaP/IPV/Hib/HepB
+V419 (PR51),DTaP/IPV/Hib/HepB
+Vaxelis,DTaP/IPV/Hib/HepB
+HIB + Meningitis C,Hib/MenC
+Menitorix,Hib/MenC
+Measles/Mumps/Rubella,MMR
+MMR II,MMR
+MMRvaxPRO,MMR
+Priorix,MMR
+Pneumococcal,Pneumococcal
+Pneumococcal polysaccharide conjugated vaccine (PCV),PCV
+Prevenar,PCV
+Prevenar - 13,PCV
+DT + Polio,Td/IPV
+Td/IPV,Td/IPV
+Tetanus Diphtheria LD and Polio,Td/IPV
+Revaxis,Td/IPV

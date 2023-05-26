@@ -3,10 +3,13 @@ from codelists import *
 import json
 import codelists
 
+############################################################
+## childhood vax variables
+from variables_childhood_vaccs import childhood_vaccs 
+childhood_vacc_variables = childhood_vaccs()
 
 def generate_matching_variables(baseline_date):
   matching_variables = dict(
-
     sex=patients.sex(
       return_expectations={
         "rate": "universal",
@@ -190,9 +193,103 @@ def generate_matching_variables(baseline_date):
       date_format="YYYY-MM-DD",
       find_last_match_in_period=True,
     ),
-  
-  
+    type_MMR = patients.satisfying(
+          """
+          Measles_Mumps_Rubella
+          OR
+          MMR_II
+          OR
+          MMRvaxPRO
+          OR
+          Priorix
+          """,
+          **childhood_vacc_variables
+    ),
+    vax_compliant_exl_mmr = patients.satisfying(
+        """
+        type_dTaP_IPV
+        AND
+        (
+        type_DTaP_IPV_Hib_HepB
+        OR
+        type_DTaP_IPV_Hib
+        )
+        AND
+        type_Hib_MenC
+        AND
+        type_PCV
+        """,
+      type_dTaP_IPV = patients.satisfying(
+          """
+          Boostrix_IPV
+          OR
+          DTaP_IPV
+          OR
+          dTP_Polio
+          OR
+          Infanrix_IPV
+          OR
+          Repevax
+          """,
+    ),
+    type_DTaP_IPV_Hib = patients.satisfying( # Infanix_Quinta_5 refers to Infanrix Quinta 5. The spelling mistake is made on the TPP backend. 
+          """
+          dTP_Polio_Hib
+          OR
+          DTaP_IPV_Hib
+          OR
+          Infanix_Quinta_5
+          OR
+          Infanrix_IPV_HIB
+          OR
+          Pediacel
+          """,
+    ),
+    type_DTaP_IPV_Hib_HepB = patients.satisfying( 
+          """
+          DTaP_IPV_Hib_HepB
+          OR
+          Infanrix_Hexa
+          OR
+          V419_PR51
+          OR
+          Vaxelis
+          """,
+    ),
+    type_Hib_MenC = patients.satisfying(
+          """
+          HIB_Meningitis_C
+          OR
+          Menitorix
+          """,
+      ),
+         
+      type_PCV = patients.satisfying(
+          """
+          Pneumococcal
+          OR
+          Pneumococcal_polysaccharide_conjugated_vaccine
+          OR
+          Prevenar
+          OR
+          Prevenar_13
+          """,
+      ),
+      
+      type_Td_IPV = patients.satisfying(
+          """
+          DT_Polio
+          OR
+          Td_IPV
+          OR
+          Tetanus_Diphtheria_LD_and_Polio
+          OR
+          Revaxis
+          """,
+          ),
+    ), 
 
   )
+
   return matching_variables
 

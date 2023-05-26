@@ -188,6 +188,10 @@ data_matched <-
     # earliest covid event after study start
     anycovid_date = pmin(postest_date, covidemergency_date, covidadmitted_date, covidcritcare_date, coviddeath_date, na.rm = TRUE),
     noncoviddeath_date = if_else(!is.na(death_date) & is.na(coviddeath_date), death_date, as.Date(NA_character_)),
+    # earliest myocarditis event after study start
+    myocarditis_date = pmin(myocarditisemergency_date, myocarditisadmitted_date, na.rm = TRUE),
+    # earliest pericarditis event after study start
+    pericarditis_date = pmin(pericarditisemergency_date, pericarditisadmitted_date, na.rm = TRUE),
     cause_of_death = fct_case_when(
       !is.na(coviddeath_date) ~ "covid-related",
       is.na(death_date) ~ "not covid-related",

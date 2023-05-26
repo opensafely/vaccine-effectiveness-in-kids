@@ -139,6 +139,19 @@ for(cohort in c("over12", "under12")){
         levels = c("1 (most deprived)", "2", "3", "4", "5 (least deprived)", "Unknown"),
         p = c(0.2, 0.2, 0.2, 0.2, 0.19, 0.01)
       )),
+
+      vax_compliant_exl_mmr = bn_node(~ rcat(
+        n = ..n,
+        levels = c(TRUE,FALSE),
+        p = c(0.8, 0.2)
+      )),
+
+      type_MMR = bn_node(~ rcat(
+        n = ..n,
+        levels = c(TRUE,FALSE),
+        p = c(0.85, 0.15)
+      )),
+    
     
       # rural_urban = bn_node(
       #   ~rfactor(n=..n, levels = 1:9, p = rep(1/9, 9)),
@@ -282,6 +295,22 @@ for(cohort in c("over12", "under12")){
       ),
       emergency_day = bn_node(
         ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
+        missing_rate = ~0.8
+      ),
+      pericarditisemergency_day = bn_node(
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
+        missing_rate = ~0.8
+      ),
+      pericarditisadmitted_day = bn_node(
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
+        missing_rate = ~0.8
+      ),
+      myocarditisemergency_day = bn_node(
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
+        missing_rate = ~0.8
+      ),
+      myocarditisadmitted_day = bn_node(
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 200)),
         missing_rate = ~0.8
       ),
       emergencyhosp_day = bn_node(
