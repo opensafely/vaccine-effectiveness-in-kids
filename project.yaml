@@ -1305,6 +1305,10 @@ actions:
     - km_over12_2_all_covidcritcare
     - km_over12_2_all_coviddeath
     - km_over12_2_all_noncoviddeath
+    - km_over12_2_all_admitted_unplanned
+    - km_over12_2_all_pericarditis
+    - km_over12_2_all_myocarditis
+    - km_over12_2_all_fracture
     - km_over12_2_prior_covid_infection_postest
     - km_over12_2_prior_covid_infection_emergency
     - km_over12_2_prior_covid_infection_covidemergency
@@ -2646,6 +2650,10 @@ actions:
     - km_under12_2_all_covidcritcare
     - km_under12_2_all_coviddeath
     - km_under12_2_all_noncoviddeath
+    - km_under12_2_all_admitted_unplanned
+    - km_under12_2_all_pericarditis
+    - km_under12_2_all_myocarditis
+    - km_under12_2_all_fracture
     - km_under12_2_prior_covid_infection_postest
     - km_under12_2_prior_covid_infection_emergency
     - km_under12_2_prior_covid_infection_covidemergency
