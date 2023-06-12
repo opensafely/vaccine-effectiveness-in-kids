@@ -51,14 +51,21 @@ if(Sys.getenv("OPENSAFELY_BACKEND") %in% c("")) {
     group_by(treated, anytest_cut, !!subgroup_sym) %>%
     summarise(
       n =  roundmid_any(n(), threshold),
-      total_persondays = case_when(n>6 ~sum(persondays)),
-      anytest_rate = case_when(n>6 ~sum(sum_anytest) / total_persondays),
-      symptomatic_rate =case_when(n>6 ~ sum(sum_symptomatic) / total_persondays),
-      postest_rate =case_when(n>6 ~ sum(sum_postest) / total_persondays),
-      firstpostest_rate = case_when(n>6 ~sum(sum_firstpostest) / total_persondays),
-      lftonly_rate = case_when(n>6 ~sum(sum_lftonly) / total_persondays),
-      pcronly_rate = case_when(n>6 ~sum(sum_pcronly) / total_persondays),
-      both_rate =case_when(n>6 ~ sum(sum_both) / total_persondays),
+      total_persondays = case_when(n>6 ~roundmid_any(sum(persondays), threshold)),
+      sum_anytest = case_when(sum(sum_anytest)>6 ~roundmid_any(sum(sum_anytest), threshold)),
+      anytest_rate = case_when(sum_anytest>6 ~sum_anytest / total_persondays),
+      sum_symptomatic =case_when(sum(sum_symptomatic)>6 ~ roundmid_any(sum(sum_symptomatic), threshold)),
+      symptomatic_rate =case_when(sum_symptomatic>6 ~ sum_symptomatic / total_persondays),
+      sum_postest =case_when(sum(sum_postest)>6 ~ roundmid_any(sum(sum_postest), threshold)),
+      postest_rate =case_when(sum_postest>6 ~ sum_postest / total_persondays),
+      sum_firstpostest = case_when(sum(sum_firstpostest)>6 ~roundmid_any(sum(sum_firstpostest), threshold)),
+      firstpostest_rate = case_when(sum_firstpostest>6 ~sum_firstpostest / total_persondays),
+      sum_lftonly = case_when(sum(sum_lftonly)>6 ~roundmid_any(sum(sum_lftonly), threshold)),
+      lftonly_rate = case_when(sum_lftonly>6 ~sum_lftonly / total_persondays),
+      sum_pcronly = case_when(sum(sum_pcronly)>6 ~roundmid_any(sum(sum_pcronly), threshold)),
+      pcronly_rate = case_when(sum_pcronly>6 ~sum_pcronly / total_persondays),
+      sum_both =case_when(sum(sum_both)>6 ~ roundmid_any(sum(sum_both), threshold)),
+      both_rate =case_when(sum_both>6 ~ sum_both / total_persondays),
       .groups = "keep"
     ) %>%
     mutate(n =case_when(n>6 ~ n ))

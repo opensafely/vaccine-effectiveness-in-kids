@@ -94,9 +94,11 @@ data_counts <- data_matched %>%
   group_by(treated, !!subgroup_sym) %>%
   summarise(
     n = roundmid_any(n(), threshold),
-    persontime = sum(as.numeric(censor_date - (trial_date - 1))),
-    test_rate = sum(test_count) / persontime,
-    postest_rate = sum(postest_count) / persontime,
+    persontime = roundmid_any(sum(as.numeric(censor_date - (trial_date - 1))), threshold),
+    sum_test_count = roundmid_any(sum(test_count), threshold),
+    test_rate = sum_test_count / persontime,
+    sum_postest_count = roundmid_any(sum(postest_count), threshold),
+    postest_rate = sum_postest_count / persontime,
   )
 
 write_rds(data_counts, fs::path(output_dir, "testcounts.rds"))
