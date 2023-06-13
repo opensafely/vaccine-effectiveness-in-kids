@@ -92,11 +92,7 @@ events_lookup <- tribble(
   "coviddeath", "coviddeath_date", "COVID-19 death",
   "noncoviddeath", "noncoviddeath_date", "Non-COVID-19 death",
   "death", "death_date", "Any death",
-  "fracture", "fracture_date", "Fracture",
-  "fractureemergency","fractureemergency_date","Fracture A&E attendance",
-  "fractureadmitted","fractureadmitted_date","Fracture hospitalisation",
-  "fracturedeath","fracturedeath_date","Fracture death",
-  
+
 
   # safety
   # "emergencyhosp", "emergencyhosp_date", "Admission from A&E",
@@ -104,6 +100,10 @@ events_lookup <- tribble(
   "admitted_unplanned", "admitted_unplanned_date", "Unplanned hospitalisation",
   "pericarditis","pericarditis_date","A&E attendance or hospital admittance with pericarditis",
   "myocarditis","myocarditis_date","A&E attendance or hospital admittance with myocarditis",
+  "fracture", "fracture_date", "Fracture",
+  "fractureemergency","fractureemergency_date","Fracture A&E attendance",
+  "fractureadmitted","fractureadmitted_date","Fracture hospitalisation",
+  "fracturedeath","fracturedeath_date","Fracture death",
 )
 
 
