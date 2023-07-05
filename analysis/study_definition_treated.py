@@ -42,8 +42,7 @@ with open("./lib/design/study-params.json") as f:
 minage = study_params[cohort]["minage"]
 maxage = study_params[cohort]["maxage"]
 treatment = study_params[cohort]["treatment"]
-
-
+product_name = study_params[cohort]["product_name"]
 
 ############################################################
 ## inclusion variables
@@ -56,7 +55,7 @@ matching_variables = generate_matching_variables(baseline_date=f"covid_vax_any_{
 ############################################################
 ## outcome variables
 from variables_outcome import generate_outcome_variables 
-outcome_variables = generate_outcome_variables(baseline_date=f"covid_vax_any_{vaxn}_date")
+outcome_variables = generate_outcome_variables(baseline_date=f"covid_vax_any_{vaxn}_date",product_name=product_name)
 ############################################################
 
 

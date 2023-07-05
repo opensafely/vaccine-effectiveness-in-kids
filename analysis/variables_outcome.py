@@ -34,7 +34,7 @@ def vaccination_date_X(name, on_or_after, n, delay=1, product_name_matches=None,
   return variables
 
   
-def generate_outcome_variables(baseline_date):
+def generate_outcome_variables(baseline_date,product_name):
   outcome_variables = dict(
   
     # deregistration date
@@ -276,6 +276,14 @@ def generate_outcome_variables(baseline_date):
       codelists.fractures_icd10,
       returning="date_of_death",
       date_format="YYYY-MM-DD",
+    ),
+
+    **vaccination_date_X(
+      name = "outcome_vax",
+      on_or_after = "1900-01-01",
+      n = 2,
+      delay=1,
+      product_name_matches=product_name
     ),
   )
 

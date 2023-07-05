@@ -59,6 +59,7 @@ study_params <- lst(
     minage = 12,
     maxage = 15,
     treatment = "pfizerA",
+    product_name = "COVID-19 mRNA Vaccine Comirnaty 30micrograms/0.3ml dose conc for susp for inj MDV (Pfizer)"
   ),
 
   # under 12 params
@@ -66,8 +67,12 @@ study_params <- lst(
     minage = 5,
     maxage = 11,
     treatment = "pfizerC",
+    product_name ="COVID-19 mRNA Vaccine Comirnaty Children 5-11yrs 10mcg/0.2ml dose conc for disp for inj MDV (Pfizer)"
   )
 )
+
+# write to json so that both R and python (study defs) can easily pick up
+jsonlite::write_json(study_params, path = here("lib", "design", "study-params.json"), auto_unbox = TRUE, pretty = TRUE)
 
 
 # define outcomes ----
@@ -104,6 +109,7 @@ events_lookup <- tribble(
   "fractureemergency","fractureemergency_date","Fracture A&E attendance",
   "fractureadmitted","fractureadmitted_date","Fracture hospitalisation",
   "fracturedeath","fracturedeath_date","Fracture death",
+  "outcome_vax_2","outcome_vax_2_date","Second vax",
 )
 
 

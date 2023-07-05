@@ -2,11 +2,13 @@
   "over12": {
     "minage": 12,
     "maxage": 15,
-    "treatment": "pfizerA"
+    "treatment": "pfizerA",
+    "product_name": "COVID-19 mRNA Vaccine Comirnaty 30micrograms/0.3ml dose conc for susp for inj MDV (Pfizer)"
   },
   "under12": {
     "minage": 5,
     "maxage": 11,
-    "treatment": "pfizerC"
+    "treatment": "pfizerC",
+    "product_name": "COVID-19 mRNA Vaccine Comirnaty Children 5-11yrs 10mcg/0.2ml dose conc for disp for inj MDV (Pfizer)"
   }
 }

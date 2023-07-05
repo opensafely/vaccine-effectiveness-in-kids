@@ -511,6 +511,24 @@ actions:
         rds: output/over12/vax1/models/km/all/fracture/*.rds
         png: output/over12/vax1/models/km/all/fracture/*.png
 
+  km_over12_1_all_noncovidadmitted:
+    run: r:latest analysis/model/km.R over12 1 all noncovidadmitted
+    needs:
+    - process_controlfinal_over12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax1/models/km/all/noncovidadmitted/*.rds
+        png: output/over12/vax1/models/km/all/noncovidadmitted/*.png
+
+  km_over12_1_all_outcome_vax_2:
+    run: r:latest analysis/model/km.R over12 1 all outcome_vax_2
+    needs:
+    - process_controlfinal_over12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax1/models/km/all/outcome_vax_2/*.rds
+        png: output/over12/vax1/models/km/all/outcome_vax_2/*.png
+
   km_over12_1_prior_covid_infection_postest:
     run: r:latest analysis/model/km.R over12 1 prior_covid_infection postest
     needs:
@@ -610,6 +628,24 @@ actions:
         rds: output/over12/vax1/models/km/prior_covid_infection/fracture/*.rds
         png: output/over12/vax1/models/km/prior_covid_infection/fracture/*.png
 
+  km_over12_1_prior_covid_infection_noncovidadmitted:
+    run: r:latest analysis/model/km.R over12 1 prior_covid_infection noncovidadmitted
+    needs:
+    - process_controlfinal_over12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax1/models/km/prior_covid_infection/noncovidadmitted/*.rds
+        png: output/over12/vax1/models/km/prior_covid_infection/noncovidadmitted/*.png
+
+  km_over12_1_prior_covid_infection_outcome_vax_2:
+    run: r:latest analysis/model/km.R over12 1 prior_covid_infection outcome_vax_2
+    needs:
+    - process_controlfinal_over12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax1/models/km/prior_covid_infection/outcome_vax_2/*.rds
+        png: output/over12/vax1/models/km/prior_covid_infection/outcome_vax_2/*.png
+
   eventcounts_over12_1_all:
     run: r:latest analysis/model/eventcounts.R over12 1 all
     needs:
@@ -640,6 +676,8 @@ actions:
     - km_over12_1_all_pericarditis
     - km_over12_1_all_myocarditis
     - km_over12_1_all_fracture
+    - km_over12_1_all_noncovidadmitted
+    - km_over12_1_all_outcome_vax_2
     - km_over12_1_prior_covid_infection_postest
     - km_over12_1_prior_covid_infection_emergency
     - km_over12_1_prior_covid_infection_covidemergency
@@ -651,6 +689,8 @@ actions:
     - km_over12_1_prior_covid_infection_pericarditis
     - km_over12_1_prior_covid_infection_myocarditis
     - km_over12_1_prior_covid_infection_fracture
+    - km_over12_1_prior_covid_infection_noncovidadmitted
+    - km_over12_1_prior_covid_infection_outcome_vax_2
     - eventcounts_over12_1_all
     - eventcounts_over12_1_prior_covid_infection
     outputs:
@@ -1180,6 +1220,24 @@ actions:
         rds: output/over12/vax2/models/km/all/fracture/*.rds
         png: output/over12/vax2/models/km/all/fracture/*.png
 
+  km_over12_2_all_noncovidadmitted:
+    run: r:latest analysis/model/km.R over12 2 all noncovidadmitted
+    needs:
+    - process_controlfinal_over12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax2/models/km/all/noncovidadmitted/*.rds
+        png: output/over12/vax2/models/km/all/noncovidadmitted/*.png
+
+  km_over12_2_all_outcome_vax_2:
+    run: r:latest analysis/model/km.R over12 2 all outcome_vax_2
+    needs:
+    - process_controlfinal_over12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax2/models/km/all/outcome_vax_2/*.rds
+        png: output/over12/vax2/models/km/all/outcome_vax_2/*.png
+
   km_over12_2_prior_covid_infection_postest:
     run: r:latest analysis/model/km.R over12 2 prior_covid_infection postest
     needs:
@@ -1279,6 +1337,24 @@ actions:
         rds: output/over12/vax2/models/km/prior_covid_infection/fracture/*.rds
         png: output/over12/vax2/models/km/prior_covid_infection/fracture/*.png
 
+  km_over12_2_prior_covid_infection_noncovidadmitted:
+    run: r:latest analysis/model/km.R over12 2 prior_covid_infection noncovidadmitted
+    needs:
+    - process_controlfinal_over12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax2/models/km/prior_covid_infection/noncovidadmitted/*.rds
+        png: output/over12/vax2/models/km/prior_covid_infection/noncovidadmitted/*.png
+
+  km_over12_2_prior_covid_infection_outcome_vax_2:
+    run: r:latest analysis/model/km.R over12 2 prior_covid_infection outcome_vax_2
+    needs:
+    - process_controlfinal_over12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/over12/vax2/models/km/prior_covid_infection/outcome_vax_2/*.rds
+        png: output/over12/vax2/models/km/prior_covid_infection/outcome_vax_2/*.png
+
   eventcounts_over12_2_all:
     run: r:latest analysis/model/eventcounts.R over12 2 all
     needs:
@@ -1309,6 +1385,8 @@ actions:
     - km_over12_2_all_pericarditis
     - km_over12_2_all_myocarditis
     - km_over12_2_all_fracture
+    - km_over12_2_all_noncovidadmitted
+    - km_over12_2_all_outcome_vax_2
     - km_over12_2_prior_covid_infection_postest
     - km_over12_2_prior_covid_infection_emergency
     - km_over12_2_prior_covid_infection_covidemergency
@@ -1320,6 +1398,8 @@ actions:
     - km_over12_2_prior_covid_infection_pericarditis
     - km_over12_2_prior_covid_infection_myocarditis
     - km_over12_2_prior_covid_infection_fracture
+    - km_over12_2_prior_covid_infection_noncovidadmitted
+    - km_over12_2_prior_covid_infection_outcome_vax_2
     - eventcounts_over12_2_all
     - eventcounts_over12_2_prior_covid_infection
     outputs:
@@ -1855,6 +1935,24 @@ actions:
         rds: output/under12/vax1/models/km/all/fracture/*.rds
         png: output/under12/vax1/models/km/all/fracture/*.png
 
+  km_under12_1_all_noncovidadmitted:
+    run: r:latest analysis/model/km.R under12 1 all noncovidadmitted
+    needs:
+    - process_controlfinal_under12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax1/models/km/all/noncovidadmitted/*.rds
+        png: output/under12/vax1/models/km/all/noncovidadmitted/*.png
+
+  km_under12_1_all_outcome_vax_2:
+    run: r:latest analysis/model/km.R under12 1 all outcome_vax_2
+    needs:
+    - process_controlfinal_under12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax1/models/km/all/outcome_vax_2/*.rds
+        png: output/under12/vax1/models/km/all/outcome_vax_2/*.png
+
   km_under12_1_prior_covid_infection_postest:
     run: r:latest analysis/model/km.R under12 1 prior_covid_infection postest
     needs:
@@ -1954,6 +2052,24 @@ actions:
         rds: output/under12/vax1/models/km/prior_covid_infection/fracture/*.rds
         png: output/under12/vax1/models/km/prior_covid_infection/fracture/*.png
 
+  km_under12_1_prior_covid_infection_noncovidadmitted:
+    run: r:latest analysis/model/km.R under12 1 prior_covid_infection noncovidadmitted
+    needs:
+    - process_controlfinal_under12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax1/models/km/prior_covid_infection/noncovidadmitted/*.rds
+        png: output/under12/vax1/models/km/prior_covid_infection/noncovidadmitted/*.png
+
+  km_under12_1_prior_covid_infection_outcome_vax_2:
+    run: r:latest analysis/model/km.R under12 1 prior_covid_infection outcome_vax_2
+    needs:
+    - process_controlfinal_under12_1
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax1/models/km/prior_covid_infection/outcome_vax_2/*.rds
+        png: output/under12/vax1/models/km/prior_covid_infection/outcome_vax_2/*.png
+
   eventcounts_under12_1_all:
     run: r:latest analysis/model/eventcounts.R under12 1 all
     needs:
@@ -1984,6 +2100,8 @@ actions:
     - km_under12_1_all_pericarditis
     - km_under12_1_all_myocarditis
     - km_under12_1_all_fracture
+    - km_under12_1_all_noncovidadmitted
+    - km_under12_1_all_outcome_vax_2
     - km_under12_1_prior_covid_infection_postest
     - km_under12_1_prior_covid_infection_emergency
     - km_under12_1_prior_covid_infection_covidemergency
@@ -1995,6 +2113,8 @@ actions:
     - km_under12_1_prior_covid_infection_pericarditis
     - km_under12_1_prior_covid_infection_myocarditis
     - km_under12_1_prior_covid_infection_fracture
+    - km_under12_1_prior_covid_infection_noncovidadmitted
+    - km_under12_1_prior_covid_infection_outcome_vax_2
     - eventcounts_under12_1_all
     - eventcounts_under12_1_prior_covid_infection
     outputs:
@@ -2525,6 +2645,24 @@ actions:
         rds: output/under12/vax2/models/km/all/fracture/*.rds
         png: output/under12/vax2/models/km/all/fracture/*.png
 
+  km_under12_2_all_noncovidadmitted:
+    run: r:latest analysis/model/km.R under12 2 all noncovidadmitted
+    needs:
+    - process_controlfinal_under12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax2/models/km/all/noncovidadmitted/*.rds
+        png: output/under12/vax2/models/km/all/noncovidadmitted/*.png
+
+  km_under12_2_all_outcome_vax_2:
+    run: r:latest analysis/model/km.R under12 2 all outcome_vax_2
+    needs:
+    - process_controlfinal_under12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax2/models/km/all/outcome_vax_2/*.rds
+        png: output/under12/vax2/models/km/all/outcome_vax_2/*.png
+
   km_under12_2_prior_covid_infection_postest:
     run: r:latest analysis/model/km.R under12 2 prior_covid_infection postest
     needs:
@@ -2624,6 +2762,24 @@ actions:
         rds: output/under12/vax2/models/km/prior_covid_infection/fracture/*.rds
         png: output/under12/vax2/models/km/prior_covid_infection/fracture/*.png
 
+  km_under12_2_prior_covid_infection_noncovidadmitted:
+    run: r:latest analysis/model/km.R under12 2 prior_covid_infection noncovidadmitted
+    needs:
+    - process_controlfinal_under12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax2/models/km/prior_covid_infection/noncovidadmitted/*.rds
+        png: output/under12/vax2/models/km/prior_covid_infection/noncovidadmitted/*.png
+
+  km_under12_2_prior_covid_infection_outcome_vax_2:
+    run: r:latest analysis/model/km.R under12 2 prior_covid_infection outcome_vax_2
+    needs:
+    - process_controlfinal_under12_2
+    outputs:
+      moderately_sensitive:
+        rds: output/under12/vax2/models/km/prior_covid_infection/outcome_vax_2/*.rds
+        png: output/under12/vax2/models/km/prior_covid_infection/outcome_vax_2/*.png
+
   eventcounts_under12_2_all:
     run: r:latest analysis/model/eventcounts.R under12 2 all
     needs:
@@ -2654,6 +2810,8 @@ actions:
     - km_under12_2_all_pericarditis
     - km_under12_2_all_myocarditis
     - km_under12_2_all_fracture
+    - km_under12_2_all_noncovidadmitted
+    - km_under12_2_all_outcome_vax_2
     - km_under12_2_prior_covid_infection_postest
     - km_under12_2_prior_covid_infection_emergency
     - km_under12_2_prior_covid_infection_covidemergency
@@ -2665,6 +2823,8 @@ actions:
     - km_under12_2_prior_covid_infection_pericarditis
     - km_under12_2_prior_covid_infection_myocarditis
     - km_under12_2_prior_covid_infection_fracture
+    - km_under12_2_prior_covid_infection_noncovidadmitted
+    - km_under12_2_prior_covid_infection_outcome_vax_2
     - eventcounts_under12_2_all
     - eventcounts_under12_2_prior_covid_infection
     outputs:

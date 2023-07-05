@@ -44,13 +44,13 @@ with open("./lib/design/study-params.json") as f:
 minage = study_params[cohort]["minage"]
 maxage = study_params[cohort]["maxage"]
 treatment = study_params[cohort]["treatment"]
-
+product_name = study_params[cohort]["product_name"]
 
 
 ############################################################
 ## outcome variables
 from variables_outcome import generate_outcome_variables 
-outcome_variables = generate_outcome_variables(baseline_date="trial_date")
+outcome_variables = generate_outcome_variables(baseline_date="trial_date",product_name=product_name)
 ############################################################
 
 
