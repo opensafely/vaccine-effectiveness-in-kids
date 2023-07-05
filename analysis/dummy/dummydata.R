@@ -383,8 +383,17 @@ for(cohort in c("over12", "under12")){
       
       postest_count = bn_node(
         ~ rpois(n = ..n, 0.1)
-      )
+      ),
       
+      outcome_vax_1_day  = bn_node(
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
+        missing_rate = ~0.8
+      ),
+      outcome_vax_2_day  = bn_node(
+        ~ as.integer(runif(n = ..n, vax_day, vax_day + 100)),
+        missing_rate = ~0.8
+      ),
+
     )
     
     
