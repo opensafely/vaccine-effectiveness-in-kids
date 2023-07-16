@@ -90,7 +90,7 @@ events_lookup <- tribble(
   "covidemergency", "covidemergency_date", "COVID-19 A&E attendance",
   "covidemergencyhosp", "covidemergencyhosp_date", "Admission from COVID-19 A&E",
   "covidadmitted", "covidadmitted_date", "COVID-19 hospitalisation",
-  "noncovidadmitted", "noncovidadmitted_date", "Non-COVID-19 hospitalisation",
+  # "noncovidadmitted", "noncovidadmitted_date", "Non-COVID-19 hospitalisation",
   "covidadmittedproxy1", "covidadmittedproxy1_date", "COVID-19 hospitalisation (A&E proxy)",
   "covidadmittedproxy2", "covidadmittedproxy2_date", "COVID-19 hospitalisation (A&E proxy v2)",
   "covidcritcare", "covidcritcare_date", "COVID-19 critical care",
