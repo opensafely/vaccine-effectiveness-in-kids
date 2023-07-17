@@ -2831,5 +2831,13 @@ actions:
         txt: output/meta-release/*.txt
         csv: output/release/*.csv
 
+  km_estimates_redaction:
+    run: r:latest analysis/km_estimates_redaction.R
+    needs: 
+    - release
+    outputs: 
+      moderately_sensitive:
+        csv: output/release/redacted/*.csv
+
   ## #### End #### 
 
