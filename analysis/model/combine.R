@@ -1,4 +1,3 @@
-
 # # # # # # # # # # # # # # # # # # # # #
 # Purpose: Combine km estimates from different outcomes
 #  - The script must be accompanied by three arguments:
@@ -42,7 +41,7 @@ fs::dir_create(output_dir)
 
 metaparams <-
   expand_grid(
-    outcome = factor(c("postest", "emergency", "covidemergency", "covidadmitted", "covidcritcare", "coviddeath", "noncoviddeath","admitted_unplanned","pericarditis","myocarditis","fracture")),
+    outcome = factor(c("postest", "emergency", "covidemergency", "covidadmitted", "covidcritcare", "coviddeath", "noncoviddeath", "admitted_unplanned", "pericarditis", "myocarditis", "fracture", "outcome_vax_2")),
     # outcome = factor(c("postest", "covidadmitted")),
     subgroup = factor(recoder$subgroups)
   ) %>%
@@ -51,8 +50,8 @@ metaparams <-
     outcome_descr = fct_recoderelevel(outcome, recoder$outcome),
     subgroup_descr = fct_recoderelevel(subgroup, recoder$subgroups),
     # subgroup_level_descr = map(as.character(subgroup), ~names(recoder[[.x]])),
-  ) #%>%
-  #map_df(as.character)
+  ) # %>%
+# map_df(as.character)
 
 km_estimates <- metaparams %>%
   mutate(
@@ -164,11 +163,11 @@ metaparams %>%
   map_df(as.character) %>%
   rowwise() %>%
   mutate(
-    vaxn=vaxn,
+    vaxn = vaxn,
     plotdir = ghere("output", cohort, "vax{vaxn}", "models", "km", subgroup, outcome, "km_plot_rounded.png"),
-    plotnewdir = glue("output", cohort, "vax{vaxn}", "models", "combined", "km_plot_rounded_{subgroup}_{outcome}.png", .sep="/"),
+    plotnewdir = glue("output", cohort, "vax{vaxn}", "models", "combined", "km_plot_rounded_{subgroup}_{outcome}.png", .sep = "/"),
   ) %>%
-  #View()
+  # View()
   {
     walk2(.$plotdir, .$plotnewdir, ~ fs::file_copy(.x, .y, overwrite = TRUE))
   }
@@ -178,7 +177,7 @@ metaparams %>%
   rowwise() %>%
   mutate(
     plotdir = ghere("output", cohort, "vax{vaxn}", "models", "km", subgroup, outcome, "km_plot_unrounded.png"),
-    plotnewdir = glue("output", cohort, "vax{vaxn}", "models", "combined", "km_plot_unrounded_{subgroup}_{outcome}.png", .sep="/"),
+    plotnewdir = glue("output", cohort, "vax{vaxn}", "models", "combined", "km_plot_unrounded_{subgroup}_{outcome}.png", .sep = "/"),
   ) %>%
   {
     walk2(.$plotdir, .$plotnewdir, ~ fs::file_copy(.x, .y, overwrite = TRUE))
