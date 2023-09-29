@@ -687,6 +687,14 @@ actions:
         rds: output/over12/vax1/models/combined/*.csv
         png: output/over12/vax1/models/combined/*.png
 
+  carditis_over12_1:
+    run: r:latest analysis/carditis.R over12 1 prior_covid_infection
+    needs:
+    - process_controlfinal_over12_1
+    outputs:
+      moderately_sensitive:
+        csv: output/over12/vax1/carditis_severity/*_severity.csv
+
   ## # # # # # # # # # # # # # # # # # # # 
   ## Covid tests data 
   ## # # # # # # # # # # # # # # # # # # # 
@@ -1375,6 +1383,14 @@ actions:
       moderately_sensitive:
         rds: output/over12/vax2/models/combined/*.csv
         png: output/over12/vax2/models/combined/*.png
+
+  carditis_over12_2:
+    run: r:latest analysis/carditis.R over12 2 prior_covid_infection
+    needs:
+    - process_controlfinal_over12_2
+    outputs:
+      moderately_sensitive:
+        csv: output/over12/vax2/carditis_severity/*_severity.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Covid tests data 
@@ -2071,6 +2087,14 @@ actions:
         rds: output/under12/vax1/models/combined/*.csv
         png: output/under12/vax1/models/combined/*.png
 
+  carditis_under12_1:
+    run: r:latest analysis/carditis.R under12 1 prior_covid_infection
+    needs:
+    - process_controlfinal_under12_1
+    outputs:
+      moderately_sensitive:
+        csv: output/under12/vax1/carditis_severity/*_severity.csv
+
   ## # # # # # # # # # # # # # # # # # # # 
   ## Covid tests data 
   ## # # # # # # # # # # # # # # # # # # # 
@@ -2761,6 +2785,14 @@ actions:
         rds: output/under12/vax2/models/combined/*.csv
         png: output/under12/vax2/models/combined/*.png
 
+  carditis_under12_2:
+    run: r:latest analysis/carditis.R under12 2 prior_covid_infection
+    needs:
+    - process_controlfinal_under12_2
+    outputs:
+      moderately_sensitive:
+        csv: output/under12/vax2/carditis_severity/*_severity.csv
+
   ## # # # # # # # # # # # # # # # # # # # 
   ## Covid tests data 
   ## # # # # # # # # # # # # # # # # # # # 
@@ -2830,14 +2862,6 @@ actions:
       moderately_sensitive:
         txt: output/meta-release/*.txt
         csv: output/release/*.csv
-
-  km_estimates_redaction:
-    run: r:latest analysis/km_estimates_redaction.R
-    needs: 
-    - release
-    outputs: 
-      moderately_sensitive:
-        csv: output/release/redacted/*.csv
 
   ## #### End #### 
 
