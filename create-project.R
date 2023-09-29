@@ -264,16 +264,16 @@ action_table1 <- function(cohort, vaxn) {
   )
 }
 
-action_covid_test <-function(cohort, vaxn){
+action_covid_test <- function(cohort, vaxn) {
   splice(
     lapply_actions(
       c("treated", "control"),
-        function(arm)
+      function(arm) {
         action(
           name = glue("extract_covidtests_{cohort}_{vaxn}_{arm}"),
           run = glue(
-            "cohortextractor:latest generate_cohort", 
-            " --study-definition study_definition_covidtests", 
+            "cohortextractor:latest generate_cohort",
+            " --study-definition study_definition_covidtests",
             " --output-file output/{cohort}/vax{vaxn}/covidtests/extract/input_covidtests_{arm}.feather",
             " --param cohort={cohort}",
             " --param vaxn={vaxn}",
@@ -286,6 +286,7 @@ action_covid_test <-function(cohort, vaxn){
             extract = glue("output/{cohort}/vax{vaxn}/covidtests/extract/input_covidtests_{arm}.feather")
           )
         )
+      }
     ),
     action(
       name = glue("process_covidtests_{cohort}_{vaxn}"),
@@ -304,7 +305,6 @@ action_covid_test <-function(cohort, vaxn){
         png = glue("output/{cohort}/vax{vaxn}/covidtests/checks/*.png")
       )
     ),
-  
     action(
       name = glue("summarise_covidtests_{cohort}_{vaxn}"),
       run = "r:latest analysis/covidtests/summarise_covidtests.R",
@@ -360,7 +360,7 @@ action_combine <- function(cohort, vaxn) {
         glue_data(
           .x = expand_grid(
             subgroup = c("all", "prior_covid_infection"),
-            outcome = c("postest", "emergency", "covidemergency", "covidadmitted", "covidcritcare", "coviddeath", "noncoviddeath","admitted_unplanned","pericarditis","myocarditis","fracture","outcome_vax_2"),
+            outcome = c("postest", "emergency", "covidemergency", "covidadmitted", "covidcritcare", "coviddeath", "noncoviddeath", "admitted_unplanned", "pericarditis", "myocarditis", "fracture", "outcome_vax_2"),
           ),
           "km_{cohort}_{vaxn}_{subgroup}_{outcome}"
         )
@@ -405,7 +405,7 @@ action_skim_treated <- function(cohort, vaxn) {
   )
 }
 
-action_skim_control <- function(cohort, vaxn,matching_round) {
+action_skim_control <- function(cohort, vaxn, matching_round) {
   action(
     name = glue("skim_{cohort}_{vaxn}_control"),
     run = "r:latest analysis/data_skim.R",
@@ -417,6 +417,19 @@ action_skim_control <- function(cohort, vaxn,matching_round) {
   )
 }
 
+action_carditis_severity <- function(cohort, vaxn) {
+  action(
+    name = glue("carditis_{cohort}_{vaxn}"),
+    run = glue("r:latest analysis/carditis.R"),
+    arguments = c(cohort, vaxn, subgroup),
+    needs = namelesslst(
+      glue("process_controlfinal_{cohort}_{vaxn}"),
+    ),
+    moderately_sensitive = lst(
+      csv = glue("output/{cohort}/vax{vaxn}/carditis_severity/*_severity.csv"),
+    )
+  )
+}
 
 # specify project ----
 
@@ -478,11 +491,12 @@ actions_list <- splice(
   action_km("over12", 1, "prior_covid_infection", "pericarditis"),
   action_km("over12", 1, "prior_covid_infection", "myocarditis"),
   action_km("over12", 1, "prior_covid_infection", "fracture"),
-#  action_km("over12", 1, "prior_covid_infection", "noncovidadmitted"),
+  #  action_km("over12", 1, "prior_covid_infection", "noncovidadmitted"),
   action_km("over12", 1, "prior_covid_infection", "outcome_vax_2"),
   action_eventcounts("over12", 1, "all"),
   action_eventcounts("over12", 1, "prior_covid_infection"),
   action_combine("over12", 1),
+  action_carditis_severity("over12", 1),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
@@ -526,13 +540,13 @@ actions_list <- splice(
   action_eventcounts("over12", 2, "all"),
   action_eventcounts("over12", 2, "prior_covid_infection"),
   action_combine("over12", 2),
+  action_carditis_severity("over12", 2),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
     "# # # # # # # # # # # # # # # # # # #"
   ),
   action_covid_test("over12", 2),
-
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Vax1, Under 12s cohort",
@@ -545,7 +559,6 @@ actions_list <- splice(
   action_extract_and_match("under12", 1, n_matching_rounds),
   action_skim("under12", 1),
   action_table1("under12", 1),
-
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Model"
@@ -579,23 +592,21 @@ actions_list <- splice(
   action_eventcounts("under12", 1, "all"),
   action_eventcounts("under12", 1, "prior_covid_infection"),
   action_combine("under12", 1),
-    comment(
+  action_carditis_severity("under12", 1),
+  comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
     "# # # # # # # # # # # # # # # # # # #"
   ),
   action_covid_test("under12", 1),
-
-   comment(
+  comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Vax2, Under 12s cohort",
     "# # # # # # # # # # # # # # # # # # #"
   ),
-
   action_extract_and_match("under12", 2, n_matching_rounds),
   action_skim("under12", 2),
   action_table1("under12", 2),
-
   action_km("under12", 2, "all", "postest"),
   action_km("under12", 2, "all", "emergency"),
   action_km("under12", 2, "all", "covidemergency"),
@@ -625,6 +636,7 @@ actions_list <- splice(
   action_eventcounts("under12", 2, "all"),
   action_eventcounts("under12", 2, "prior_covid_infection"),
   action_combine("under12", 2),
+  action_carditis_severity("under12", 2),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
@@ -684,7 +696,6 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("expectations", "tpp")) {
 
   # if running manually, output new project as normal
 } else if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("")) {
-
   ## output to file ----
   writeLines(thisproject, here("project.yaml"))
   # yaml::write_yaml(project_list, file =here("project.yaml"))
