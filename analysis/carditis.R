@@ -58,41 +58,85 @@ fs::dir_create(output_dir)
 
 data_matched <- read_rds(ghere("output", cohort, "vax{vaxn}", "match", "data_matched.rds"))
 
-data_matched_myocarditis <- data_matched %>%
-  filter(!is.na(myocarditis_date)) %>%
-  summarise(
-    treated,
+## import baseline data, restrict to matched individuals and derive time-to-event variables
+data_matched_myocarditis <-
+  data_matched %>%
+  select(
+    # select only variables needed for models to save space
+    patient_id, treated, trial_date, match_id,
+    controlistreated_date,
+    vax_date,
+    death_date, dereg_date, coviddeath_date, noncoviddeath_date,
     myocarditis_date,
     emergency_date,
     admitted_unplanned_date,
     emergencyhosp_date,
-    death_date,
   ) %>%
-  mutate(across(ends_with("date"), ~ as.integer(!is.na(.)))) %>%
-  summarise(myocarditis = sum(myocarditis_date),
+  mutate(
+    
+    # follow-up time is up to and including censor date
+    censor_date = pmin(
+      dereg_date,
+      # vax2_date-1, # -1 because we assume vax occurs at the start of the day
+      death_date,
+      dates[[c(glue("followupend_date{vaxn}"))]],
+      trial_date + maxfup - 1,
+      na.rm = TRUE
+    ),
+    matchcensor_date = pmin(censor_date, controlistreated_date - 1, na.rm = TRUE), # new censor date based on whether control gets treated or not
+    myocarditis_outcome = censor_indicator(myocarditis_date, matchcensor_date),
+    emergency_outcome = censor_indicator(emergency_date, matchcensor_date),
+    admitted_unplanned_outcome = censor_indicator(admitted_unplanned_date, matchcensor_date),
+    emergencyhosp_outcome = censor_indicator(emergencyhosp_date, matchcensor_date),
+    death_outcome = censor_indicator(death_date, matchcensor_date),
+  ) %>%
+  filter(myocarditis_outcome==T) %>%
+  summarise(myocarditis = sum(myocarditis_outcome),
     across(
-    ends_with("date"),
+    ends_with("outcome"),
     ~ sum(.x) / myocarditis * 100
   ))
 
 write_csv(data_matched_myocarditis, fs::path(output_dir, "myocarditis_severity.csv"))
 
-data_matched_pericarditis <- data_matched %>%
-  filter(!is.na(pericarditis_date)) %>%
-  summarise(
-    treated,
+
+## import baseline data, restrict to matched individuals and derive time-to-event variables
+data_matched_pericarditis <-
+  data_matched %>%
+  select(
+    # select only variables needed for models to save space
+    patient_id, treated, trial_date, match_id,
+    controlistreated_date,
+    vax_date,
+    death_date, dereg_date, coviddeath_date, noncoviddeath_date,
     pericarditis_date,
     emergency_date,
     admitted_unplanned_date,
     emergencyhosp_date,
-    death_date,
   ) %>%
-  mutate(across(ends_with("date"), ~ as.integer(!is.na(.)))) %>%
-  summarise(pericarditis =  sum(pericarditis_date),
+  mutate(
+    
+    # follow-up time is up to and including censor date
+    censor_date = pmin(
+      dereg_date,
+      # vax2_date-1, # -1 because we assume vax occurs at the start of the day
+      death_date,
+      dates[[c(glue("followupend_date{vaxn}"))]],
+      trial_date + maxfup - 1,
+      na.rm = TRUE
+    ),
+    matchcensor_date = pmin(censor_date, controlistreated_date - 1, na.rm = TRUE), # new censor date based on whether control gets treated or not
+    pericarditis_outcome = censor_indicator(pericarditis_date, matchcensor_date),
+    emergency_outcome = censor_indicator(emergency_date, matchcensor_date),
+    admitted_unplanned_outcome = censor_indicator(admitted_unplanned_date, matchcensor_date),
+    emergencyhosp_outcome = censor_indicator(emergencyhosp_date, matchcensor_date),
+    death_outcome = censor_indicator(death_date, matchcensor_date),
+  ) %>%
+  filter(pericarditis_outcome==T) %>%
+  summarise(pericarditis = sum(pericarditis_outcome),
             across(
-    ends_with("date"),
-    ~ sum(.x) / pericarditis * 100
-  ))
-
+              ends_with("outcome"),
+              ~ sum(.x) / pericarditis * 100
+            ))
 write_csv(data_matched_pericarditis, fs::path(output_dir, "pericarditis_severity.csv"))
 
