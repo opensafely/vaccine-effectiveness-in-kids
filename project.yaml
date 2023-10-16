@@ -688,12 +688,44 @@ actions:
         png: output/over12/vax1/models/combined/*.png
 
   carditis_over12_1:
-    run: r:latest analysis/carditis.R over12 1 prior_covid_infection
+    run: r:latest analysis/carditis.R over12 1 all
     needs:
     - process_controlfinal_over12_1
     outputs:
+      highly_sensitive:
+        extract: output/over12/vax1/carditis_severity/*_dates.csv
       moderately_sensitive:
         csv: output/over12/vax1/carditis_severity/*_severity.csv
+
+  extract_carditis_date_over12_1_myo:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_carditis_severity
+      --output-file output/over12/vax1/extract/input_myocarditis_severity.feather
+      --param cohort=over12 --param vaxn=1 --param carditis_type = myo
+    needs:
+    - carditis_over12_1
+    outputs:
+      highly_sensitive:
+        extract: output/over12/vax1/extract/input_myocarditis_severity.feather
+
+  extract_carditis_date_over12_1_peri:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_carditis_severity
+      --output-file output/over12/vax1/extract/input_pericarditis_severity.feather
+      --param cohort=over12 --param vaxn=1 --param carditis_type = peri
+    needs:
+    - carditis_over12_1
+    outputs:
+      highly_sensitive:
+        extract: output/over12/vax1/extract/input_pericarditis_severity.feather
+
+  carditis_hosp_over12_1:
+    run: r:latest analysis/carditis_hospitalisation.R over12 1 all
+    needs:
+    - extract_carditis_date_over12_1_myo
+    - extract_carditis_date_over12_1_peri
+    - carditis_over12_1
+    outputs:
+      moderately_sensitive:
+        csv: output/over12/vax1/carditis_severity/*tables.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Covid tests data 
@@ -1385,12 +1417,44 @@ actions:
         png: output/over12/vax2/models/combined/*.png
 
   carditis_over12_2:
-    run: r:latest analysis/carditis.R over12 2 prior_covid_infection
+    run: r:latest analysis/carditis.R over12 2 all
     needs:
     - process_controlfinal_over12_2
     outputs:
+      highly_sensitive:
+        extract: output/over12/vax2/carditis_severity/*_dates.csv
       moderately_sensitive:
         csv: output/over12/vax2/carditis_severity/*_severity.csv
+
+  extract_carditis_date_over12_2_myo:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_carditis_severity
+      --output-file output/over12/vax2/extract/input_myocarditis_severity.feather
+      --param cohort=over12 --param vaxn=2 --param carditis_type = myo
+    needs:
+    - carditis_over12_2
+    outputs:
+      highly_sensitive:
+        extract: output/over12/vax2/extract/input_myocarditis_severity.feather
+
+  extract_carditis_date_over12_2_peri:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_carditis_severity
+      --output-file output/over12/vax2/extract/input_pericarditis_severity.feather
+      --param cohort=over12 --param vaxn=2 --param carditis_type = peri
+    needs:
+    - carditis_over12_2
+    outputs:
+      highly_sensitive:
+        extract: output/over12/vax2/extract/input_pericarditis_severity.feather
+
+  carditis_hosp_over12_2:
+    run: r:latest analysis/carditis_hospitalisation.R over12 2 all
+    needs:
+    - extract_carditis_date_over12_2_myo
+    - extract_carditis_date_over12_2_peri
+    - carditis_over12_2
+    outputs:
+      moderately_sensitive:
+        csv: output/over12/vax2/carditis_severity/*tables.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Covid tests data 
@@ -2088,12 +2152,44 @@ actions:
         png: output/under12/vax1/models/combined/*.png
 
   carditis_under12_1:
-    run: r:latest analysis/carditis.R under12 1 prior_covid_infection
+    run: r:latest analysis/carditis.R under12 1 all
     needs:
     - process_controlfinal_under12_1
     outputs:
+      highly_sensitive:
+        extract: output/under12/vax1/carditis_severity/*_dates.csv
       moderately_sensitive:
         csv: output/under12/vax1/carditis_severity/*_severity.csv
+
+  extract_carditis_date_under12_1_myo:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_carditis_severity
+      --output-file output/under12/vax1/extract/input_myocarditis_severity.feather
+      --param cohort=under12 --param vaxn=1 --param carditis_type = myo
+    needs:
+    - carditis_under12_1
+    outputs:
+      highly_sensitive:
+        extract: output/under12/vax1/extract/input_myocarditis_severity.feather
+
+  extract_carditis_date_under12_1_peri:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_carditis_severity
+      --output-file output/under12/vax1/extract/input_pericarditis_severity.feather
+      --param cohort=under12 --param vaxn=1 --param carditis_type = peri
+    needs:
+    - carditis_under12_1
+    outputs:
+      highly_sensitive:
+        extract: output/under12/vax1/extract/input_pericarditis_severity.feather
+
+  carditis_hosp_under12_1:
+    run: r:latest analysis/carditis_hospitalisation.R under12 1 all
+    needs:
+    - extract_carditis_date_under12_1_myo
+    - extract_carditis_date_under12_1_peri
+    - carditis_under12_1
+    outputs:
+      moderately_sensitive:
+        csv: output/under12/vax1/carditis_severity/*tables.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Covid tests data 
@@ -2786,12 +2882,44 @@ actions:
         png: output/under12/vax2/models/combined/*.png
 
   carditis_under12_2:
-    run: r:latest analysis/carditis.R under12 2 prior_covid_infection
+    run: r:latest analysis/carditis.R under12 2 all
     needs:
     - process_controlfinal_under12_2
     outputs:
+      highly_sensitive:
+        extract: output/under12/vax2/carditis_severity/*_dates.csv
       moderately_sensitive:
         csv: output/under12/vax2/carditis_severity/*_severity.csv
+
+  extract_carditis_date_under12_2_myo:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_carditis_severity
+      --output-file output/under12/vax2/extract/input_myocarditis_severity.feather
+      --param cohort=under12 --param vaxn=2 --param carditis_type = myo
+    needs:
+    - carditis_under12_2
+    outputs:
+      highly_sensitive:
+        extract: output/under12/vax2/extract/input_myocarditis_severity.feather
+
+  extract_carditis_date_under12_2_peri:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_carditis_severity
+      --output-file output/under12/vax2/extract/input_pericarditis_severity.feather
+      --param cohort=under12 --param vaxn=2 --param carditis_type = peri
+    needs:
+    - carditis_under12_2
+    outputs:
+      highly_sensitive:
+        extract: output/under12/vax2/extract/input_pericarditis_severity.feather
+
+  carditis_hosp_under12_2:
+    run: r:latest analysis/carditis_hospitalisation.R under12 2 all
+    needs:
+    - extract_carditis_date_under12_2_myo
+    - extract_carditis_date_under12_2_peri
+    - carditis_under12_2
+    outputs:
+      moderately_sensitive:
+        csv: output/under12/vax2/carditis_severity/*tables.csv
 
   ## # # # # # # # # # # # # # # # # # # # 
   ## Covid tests data 

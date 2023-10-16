@@ -247,3 +247,174 @@ def admitted_daysincritcare_X(
       with_patient_classification
     ))
   return variables
+      
+def critcare_date_length_X(
+  # hospital admission and discharge dates, given admission method and patient classification
+  # note, it is not easy/possible to pick up sequences of contiguous episodes,
+  # because we cannot reliably identify a second admission occurring on the same day as an earlier admission
+  # some episodes will therefore be missed
+  name, index_date, n,  
+  with_these_diagnoses=None, 
+  with_admission_method=None, 
+  with_patient_classification=None,
+):
+  def var_signature(
+    name, 
+    on_or_after, 
+    returning,
+    with_these_diagnoses, 
+    with_admission_method, 
+    with_patient_classification
+  ):
+    return {
+      name: patients.admitted_to_hospital(
+        returning = returning,
+        on_or_after = on_or_after,
+        find_first_match_in_period = True,
+        date_format = "YYYY-MM-DD",
+        with_these_diagnoses = with_these_diagnoses,
+        with_admission_method = with_admission_method,
+        with_patient_classification = with_patient_classification
+	   ),
+    }
+  variables = var_signature(
+    name=f"admitted_{name}_1_date", 
+    on_or_after=index_date, 
+    returning="date_admitted", 
+    with_these_diagnoses=with_these_diagnoses,
+    with_admission_method=with_admission_method,
+    with_patient_classification=with_patient_classification
+  )
+  variables.update(var_signature(
+    name=f"length_{name}_1_date", 
+    on_or_after=f"admitted_{name}_1_date", 
+    returning="days_in_critical_care", 
+    with_these_diagnoses=with_these_diagnoses,
+    with_admission_method=with_admission_method,
+    with_patient_classification=with_patient_classification
+  ))
+  for i in range(2, n+1):
+    variables.update(var_signature(
+      name=f"admitted_{name}_{i}_date", 
+      on_or_after=f"admitted_{name}_{i-1}_date + 1 day", 
+      # we cannot pick up more than one admission per day
+      # but "+ 1 day" is necessary to ensure we don't always pick up the same admission
+      # some one day admissions will therefore be lost
+      returning="date_admitted", 
+      with_these_diagnoses=with_these_diagnoses,
+      with_admission_method=with_admission_method,
+      with_patient_classification=with_patient_classification
+    ))
+    variables.update(var_signature(
+      name=f"length_{name}_{i}_date", 
+      on_or_after=f"admitted_{name}_{i}_date", 
+      returning="days_in_critical_care", 
+      with_these_diagnoses=with_these_diagnoses,
+      with_admission_method=with_admission_method,
+      with_patient_classification=with_patient_classification
+    ))
+  return variables
+
+# admitted_to_hospital_X: Creates n columns for each consecutive event of hospital admission/discharge dates, admission method
+def admitted_to_hospital_X(n,with_admission_method,on_or_after,end_date):
+    def var_signature(name, returning, on_or_after,with_admission_method, return_expectations):
+        return {
+            name: patients.admitted_to_hospital(
+                    returning=returning,
+                    on_or_after=on_or_after,
+                    date_format="YYYY-MM-DD",
+                    find_first_match_in_period=True,
+                    with_admission_method= with_admission_method,
+                    return_expectations=return_expectations
+                    ),
+        }
+
+    def var_signature2(name, returning, on_or_after,with_admission_method, return_expectations):
+        return {
+            name: patients.admitted_to_hospital(
+                    returning=returning,
+                    on_or_after=on_or_after,
+                    date_format="YYYY-MM-DD",
+                    find_first_match_in_period=True,
+                    with_admission_method= with_admission_method,
+                    return_expectations=return_expectations
+                    ),
+        }
+                     
+    # Expections for admission dates
+    return_expectations_date_adm={
+        "date": {"earliest": "2020-01-01", "latest": end_date},
+        "rate": "uniform",
+        "incidence": 0.8}
+        
+    # Expections for discharge dates
+    return_expectations_date_dis={
+        "date": {"earliest": "2020-01-01", "latest": end_date},
+        "rate": "uniform",
+        "incidence": 0.8}
+
+    # Expectation for admission method
+    return_expectations_method={
+        "category": {"ratios": {"11": 0.1, "12": 0.1, "13": 0.1, "21": 0.1, "22": 0.1, "23": 0.1,
+                                "24": 0.05, "25": 0.05, "2A": 0.05, "2B": 0.05, "2C": 0.05, "2D": 0.05, "28": 0.05,
+                                "31": 0.01, "32": 0.01, "82": 0.01, "83": 0.01, "81": 0.01}},
+                     "incidence": 0.95}
+
+    # Expectation for primary diagnosis
+    return_expectations_diagnosis={
+        "category": {"ratios": {"J45": 0.25, "E10": 0.25, "C91": 0.25, "I50": 0.25}},
+                     "incidence": 0.95}
+
+    # Expectation for admission treatment function code
+    return_expectations_diagnosis={
+        "category": {"ratios": {"100": 0.25, "173": 0.25, "212": 0.25, "I50": 0.25}},
+                     "incidence": 0.95}
+
+    # Expectation for days in critical care
+    return_expectations_critical_care={
+        "category": {"ratios": {"0": 0.75, "1": 0.20,  "2": 0.05}},
+        "incidence": 0.5,
+      }
+
+
+    for i in range(1, n+1):
+        if i == 1:
+            variables = var_signature("admission_date_1", "date_admitted", on_or_after,with_admission_method, return_expectations_date_adm)
+            variables.update(var_signature2("discharge_date_1", "date_discharged", "admission_date_1",with_admission_method, return_expectations_date_dis))
+            variables.update(var_signature2("admission_method_1", "admission_method", "admission_date_1",with_admission_method, return_expectations_method))
+            variables.update(var_signature2("primary_diagnosis_1", "primary_diagnosis", "admission_date_1",with_admission_method, return_expectations_diagnosis))
+            variables.update(var_signature2("critical_care_days_1", "days_in_critical_care", "admission_date_1",with_admission_method, return_expectations_critical_care))
+        else:
+            variables.update(var_signature(f"admission_date_{i}", "date_admitted", f"admission_date_{i-1} + 1 day",with_admission_method, return_expectations_date_adm))
+            variables.update(var_signature2(f"discharge_date_{i}", "date_discharged", f"admission_date_{i}",with_admission_method, return_expectations_date_dis))
+            variables.update(var_signature2(f"admission_method_{i}", "admission_method", f"admission_date_{i}",with_admission_method, return_expectations_method))
+            variables.update(var_signature2(f"primary_diagnosis_{i}", "primary_diagnosis", f"admission_date_{i}",with_admission_method, return_expectations_diagnosis))
+            variables.update(var_signature2(f"critical_care_days_{i}", "days_in_critical_care", f"admission_date_{i}",with_admission_method, return_expectations_critical_care))
+    return variables
+
+
+def carditis_emergency_X(carditis_type,on_or_after):
+  def var_signature( 
+    name,
+    on_or_after,
+    with_these_diagnoses
+  ):
+    return {
+      name:patients.attended_emergency_care(
+          returning="binary_flag",
+          date_format="YYYY-MM-DD",
+          on_or_after=on_or_after,
+          with_these_diagnoses = with_these_diagnoses, # 3238004 Pericarditis; 373945007	Pericardial effusion
+          find_first_match_in_period=True,
+          ),
+    }
+  if carditis_type=="myo":
+    with_these_diagnoses = ["50920009"]
+  if carditis_type=="peri":
+    with_these_diagnoses = ["3238004","373945007"]
+  variables = var_signature(
+    name=f"{carditis_type}carditis_emergency", 
+    on_or_after=on_or_after, 
+    with_these_diagnoses=with_these_diagnoses,
+  )
+  return variables
