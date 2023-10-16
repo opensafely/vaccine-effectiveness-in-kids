@@ -417,7 +417,7 @@ action_skim_control <- function(cohort, vaxn, matching_round) {
   )
 }
 
-action_carditis_severity <- function(cohort, vaxn) {
+action_carditis_severity <- function(cohort, vaxn, subgroup) {
   action(
     name = glue("carditis_{cohort}_{vaxn}"),
     run = glue("r:latest analysis/carditis.R"),
@@ -425,12 +425,50 @@ action_carditis_severity <- function(cohort, vaxn) {
     needs = namelesslst(
       glue("process_controlfinal_{cohort}_{vaxn}"),
     ),
+    highly_sensitive = lst(
+      extract = glue("output/{cohort}/vax{vaxn}/carditis_severity/*_dates.csv"),
+    ),
     moderately_sensitive = lst(
       csv = glue("output/{cohort}/vax{vaxn}/carditis_severity/*_severity.csv"),
     )
   )
 }
 
+action_extract_carditis_date <- function(cohort, vaxn, carditis_type) {
+  action(
+    name = glue("extract_carditis_date_{cohort}_{vaxn}_{carditis_type}"),
+    run = glue(
+      "cohortextractor:latest generate_cohort",
+      " --study-definition study_definition_carditis_severity",
+      " --output-file output/{cohort}/vax{vaxn}/extract/input_{carditis_type}carditis_severity.feather",
+      " --param cohort={cohort}",
+      " --param vaxn={vaxn}",
+      " --param carditis_type = {carditis_type}"
+    ),
+    needs = namelesslst(
+      glue("carditis_{cohort}_{vaxn}"),
+    ),
+    highly_sensitive = lst(
+      extract = glue("output/{cohort}/vax{vaxn}/extract/input_{carditis_type}carditis_severity.feather")
+    ),
+  )
+}
+
+action_carditis_hosp <- function(cohort, vaxn, subgroup) {
+  action(
+    name = glue("carditis_hosp_{cohort}_{vaxn}"),
+    run = glue("r:latest analysis/carditis_hospitalisation.R"),
+    arguments = c(cohort, vaxn, subgroup),
+    needs = namelesslst(
+      glue("extract_carditis_date_{cohort}_{vaxn}_myo"),
+      glue("extract_carditis_date_{cohort}_{vaxn}_peri"),
+      glue("carditis_{cohort}_{vaxn}"),
+    ),
+    moderately_sensitive = lst(
+      csv = glue("output/{cohort}/vax{vaxn}/carditis_severity/*tables.csv"),
+    )
+  )
+}
 # specify project ----
 
 ## defaults ----
@@ -496,7 +534,10 @@ actions_list <- splice(
   action_eventcounts("over12", 1, "all"),
   action_eventcounts("over12", 1, "prior_covid_infection"),
   action_combine("over12", 1),
-  action_carditis_severity("over12", 1),
+  action_carditis_severity("over12", 1, "all"),
+  action_extract_carditis_date("over12", 1, "myo"),
+  action_extract_carditis_date("over12", 1, "peri"),
+  action_carditis_hosp("over12", 1, "all"),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
@@ -540,7 +581,10 @@ actions_list <- splice(
   action_eventcounts("over12", 2, "all"),
   action_eventcounts("over12", 2, "prior_covid_infection"),
   action_combine("over12", 2),
-  action_carditis_severity("over12", 2),
+  action_carditis_severity("over12", 2, "all"),
+  action_extract_carditis_date("over12", 2, "myo"),
+  action_extract_carditis_date("over12", 2, "peri"),
+  action_carditis_hosp("over12", 2, "all"),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
@@ -592,7 +636,10 @@ actions_list <- splice(
   action_eventcounts("under12", 1, "all"),
   action_eventcounts("under12", 1, "prior_covid_infection"),
   action_combine("under12", 1),
-  action_carditis_severity("under12", 1),
+  action_carditis_severity("under12", 1, "all"),
+  action_extract_carditis_date("under12", 1, "myo"),
+  action_extract_carditis_date("under12", 1, "peri"),
+  action_carditis_hosp("under12", 1, "all"),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
@@ -636,7 +683,10 @@ actions_list <- splice(
   action_eventcounts("under12", 2, "all"),
   action_eventcounts("under12", 2, "prior_covid_infection"),
   action_combine("under12", 2),
-  action_carditis_severity("under12", 2),
+  action_carditis_severity("under12", 2, "all"),
+  action_extract_carditis_date("under12", 2, "myo"),
+  action_extract_carditis_date("under12", 2, "peri"),
+  action_carditis_hosp("under12", 2, "all"),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
