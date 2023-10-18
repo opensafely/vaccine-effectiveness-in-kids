@@ -537,7 +537,7 @@ actions_list <- splice(
   action_carditis_severity("over12", 1, "all"),
   action_extract_carditis_date("over12", 1, "myo"),
   action_extract_carditis_date("over12", 1, "peri"),
-  action_carditis_hosp("over12", 1, "all"),
+  action_carditis_hosp("over12", 1, "both"),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
@@ -584,7 +584,7 @@ actions_list <- splice(
   action_carditis_severity("over12", 2, "all"),
   action_extract_carditis_date("over12", 2, "myo"),
   action_extract_carditis_date("over12", 2, "peri"),
-  action_carditis_hosp("over12", 2, "all"),
+  action_carditis_hosp("over12", 2, "peri"),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
@@ -639,7 +639,7 @@ actions_list <- splice(
   action_carditis_severity("under12", 1, "all"),
   action_extract_carditis_date("under12", 1, "myo"),
   action_extract_carditis_date("under12", 1, "peri"),
-  action_carditis_hosp("under12", 1, "all"),
+  action_carditis_hosp("under12", 1, "peri"),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
@@ -686,7 +686,6 @@ actions_list <- splice(
   action_carditis_severity("under12", 2, "all"),
   action_extract_carditis_date("under12", 2, "myo"),
   action_extract_carditis_date("under12", 2, "peri"),
-  action_carditis_hosp("under12", 2, "all"),
   comment(
     "# # # # # # # # # # # # # # # # # # #",
     "Covid tests data",
