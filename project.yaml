@@ -1449,7 +1449,6 @@ actions:
   carditis_hosp_over12_2:
     run: r:latest analysis/carditis_hospitalisation.R over12 2 peri
     needs:
-    - extract_carditis_date_over12_2_myo
     - extract_carditis_date_over12_2_peri
     - carditis_over12_2
     outputs:
@@ -2184,7 +2183,6 @@ actions:
   carditis_hosp_under12_1:
     run: r:latest analysis/carditis_hospitalisation.R under12 1 peri
     needs:
-    - extract_carditis_date_under12_1_myo
     - extract_carditis_date_under12_1_peri
     - carditis_under12_1
     outputs:
