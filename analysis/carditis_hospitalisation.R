@@ -54,19 +54,32 @@ if (carditis == "myo" | carditis == "both") {
 
   spell_length <- myo_data_extract %>%
     mutate(
-      admission_length_1 = difftime(discharge_date_1, admission_date_1, unit = "days"),
-      admission_length_2 = difftime(discharge_date_2, admission_date_2, unit = "days"),
-      admission_length_3 = difftime(discharge_date_3, admission_date_3, unit = "days")
+      admission_days_1 = as.numeric(difftime(discharge_date_1, admission_date_1, unit = "days")),
+      admission_days_2 = as.numeric(difftime(discharge_date_2, admission_date_2, unit = "days")),
+      admission_days_3 = as.numeric(difftime(discharge_date_3, admission_date_3, unit = "days"))
     ) %>%
-    summarise(
-      admission_length_1 = range(admission_length_1, na.rm = T),
-      admission_length_2 = range(admission_length_2, na.rm = T),
-      admission_length_3 = range(admission_length_3, na.rm = T),
-      critical_care_days_1 = range(as.numeric(critical_care_days_1), na.rm = T),
-      critical_care_days_2 = range(as.numeric(critical_care_days_2), na.rm = T),
-      critical_care_days_3 = range(as.numeric(critical_care_days_3), na.rm = T)
-    )
-
+    select(contains("days")) %>%
+    mutate_if(is.factor, as.numeric) %>%
+    pivot_longer(
+      cols = contains("days"),
+      names_to = "length",
+      #   names_prefix = "wk",
+      values_to = "rank",
+      values_drop_na = F
+    ) %>%
+    group_by(length) %>%
+    summarise(across(contains("rank"),
+                     .fns =
+                       list(
+                         min = ~ min(., na.rm = T),
+                         median = ~ median(., na.rm = T),
+                         mean = ~ mean(., na.rm = T),
+                         stdev = ~ sd(., na.rm = T),
+                         q25 = ~ quantile(., 0.25, na.rm = T),
+                         q75 = ~ quantile(., 0.75, na.rm = T),
+                         max = ~ max(., na.rm = T)
+                       )
+    ))
   write_csv(spell_length, fs::path(output_dir, "myo_spell_length_ranges_tables.csv"))
 
   diagnosis <- myo_data_extract %>%

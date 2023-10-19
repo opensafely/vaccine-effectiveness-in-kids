@@ -459,10 +459,27 @@ action_carditis_hosp <- function(cohort, vaxn, subgroup) {
     name = glue("carditis_hosp_{cohort}_{vaxn}"),
     run = glue("r:latest analysis/carditis_hospitalisation.R"),
     arguments = c(cohort, vaxn, subgroup),
-    needs = namelesslst(
-      glue("extract_carditis_date_{cohort}_{vaxn}_myo"),
-      glue("extract_carditis_date_{cohort}_{vaxn}_peri"),
-      glue("carditis_{cohort}_{vaxn}"),
+    needs = c(
+      
+      if (subgroup == "both") {
+        namelesslst(
+          glue("extract_carditis_date_{cohort}_{vaxn}_myo"),
+          glue("extract_carditis_date_{cohort}_{vaxn}_peri"),
+          glue("carditis_{cohort}_{vaxn}"),
+        )
+      },
+      if (subgroup == "myo") {
+        namelesslst(
+          glue("extract_carditis_date_{cohort}_{vaxn}_myo"),
+          glue("carditis_{cohort}_{vaxn}"),
+        )
+      },
+      if (subgroup == "peri") {
+        namelesslst(
+          glue("extract_carditis_date_{cohort}_{vaxn}_peri"),
+          glue("carditis_{cohort}_{vaxn}"),
+        )
+      }
     ),
     moderately_sensitive = lst(
       csv = glue("output/{cohort}/vax{vaxn}/carditis_severity/*tables.csv"),
