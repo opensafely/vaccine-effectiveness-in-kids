@@ -328,9 +328,11 @@ action_km <- function(cohort, vaxn, subgroup, outcome) {
     needs = namelesslst(
       glue("process_controlfinal_{cohort}_{vaxn}"),
     ),
+    highly_sensitive = lst(
+      rds = glue("output/{cohort}/vax{vaxn}/models/km/{subgroup}/{outcome}/*.rds"),
+    ),
     moderately_sensitive = lst(
       # csv= glue("output/{cohort}/vax{vaxn}/models/km/{subgroup}/{outcome}/*.csv"),
-      rds = glue("output/{cohort}/vax{vaxn}/models/km/{subgroup}/{outcome}/*.rds"),
       png = glue("output/{cohort}/vax{vaxn}/models/km/{subgroup}/{outcome}/*.png"),
     )
   )
@@ -344,7 +346,7 @@ action_eventcounts <- function(cohort, vaxn, subgroup) {
     needs = namelesslst(
       glue("process_controlfinal_{cohort}_{vaxn}"),
     ),
-    moderately_sensitive = lst(
+    highly_sensitive = lst(
       rds = glue("output/{cohort}/vax{vaxn}/models/eventcounts/{subgroup}/*.rds"),
     )
   )
@@ -374,8 +376,10 @@ action_combine <- function(cohort, vaxn) {
         )
       )
     ),
-    moderately_sensitive = lst(
+    highly_sensitive = lst(
       rds = glue("output/{cohort}/vax{vaxn}/models/combined/*.csv"),
+    ),
+    moderately_sensitive = lst(
       png = glue("output/{cohort}/vax{vaxn}/models/combined/*.png"),
     )
   )
@@ -460,7 +464,6 @@ action_carditis_hosp <- function(cohort, vaxn, subgroup) {
     run = glue("r:latest analysis/carditis_hospitalisation.R"),
     arguments = c(cohort, vaxn, subgroup),
     needs = c(
-      
       if (subgroup == "both") {
         namelesslst(
           glue("extract_carditis_date_{cohort}_{vaxn}_myo"),
