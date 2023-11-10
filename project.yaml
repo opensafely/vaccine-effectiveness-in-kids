@@ -417,8 +417,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/postest/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/postest/*.png
 
   km_over12_1_all_emergency:
@@ -426,8 +427,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/emergency/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/emergency/*.png
 
   km_over12_1_all_covidemergency:
@@ -435,8 +437,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/covidemergency/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/covidemergency/*.png
 
   km_over12_1_all_covidadmitted:
@@ -444,8 +447,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/covidadmitted/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/covidadmitted/*.png
 
   km_over12_1_all_covidcritcare:
@@ -453,8 +457,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/covidcritcare/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/covidcritcare/*.png
 
   km_over12_1_all_coviddeath:
@@ -462,8 +467,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/coviddeath/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/coviddeath/*.png
 
   km_over12_1_all_noncoviddeath:
@@ -471,8 +477,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/noncoviddeath/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/noncoviddeath/*.png
 
   km_over12_1_all_admitted_unplanned:
@@ -480,8 +487,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/admitted_unplanned/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/admitted_unplanned/*.png
 
   km_over12_1_all_pericarditis:
@@ -489,8 +497,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/pericarditis/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/pericarditis/*.png
 
   km_over12_1_all_myocarditis:
@@ -498,8 +507,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/myocarditis/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/myocarditis/*.png
 
   km_over12_1_all_fracture:
@@ -507,8 +517,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/fracture/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/fracture/*.png
 
   km_over12_1_all_noncovidadmitted:
@@ -516,8 +527,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/noncovidadmitted/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/noncovidadmitted/*.png
 
   km_over12_1_all_outcome_vax_2:
@@ -525,8 +537,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/all/outcome_vax_2/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/all/outcome_vax_2/*.png
 
   km_over12_1_prior_covid_infection_postest:
@@ -534,8 +547,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/postest/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/postest/*.png
 
   km_over12_1_prior_covid_infection_emergency:
@@ -543,8 +557,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/emergency/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/emergency/*.png
 
   km_over12_1_prior_covid_infection_covidemergency:
@@ -552,8 +567,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/covidemergency/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/covidemergency/*.png
 
   km_over12_1_prior_covid_infection_covidadmitted:
@@ -561,8 +577,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/covidadmitted/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/covidadmitted/*.png
 
   km_over12_1_prior_covid_infection_covidcritcare:
@@ -570,8 +587,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/covidcritcare/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/covidcritcare/*.png
 
   km_over12_1_prior_covid_infection_coviddeath:
@@ -579,8 +597,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/coviddeath/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/coviddeath/*.png
 
   km_over12_1_prior_covid_infection_noncoviddeath:
@@ -588,8 +607,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/noncoviddeath/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/noncoviddeath/*.png
 
   km_over12_1_prior_covid_infection_admitted_unplanned:
@@ -597,8 +617,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/admitted_unplanned/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/admitted_unplanned/*.png
 
   km_over12_1_prior_covid_infection_pericarditis:
@@ -606,8 +627,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/pericarditis/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/pericarditis/*.png
 
   km_over12_1_prior_covid_infection_myocarditis:
@@ -615,8 +637,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/myocarditis/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/myocarditis/*.png
 
   km_over12_1_prior_covid_infection_fracture:
@@ -624,8 +647,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/fracture/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/fracture/*.png
 
   km_over12_1_prior_covid_infection_outcome_vax_2:
@@ -633,8 +657,9 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/km/prior_covid_infection/outcome_vax_2/*.rds
+      moderately_sensitive:
         png: output/over12/vax1/models/km/prior_covid_infection/outcome_vax_2/*.png
 
   eventcounts_over12_1_all:
@@ -642,7 +667,7 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/eventcounts/all/*.rds
 
   eventcounts_over12_1_prior_covid_infection:
@@ -650,7 +675,7 @@ actions:
     needs:
     - process_controlfinal_over12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/eventcounts/prior_covid_infection/*.rds
 
   combine_over12_1:
@@ -683,8 +708,9 @@ actions:
     - eventcounts_over12_1_all
     - eventcounts_over12_1_prior_covid_infection
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax1/models/combined/*.csv
+      moderately_sensitive:
         png: output/over12/vax1/models/combined/*.png
 
   carditis_over12_1:
@@ -1155,8 +1181,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/postest/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/postest/*.png
 
   km_over12_2_all_emergency:
@@ -1164,8 +1191,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/emergency/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/emergency/*.png
 
   km_over12_2_all_covidemergency:
@@ -1173,8 +1201,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/covidemergency/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/covidemergency/*.png
 
   km_over12_2_all_covidadmitted:
@@ -1182,8 +1211,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/covidadmitted/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/covidadmitted/*.png
 
   km_over12_2_all_covidcritcare:
@@ -1191,8 +1221,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/covidcritcare/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/covidcritcare/*.png
 
   km_over12_2_all_coviddeath:
@@ -1200,8 +1231,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/coviddeath/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/coviddeath/*.png
 
   km_over12_2_all_noncoviddeath:
@@ -1209,8 +1241,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/noncoviddeath/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/noncoviddeath/*.png
 
   km_over12_2_all_admitted_unplanned:
@@ -1218,8 +1251,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/admitted_unplanned/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/admitted_unplanned/*.png
 
   km_over12_2_all_pericarditis:
@@ -1227,8 +1261,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/pericarditis/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/pericarditis/*.png
 
   km_over12_2_all_myocarditis:
@@ -1236,8 +1271,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/myocarditis/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/myocarditis/*.png
 
   km_over12_2_all_fracture:
@@ -1245,8 +1281,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/fracture/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/fracture/*.png
 
   km_over12_2_all_outcome_vax_2:
@@ -1254,8 +1291,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/all/outcome_vax_2/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/all/outcome_vax_2/*.png
 
   km_over12_2_prior_covid_infection_postest:
@@ -1263,8 +1301,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/postest/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/postest/*.png
 
   km_over12_2_prior_covid_infection_emergency:
@@ -1272,8 +1311,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/emergency/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/emergency/*.png
 
   km_over12_2_prior_covid_infection_covidemergency:
@@ -1281,8 +1321,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/covidemergency/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/covidemergency/*.png
 
   km_over12_2_prior_covid_infection_covidadmitted:
@@ -1290,8 +1331,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/covidadmitted/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/covidadmitted/*.png
 
   km_over12_2_prior_covid_infection_covidcritcare:
@@ -1299,8 +1341,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/covidcritcare/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/covidcritcare/*.png
 
   km_over12_2_prior_covid_infection_coviddeath:
@@ -1308,8 +1351,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/coviddeath/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/coviddeath/*.png
 
   km_over12_2_prior_covid_infection_noncoviddeath:
@@ -1317,8 +1361,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/noncoviddeath/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/noncoviddeath/*.png
 
   km_over12_2_prior_covid_infection_admitted_unplanned:
@@ -1326,8 +1371,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/admitted_unplanned/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/admitted_unplanned/*.png
 
   km_over12_2_prior_covid_infection_pericarditis:
@@ -1335,8 +1381,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/pericarditis/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/pericarditis/*.png
 
   km_over12_2_prior_covid_infection_myocarditis:
@@ -1344,8 +1391,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/myocarditis/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/myocarditis/*.png
 
   km_over12_2_prior_covid_infection_fracture:
@@ -1353,8 +1401,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/fracture/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/fracture/*.png
 
   km_over12_2_prior_covid_infection_outcome_vax_2:
@@ -1362,8 +1411,9 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/km/prior_covid_infection/outcome_vax_2/*.rds
+      moderately_sensitive:
         png: output/over12/vax2/models/km/prior_covid_infection/outcome_vax_2/*.png
 
   eventcounts_over12_2_all:
@@ -1371,7 +1421,7 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/eventcounts/all/*.rds
 
   eventcounts_over12_2_prior_covid_infection:
@@ -1379,7 +1429,7 @@ actions:
     needs:
     - process_controlfinal_over12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/eventcounts/prior_covid_infection/*.rds
 
   combine_over12_2:
@@ -1412,8 +1462,9 @@ actions:
     - eventcounts_over12_2_all
     - eventcounts_over12_2_prior_covid_infection
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/over12/vax2/models/combined/*.csv
+      moderately_sensitive:
         png: output/over12/vax2/models/combined/*.png
 
   carditis_over12_2:
@@ -1889,8 +1940,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/postest/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/postest/*.png
 
   km_under12_1_all_emergency:
@@ -1898,8 +1950,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/emergency/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/emergency/*.png
 
   km_under12_1_all_covidemergency:
@@ -1907,8 +1960,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/covidemergency/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/covidemergency/*.png
 
   km_under12_1_all_covidadmitted:
@@ -1916,8 +1970,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/covidadmitted/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/covidadmitted/*.png
 
   km_under12_1_all_covidcritcare:
@@ -1925,8 +1980,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/covidcritcare/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/covidcritcare/*.png
 
   km_under12_1_all_coviddeath:
@@ -1934,8 +1990,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/coviddeath/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/coviddeath/*.png
 
   km_under12_1_all_noncoviddeath:
@@ -1943,8 +2000,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/noncoviddeath/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/noncoviddeath/*.png
 
   km_under12_1_all_admitted_unplanned:
@@ -1952,8 +2010,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/admitted_unplanned/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/admitted_unplanned/*.png
 
   km_under12_1_all_pericarditis:
@@ -1961,8 +2020,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/pericarditis/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/pericarditis/*.png
 
   km_under12_1_all_myocarditis:
@@ -1970,8 +2030,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/myocarditis/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/myocarditis/*.png
 
   km_under12_1_all_fracture:
@@ -1979,8 +2040,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/fracture/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/fracture/*.png
 
   km_under12_1_all_outcome_vax_2:
@@ -1988,8 +2050,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/all/outcome_vax_2/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/all/outcome_vax_2/*.png
 
   km_under12_1_prior_covid_infection_postest:
@@ -1997,8 +2060,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/postest/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/postest/*.png
 
   km_under12_1_prior_covid_infection_emergency:
@@ -2006,8 +2070,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/emergency/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/emergency/*.png
 
   km_under12_1_prior_covid_infection_covidemergency:
@@ -2015,8 +2080,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/covidemergency/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/covidemergency/*.png
 
   km_under12_1_prior_covid_infection_covidadmitted:
@@ -2024,8 +2090,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/covidadmitted/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/covidadmitted/*.png
 
   km_under12_1_prior_covid_infection_covidcritcare:
@@ -2033,8 +2100,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/covidcritcare/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/covidcritcare/*.png
 
   km_under12_1_prior_covid_infection_coviddeath:
@@ -2042,8 +2110,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/coviddeath/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/coviddeath/*.png
 
   km_under12_1_prior_covid_infection_noncoviddeath:
@@ -2051,8 +2120,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/noncoviddeath/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/noncoviddeath/*.png
 
   km_under12_1_prior_covid_infection_admitted_unplanned:
@@ -2060,8 +2130,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/admitted_unplanned/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/admitted_unplanned/*.png
 
   km_under12_1_prior_covid_infection_pericarditis:
@@ -2069,8 +2140,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/pericarditis/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/pericarditis/*.png
 
   km_under12_1_prior_covid_infection_myocarditis:
@@ -2078,8 +2150,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/myocarditis/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/myocarditis/*.png
 
   km_under12_1_prior_covid_infection_fracture:
@@ -2087,8 +2160,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/fracture/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/fracture/*.png
 
   km_under12_1_prior_covid_infection_outcome_vax_2:
@@ -2096,8 +2170,9 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/km/prior_covid_infection/outcome_vax_2/*.rds
+      moderately_sensitive:
         png: output/under12/vax1/models/km/prior_covid_infection/outcome_vax_2/*.png
 
   eventcounts_under12_1_all:
@@ -2105,7 +2180,7 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/eventcounts/all/*.rds
 
   eventcounts_under12_1_prior_covid_infection:
@@ -2113,7 +2188,7 @@ actions:
     needs:
     - process_controlfinal_under12_1
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/eventcounts/prior_covid_infection/*.rds
 
   combine_under12_1:
@@ -2146,8 +2221,9 @@ actions:
     - eventcounts_under12_1_all
     - eventcounts_under12_1_prior_covid_infection
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax1/models/combined/*.csv
+      moderately_sensitive:
         png: output/under12/vax1/models/combined/*.png
 
   carditis_under12_1:
@@ -2618,8 +2694,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/postest/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/postest/*.png
 
   km_under12_2_all_emergency:
@@ -2627,8 +2704,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/emergency/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/emergency/*.png
 
   km_under12_2_all_covidemergency:
@@ -2636,8 +2714,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/covidemergency/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/covidemergency/*.png
 
   km_under12_2_all_covidadmitted:
@@ -2645,8 +2724,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/covidadmitted/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/covidadmitted/*.png
 
   km_under12_2_all_covidcritcare:
@@ -2654,8 +2734,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/covidcritcare/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/covidcritcare/*.png
 
   km_under12_2_all_coviddeath:
@@ -2663,8 +2744,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/coviddeath/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/coviddeath/*.png
 
   km_under12_2_all_noncoviddeath:
@@ -2672,8 +2754,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/noncoviddeath/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/noncoviddeath/*.png
 
   km_under12_2_all_admitted_unplanned:
@@ -2681,8 +2764,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/admitted_unplanned/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/admitted_unplanned/*.png
 
   km_under12_2_all_pericarditis:
@@ -2690,8 +2774,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/pericarditis/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/pericarditis/*.png
 
   km_under12_2_all_myocarditis:
@@ -2699,8 +2784,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/myocarditis/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/myocarditis/*.png
 
   km_under12_2_all_fracture:
@@ -2708,8 +2794,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/fracture/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/fracture/*.png
 
   km_under12_2_all_outcome_vax_2:
@@ -2717,8 +2804,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/all/outcome_vax_2/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/all/outcome_vax_2/*.png
 
   km_under12_2_prior_covid_infection_postest:
@@ -2726,8 +2814,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/postest/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/postest/*.png
 
   km_under12_2_prior_covid_infection_emergency:
@@ -2735,8 +2824,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/emergency/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/emergency/*.png
 
   km_under12_2_prior_covid_infection_covidemergency:
@@ -2744,8 +2834,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/covidemergency/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/covidemergency/*.png
 
   km_under12_2_prior_covid_infection_covidadmitted:
@@ -2753,8 +2844,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/covidadmitted/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/covidadmitted/*.png
 
   km_under12_2_prior_covid_infection_covidcritcare:
@@ -2762,8 +2854,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/covidcritcare/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/covidcritcare/*.png
 
   km_under12_2_prior_covid_infection_coviddeath:
@@ -2771,8 +2864,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/coviddeath/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/coviddeath/*.png
 
   km_under12_2_prior_covid_infection_noncoviddeath:
@@ -2780,8 +2874,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/noncoviddeath/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/noncoviddeath/*.png
 
   km_under12_2_prior_covid_infection_admitted_unplanned:
@@ -2789,8 +2884,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/admitted_unplanned/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/admitted_unplanned/*.png
 
   km_under12_2_prior_covid_infection_pericarditis:
@@ -2798,8 +2894,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/pericarditis/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/pericarditis/*.png
 
   km_under12_2_prior_covid_infection_myocarditis:
@@ -2807,8 +2904,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/myocarditis/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/myocarditis/*.png
 
   km_under12_2_prior_covid_infection_fracture:
@@ -2816,8 +2914,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/fracture/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/fracture/*.png
 
   km_under12_2_prior_covid_infection_outcome_vax_2:
@@ -2825,8 +2924,9 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/km/prior_covid_infection/outcome_vax_2/*.rds
+      moderately_sensitive:
         png: output/under12/vax2/models/km/prior_covid_infection/outcome_vax_2/*.png
 
   eventcounts_under12_2_all:
@@ -2834,7 +2934,7 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/eventcounts/all/*.rds
 
   eventcounts_under12_2_prior_covid_infection:
@@ -2842,7 +2942,7 @@ actions:
     needs:
     - process_controlfinal_under12_2
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/eventcounts/prior_covid_infection/*.rds
 
   combine_under12_2:
@@ -2875,8 +2975,9 @@ actions:
     - eventcounts_under12_2_all
     - eventcounts_under12_2_prior_covid_infection
     outputs:
-      moderately_sensitive:
+      highly_sensitive:
         rds: output/under12/vax2/models/combined/*.csv
+      moderately_sensitive:
         png: output/under12/vax2/models/combined/*.png
 
   carditis_under12_2:

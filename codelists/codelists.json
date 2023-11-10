@@ -165,8 +165,8 @@
     "primis-covid19-vacc-uptake-covrx.csv": {
       "id": "primis-covid19-vacc-uptake/covrx/v1.2",
       "url": "https://codelists.opensafely.org/codelist/primis-covid19-vacc-uptake/covrx/v1.2/",
-      "downloaded_at": "2022-07-11 14:37:22.449038Z",
-      "sha": "a742a5d534eeea2cb222b15e885487d5218f7d0b"
+      "downloaded_at": "2023-11-10 09:58:22.422710Z",
+      "sha": "23aaa270aa758ebb3c8ee1f3980f4ab781b6f40c"
     },
     "primis-covid19-vacc-uptake-carer.csv": {
       "id": "primis-covid19-vacc-uptake/carer/v1",
@@ -207,8 +207,8 @@
     "opensafely-midazolam-end-of-life.csv": {
       "id": "opensafely/midazolam-end-of-life/4c1b3c89",
       "url": "https://codelists.opensafely.org/codelist/opensafely/midazolam-end-of-life/4c1b3c89/",
-      "downloaded_at": "2022-07-11 14:37:23.864074Z",
-      "sha": "6478270c4b76768366bcf585622905154fb32d91"
+      "downloaded_at": "2023-11-10 09:58:23.865610Z",
+      "sha": "0777be3f20b0a8baed68ce2cf3e7bb4eb5851cb6"
     },
     "opensafely-housebound.csv": {
       "id": "opensafely/housebound/5bc77310",
@@ -231,8 +231,8 @@
     "primis-covid19-vacc-uptake-immrx.csv": {
       "id": "primis-covid19-vacc-uptake/immrx/22e53df4",
       "url": "https://codelists.opensafely.org/codelist/primis-covid19-vacc-uptake/immrx/22e53df4/",
-      "downloaded_at": "2022-07-19 13:23:36.483261Z",
-      "sha": "1fc42a6e5ef8b428fad7b8a71549fefbbc9ac1a8"
+      "downloaded_at": "2023-11-10 09:58:25.111158Z",
+      "sha": "25eb64e8de6033fe7f1522546efc27ebf81f5aad"
     },
     "primis-covid19-vacc-uptake-dxt_chemo_cod.csv": {
       "id": "primis-covid19-vacc-uptake/dxt_chemo_cod/15677e26",
@@ -273,20 +273,20 @@
     "primis-covid19-vacc-uptake-astrx.csv": {
       "id": "primis-covid19-vacc-uptake/astrx/6f2f876e",
       "url": "https://codelists.opensafely.org/codelist/primis-covid19-vacc-uptake/astrx/6f2f876e/",
-      "downloaded_at": "2022-07-19 13:23:38.204602Z",
-      "sha": "509ff19b1767ae97a845fed67e92a241bc743a7d"
+      "downloaded_at": "2023-11-10 09:58:26.630788Z",
+      "sha": "c431ffdc72b996cf0996d76f77c32508603659e6"
     },
     "primis-covid19-vacc-uptake-astrxm1.csv": {
       "id": "primis-covid19-vacc-uptake/astrxm1/v1.5.3",
       "url": "https://codelists.opensafely.org/codelist/primis-covid19-vacc-uptake/astrxm1/v1.5.3/",
-      "downloaded_at": "2022-09-22 21:55:50.913351Z",
-      "sha": "de273df54d8c80e6457494da8d4f6da1b3600045"
+      "downloaded_at": "2023-11-10 09:58:26.970332Z",
+      "sha": "3bb91f31780887b9e236dc2585666b295cefdb17"
     },
     "primis-covid19-vacc-uptake-astrxm2.csv": {
       "id": "primis-covid19-vacc-uptake/astrxm2/v1.5.3",
       "url": "https://codelists.opensafely.org/codelist/primis-covid19-vacc-uptake/astrxm2/v1.5.3/",
-      "downloaded_at": "2022-09-22 21:55:51.094491Z",
-      "sha": "fbb45446f0f5be328ffd792eae223ee98673050e"
+      "downloaded_at": "2023-11-10 09:58:27.169115Z",
+      "sha": "36c98dcef8b6944d7f94b80e47f3e4c7949fd86a"
     },
     "primis-covid19-vacc-uptake-resp_cov.csv": {
       "id": "primis-covid19-vacc-uptake/resp_cov/608c6ec8",
