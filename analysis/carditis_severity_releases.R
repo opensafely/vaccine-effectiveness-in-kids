@@ -17,8 +17,8 @@ for (cohort in c("over12", "under12")) {
   for (vaxn in c(1L, 2L, 3L)) {
     dfappend <- NULL
     input_dir <- ghere("output", cohort, "vax{vaxn}", "carditis_severity")
-    if (file.exists(ghere(input_dir, "peri_admitted_tables.csv"))) {
-      peri_admitted <- read_csv(ghere(input_dir, "peri_admitted_tables.csv"))
+    if (file.exists(fs::path(input_dir, "peri_admitted_tables.csv"))) {
+      peri_admitted <- read_csv(fs::path(input_dir, "peri_admitted_tables.csv"))
       dfappend <- dfappend %>%
         bind_cols(
           cohort = paste0(cohort, "_", vaxn),
@@ -27,7 +27,7 @@ for (cohort in c("over12", "under12")) {
           peri_admitted = peri_admitted$admitted_to_hospital,
           peri_critical = peri_admitted$critical_care
         )
-      peri_length <- read_csv(ghere(input_dir, "peri_spell_length_ranges_tables.csv"))
+      peri_length <- read_csv(fs::path(input_dir, "peri_spell_length_ranges_tables.csv"))
       print(paste0(cohort, vaxn))
       dfappend <- dfappend %>%
         bind_cols(
@@ -43,8 +43,8 @@ for (cohort in c("over12", "under12")) {
         )
     }
 
-    if (file.exists(ghere(input_dir, "myo_admitted_tables.csv"))) {
-      myo_admitted <- read_csv(ghere(input_dir, "myo_admitted_tables.csv"))
+    if (file.exists(fs::path(input_dir, "myo_admitted_tables.csv"))) {
+      myo_admitted <- read_csv(fs::path(input_dir, "myo_admitted_tables.csv"))
       dfappend <- dfappend %>%
         bind_cols(
           myo_n = myo_admitted$n,
@@ -52,7 +52,7 @@ for (cohort in c("over12", "under12")) {
           myo_admitted = myo_admitted$admitted_to_hospital,
           myo_critical = myo_admitted$critical_care
         )
-      myo_length <- read_csv(ghere(input_dir, "myo_spell_length_ranges_tables.csv"))
+      myo_length <- read_csv(fs::path(input_dir, "myo_spell_length_ranges_tables.csv"))
       print(paste0(cohort, vaxn))
       dfappend <- dfappend %>%
         bind_cols(
@@ -70,6 +70,7 @@ for (cohort in c("over12", "under12")) {
     df <- df %>% bind_rows(dfappend)
   }
 }
+
 
 
 df_disclosive <- df %>%
