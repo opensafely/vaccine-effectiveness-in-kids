@@ -1,4 +1,3 @@
-
 # # # # # # # # # # # # # # # # # # # # #
 # Purpose: Get cumulative incidence(kaplan meier) estimates for specified outcome, and derive risk differences
 #  - import matched data
@@ -40,14 +39,12 @@ if (length(args) == 0) {
   vaxn <- as.integer("2")
   subgroup <- "prior_covid_infection"
   outcome <- "postest"
-  
 } else {
   removeobjects <- TRUE
   cohort <- args[[1]]
   vaxn <- as.integer(args[[2]])
   subgroup <- args[[3]]
   outcome <- args[[4]]
-  
 }
 
 ## get cohort-specific parameters study dates and parameters ----
@@ -245,7 +242,6 @@ ggsave(filename = fs::path(output_dir, "km_plot_rounded.png"), km_plot_rounded, 
 ## calculate quantities relating to cumulative incidence curve and their ratio / difference / etc
 
 kmcontrasts <- function(data, cuts = NULL) {
-
   # if cuts=NULL then fucntion provides daily estimates
   # if eg c(0,14,28,42,...) then follow u[ is split on these days
   # c(0, 140)

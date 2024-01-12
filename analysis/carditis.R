@@ -71,7 +71,7 @@ data_matched_myocarditis <-
     emergencyhosp_date,
   ) %>%
   mutate(
-    
+
     # follow-up time is up to and including censor date
     censor_date = pmin(
       dereg_date,
@@ -88,26 +88,28 @@ data_matched_myocarditis <-
     emergencyhosp_outcome = censor_indicator(emergencyhosp_date, matchcensor_date),
     death_outcome = censor_indicator(death_date, matchcensor_date),
   ) %>%
-  filter(myocarditis_outcome==T) 
+  filter(myocarditis_outcome == T)
 
 myocarditis_dates <-
   data_matched_myocarditis %>%
   select(
     # select only variables needed for models to save space
-    patient_id, 
+    patient_id,
     treated,
     myocarditis_date,
   )
 
 write_csv(myocarditis_dates, fs::path(output_dir, "myocarditis_dates.csv"))
 
-severity_myocarditis <- 
+severity_myocarditis <-
   data_matched_myocarditis %>%
-  summarise(myocarditis = sum(myocarditis_outcome),
+  summarise(
+    myocarditis = sum(myocarditis_outcome),
     across(
-    ends_with("outcome"),
-    ~ sum(.x) / myocarditis * 100
-  ))
+      ends_with("outcome"),
+      ~ sum(.x) / myocarditis * 100
+    )
+  )
 
 write_csv(severity_myocarditis, fs::path(output_dir, "myocarditis_severity.csv"))
 
@@ -127,7 +129,7 @@ data_matched_pericarditis <-
     emergencyhosp_date,
   ) %>%
   mutate(
-    
+
     # follow-up time is up to and including censor date
     censor_date = pmin(
       dereg_date,
@@ -144,13 +146,13 @@ data_matched_pericarditis <-
     emergencyhosp_outcome = censor_indicator(emergencyhosp_date, matchcensor_date),
     death_outcome = censor_indicator(death_date, matchcensor_date),
   ) %>%
-  filter(pericarditis_outcome==T) 
+  filter(pericarditis_outcome == T)
 
 pericarditis_dates <-
   data_matched_pericarditis %>%
   select(
     # select only variables needed for models to save space
-    patient_id, 
+    patient_id,
     treated,
     pericarditis_date,
   )
@@ -159,10 +161,11 @@ write_csv(pericarditis_dates, fs::path(output_dir, "pericarditis_dates.csv"))
 
 severity_pericarditis <-
   data_matched_pericarditis %>%
-  summarise(pericarditis = sum(pericarditis_outcome),
-            across(
-              ends_with("outcome"),
-              ~ sum(.x) / pericarditis * 100
-            ))
+  summarise(
+    pericarditis = sum(pericarditis_outcome),
+    across(
+      ends_with("outcome"),
+      ~ sum(.x) / pericarditis * 100
+    )
+  )
 write_csv(severity_pericarditis, fs::path(output_dir, "pericarditis_severity.csv"))
-

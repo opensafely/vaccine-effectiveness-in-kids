@@ -739,6 +739,18 @@ actions_list <- splice(
       csv = glue("output/release/*.csv"),
     ),
   ),
+  action(
+    name = "release_carditis",
+    run = glue("r:latest analysis/carditis_severity_releases.R"),
+    needs = namelesslst(
+      glue("carditis_hosp_over12_1"),
+      glue("carditis_hosp_over12_2"),
+      glue("carditis_hosp_under12_1"),
+    ),
+    moderately_sensitive = lst(
+      csv = glue("output/release_*/*_severity.csv"),
+    ),
+  ),
   comment("#### End ####")
 )
 

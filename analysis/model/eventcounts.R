@@ -1,4 +1,3 @@
-
 # # # # # # # # # # # # # # # # # # # # #
 # Purpose: report count of
 #  - import matched data
@@ -37,13 +36,11 @@ if (length(args) == 0) {
   cohort <- "over12"
   vaxn <- as.integer("2")
   subgroup <- "all"
-  
 } else {
   removeobjects <- TRUE
   cohort <- args[[1]]
   vaxn <- as.integer(args[[2]])
   subgroup <- args[[3]]
-  
 }
 
 
@@ -102,4 +99,3 @@ data_counts <- data_matched %>%
   )
 
 write_rds(data_counts, fs::path(output_dir, "testcounts.rds"))
-

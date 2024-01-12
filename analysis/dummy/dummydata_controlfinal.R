@@ -35,7 +35,7 @@ first_pfizerC_day <- as.integer(first_pfizerC_date - index_date)
 
 known_variables <- c(
   "index_date", "start_date", "end_date", "first_pfizerA_date", "first_pfizerC_date",
-  "index_day",  "start_day", "end_day", "first_pfizerA_day", "first_pfizerC_day"
+  "index_day", "start_day", "end_day", "first_pfizerA_day", "first_pfizerC_day"
 )
 
 
@@ -108,11 +108,11 @@ dummydata <- data_matchedcontrols %>%
     coviddeath_day = missing(death_day, 0.7),
     test_count = rpois(n = n(), 1),
     postest_count = rpois(n = n(), 0.1),
-    fractureemergency_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.9),
-    fractureadmitted_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.9),
-    fracturedeath_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.9),
-    outcome_vax_1_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.9),
-    outcome_vax_2_day = missing(as.integer(runif(n=n(), trial_day, trial_day+100)), 0.9)
+    fractureemergency_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 100)), 0.9),
+    fractureadmitted_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 100)), 0.9),
+    fracturedeath_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 100)), 0.9),
+    outcome_vax_1_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 100)), 0.9),
+    outcome_vax_2_day = missing(as.integer(runif(n = n(), trial_day, trial_day + 100)), 0.9)
   )
 
 

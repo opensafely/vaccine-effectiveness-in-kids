@@ -1,4 +1,3 @@
-
 # # # # # # # # # # # # # # # # # # # # #
 # Purpose: To gather level 4 files ("moderately sensitive") place in a single directory for easy review and release
 # # # # # # # # # # # # # # # # # # # # #
@@ -46,8 +45,7 @@ for (cohort in c("over12", "under12")) {
 
     ## covidtests ---
     fs::file_copy(ghere("output", cohort, "vax{vaxn}", "covidtests", "summary", "all", "covidtest_rates.csv"), fs::path(output_dir, glue("{cohort}_{vaxn}_covid_test_rates.csv")), overwrite = TRUE)
-    
-      }
+  }
 }
 
 fs::dir_create(here("output", "meta-release"))

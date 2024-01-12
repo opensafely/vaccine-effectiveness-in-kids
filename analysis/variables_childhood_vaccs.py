@@ -5,17 +5,26 @@ import pandas as pd
 
 child_vax = pd.read_csv("lib/childhood_vaccines/selected_childhood_vaccines.csv")
 
+
 def childhood_vaccs():
-    def childhood_vacc(
-        product_name
-    ):
+    def childhood_vacc(product_name):
         ## format product names for consistency
-        name = product_name.replace(" (PCV)","").replace(" + ", "_").replace(" - ", "_").replace("/", "_").replace("-", "_").replace(" ", "_").replace("+", "_").replace("(", "").replace(")", "")
+        name = (
+            product_name.replace(" (PCV)", "")
+            .replace(" + ", "_")
+            .replace(" - ", "_")
+            .replace("/", "_")
+            .replace("-", "_")
+            .replace(" ", "_")
+            .replace("+", "_")
+            .replace("(", "")
+            .replace(")", "")
+        )
         return {
-        name: patients.with_tpp_vaccination_record(
-            product_name_matches=product_name,
-            returning="binary_flag",
-        ),
+            name: patients.with_tpp_vaccination_record(
+                product_name_matches=product_name,
+                returning="binary_flag",
+            ),
         }
 
     childhood_vacc_variables = dict()

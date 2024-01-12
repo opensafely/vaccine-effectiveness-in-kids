@@ -1,4 +1,3 @@
-
 # # # # # # # # # # # # # # # # # # # # #
 # This script:
 # imports processed data
@@ -104,7 +103,6 @@ data_eligible <-
 
 
 local({
-
   ## sequential trial matching routine is as follows:
   # each daily trial includes all n people who were vaccinated on that day (treated=1) and
   # a sample of n controls (treated=0) who:
@@ -176,7 +174,7 @@ local({
       message("Skipping trial ", trial, " - No treated people eligible for inclusion.")
       next
     }
-    
+
     matching_candidates_i <-
       bind_rows(data_treated_i, data_control_i) %>%
       left_join(
@@ -192,7 +190,7 @@ local({
         by = c("patient_id", "treated")
       )
 
-    safely_matchit <- purrr::safely(matchit, quiet=FALSE)
+    safely_matchit <- purrr::safely(matchit, quiet = FALSE)
 
     # run matching algorithm
     obj_matchit_i <-
@@ -210,7 +208,6 @@ local({
       )[[1]]
 
     if (is.null(obj_matchit_i)) {
-      
       message("Skipping trial ", trial, " - No exact matches found.")
       next
     }
@@ -284,11 +281,11 @@ local({
       trial_date,
       controlistreated_date,
     )
-  
+
   # matching status for all treated people and their controls (if matched).
   # includes: unmatched treated; matched treated; matched control
 
-   data_matchstatus <<-
+  data_matchstatus <<-
     data_treated %>%
     left_join(data_matched %>% filter(treated == 1L, matched == 1L), by = c("patient_id", "treated", "trial_time", "trial_date")) %>%
     mutate(

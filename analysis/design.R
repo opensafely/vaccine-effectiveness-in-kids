@@ -67,7 +67,7 @@ study_params <- lst(
     minage = 5,
     maxage = 11,
     treatment = "pfizerC",
-    product_name ="COVID-19 mRNA Vaccine Comirnaty Children 5-11yrs 10mcg/0.2ml dose conc for disp for inj MDV (Pfizer)"
+    product_name = "COVID-19 mRNA Vaccine Comirnaty Children 5-11yrs 10mcg/0.2ml dose conc for disp for inj MDV (Pfizer)"
   )
 )
 
@@ -103,13 +103,13 @@ events_lookup <- tribble(
   # "emergencyhosp", "emergencyhosp_date", "Admission from A&E",
   "emergency", "emergency_date", "A&E attendance",
   "admitted_unplanned", "admitted_unplanned_date", "Unplanned hospitalisation",
-  "pericarditis","pericarditis_date","A&E attendance or hospital admittance with pericarditis",
-  "myocarditis","myocarditis_date","A&E attendance or hospital admittance with myocarditis",
+  "pericarditis", "pericarditis_date", "A&E attendance or hospital admittance with pericarditis",
+  "myocarditis", "myocarditis_date", "A&E attendance or hospital admittance with myocarditis",
   "fracture", "fracture_date", "Fracture",
-  "fractureemergency","fractureemergency_date","Fracture A&E attendance",
-  "fractureadmitted","fractureadmitted_date","Fracture hospitalisation",
-  "fracturedeath","fracturedeath_date","Fracture death",
-  "outcome_vax_2","outcome_vax_2_date","Second vax",
+  "fractureemergency", "fractureemergency_date", "Fracture A&E attendance",
+  "fractureadmitted", "fractureadmitted_date", "Fracture hospitalisation",
+  "fracturedeath", "fracturedeath_date", "Fracture death",
+  "outcome_vax_2", "outcome_vax_2_date", "Second vax",
 )
 
 
@@ -146,13 +146,13 @@ fup_params <- lst(
   # number of follow-up periods
   postbaselineperiods = 9,
   # where to split follow-up time after recruitment
-  postbaselinecuts = c(0, baselinedays, baselinedays + (1:postbaselineperiods)*postbaselinedays),
+  postbaselinecuts = c(0, baselinedays, baselinedays + (1:postbaselineperiods) * postbaselinedays),
   # maximum follow-up
-  maxfup = max(postbaselinecuts), 
+  maxfup = max(postbaselinecuts),
   # the following params are for covidtests only
   # number of prebaseline periods to summarise test behaviour
   prebaselineperiods = 3,
-  covidtestcuts = c(seq(-prebaselineperiods*postbaselinedays, -postbaselinedays, postbaselinedays), postbaselinecuts),
+  covidtestcuts = c(seq(-prebaselineperiods * postbaselinedays, -postbaselinedays, postbaselinedays), postbaselinecuts),
   # number of recurring events for the covidtests study definition
   n_any = 10,
   n_pos = 5
@@ -162,9 +162,9 @@ jsonlite::write_json(fup_params, path = here("lib", "design", "fup-params.json")
 
 
 # split into named objects until scripts updated
-for(i in 1:length(fup_params)){
-  assign(names(fup_params)[i],fup_params[[i]])
-} 
+for (i in 1:length(fup_params)) {
+  assign(names(fup_params)[i], fup_params[[i]])
+}
 
 
 
@@ -205,7 +205,6 @@ caliper_variables <- lst(
   vax2 = c(
     vax1_date = 7,
     NULL
-)
+  )
 )
 matching_variables <- c(exact_variables, names(caliper_variables))
-

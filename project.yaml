@@ -3080,5 +3080,15 @@ actions:
         txt: output/meta-release/*.txt
         csv: output/release/*.csv
 
+  release_carditis:
+    run: r:latest analysis/carditis_severity_releases.R
+    needs:
+    - carditis_hosp_over12_1
+    - carditis_hosp_over12_2
+    - carditis_hosp_under12_1
+    outputs:
+      moderately_sensitive:
+        csv: output/release_*/*_severity.csv
+
   ## #### End #### 
 
