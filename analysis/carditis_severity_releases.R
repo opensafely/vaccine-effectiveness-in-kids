@@ -100,7 +100,7 @@ df_ig_disc <- df %>%
     ),
     peri_admitted = case_when(
       peri_admitted == 0 ~ "none",
-      peri_admitted == 100 ~ "all"
+      peri_admitted == 100 ~ "all",
       peri_admitted < 51 ~ "less than 51%",
       peri_admitted >= 51 ~ "51% or more",
     ),
