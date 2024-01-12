@@ -93,40 +93,45 @@ df_ig_disc <- df %>%
   mutate(
     peri_emergency = case_when(
       peri_emergency == 0 ~ "none",
+      peri_emergency == 100 ~ "all",
       peri_emergency < 51 ~ "less than 51%",
       peri_emergency >= 51 ~ "51% or more",
-      peri_emergency == 100 ~ "all"
+
     ),
     peri_admitted = case_when(
       peri_admitted == 0 ~ "none",
+      peri_admitted == 100 ~ "all"
       peri_admitted < 51 ~ "less than 51%",
       peri_admitted >= 51 ~ "51% or more",
-      peri_admitted == 100 ~ "all"
     ),
     peri_critical = case_when(
       peri_critical == 0 ~ "none",
+      peri_critical == 100 ~ "all",
       peri_critical < 51 ~ "less than 51%",
       peri_critical >= 51 ~ "51% or more",
-      peri_critical == 100 ~ "all"
+
     ),
     peri_n = roundmid_any(peri_n, threshold),
     myo_emergency = case_when(
       myo_emergency == 0 ~ "none",
+      myo_emergency == 100 ~ "all",
       myo_emergency < 51 ~ "less than 51%",
       myo_emergency >= 51 ~ "51% or more",
-      myo_emergency == 100 ~ "all"
+
     ),
     myo_admitted = case_when(
       myo_admitted == 0 ~ "none",
+      myo_admitted == 100 ~ "all",
       myo_admitted < 51 ~ "less than 51%",
       myo_admitted >= 51 ~ "51% or more",
-      myo_admitted == 100 ~ "all"
+
     ),
     myo_critical = case_when(
       myo_critical == 0 ~ "none",
+      myo_critical == 100 ~ "all",
       myo_critical < 51 ~ "less than 51%",
-      myo_critical >= 51 ~ "51% or more",
-      myo_critical == 100 ~ "all"
+      myo_critical >= 51 ~ "51% or more"
+      
     ),
     myo_n = roundmid_any(myo_n, threshold)
   )
