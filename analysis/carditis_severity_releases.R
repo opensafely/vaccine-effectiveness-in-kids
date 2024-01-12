@@ -32,13 +32,13 @@ for (cohort in c("over12", "under12")) {
       dfappend <- dfappend %>%
         bind_cols(
           peri_length %>%
-            filter(grepl("critical", length)) %>%
+            filter(stringr::str_detect(length,"critical")) %>%
             summarise(peri_critical_maxlength = max(rank_max))
         )
       dfappend <- dfappend %>%
         bind_cols(
           peri_length %>%
-            filter(grepl("admission", length)) %>%
+            filter(stringr::str_detect(length,"admission")) %>%
             summarise(peri_admission_maxlength = max(rank_max))
         )
     }
@@ -57,13 +57,13 @@ for (cohort in c("over12", "under12")) {
       dfappend <- dfappend %>%
         bind_cols(
           myo_length %>%
-            filter(grepl("critical", length)) %>%
+            filter(stringr::str_detect(length,"critical")) %>%
             summarise(myo_critical_maxlength = max(rank_max))
         )
       dfappend <- dfappend %>%
         bind_cols(
           myo_length %>%
-            filter(grepl("admission", length)) %>%
+            filter(stringr::str_detect(length,"admission")) %>%
             summarise(myo_admission_maxlength = max(rank_max))
         )
     }
