@@ -30,10 +30,6 @@ for (cohort in c("over12", "under12")) {
       peri_length <- read_csv(fs::path(input_dir, "peri_spell_length_ranges_tables.csv")) %>%
         rename(episode_type = length)
 
-      print("spell length table")
-      print(peri_length)
-      print(str(peri_length))
-
       dfappend <- dfappend %>%
         bind_cols(
           peri_length %>%
@@ -49,8 +45,8 @@ for (cohort in c("over12", "under12")) {
     }
 
     if (file.exists(fs::path(input_dir, "myo_admitted_tables.csv"))) {
-      myo_admitted <- read_csv(fs::path(input_dir, "myo_admitted_tables.csv"))  
-      
+      myo_admitted <- read_csv(fs::path(input_dir, "myo_admitted_tables.csv"))
+
       dfappend <- dfappend %>%
         bind_cols(
           myo_n = myo_admitted$n,
@@ -60,7 +56,7 @@ for (cohort in c("over12", "under12")) {
         )
       myo_length <- read_csv(fs::path(input_dir, "myo_spell_length_ranges_tables.csv")) %>%
         rename(episode_type = length)
-      
+
       dfappend <- dfappend %>%
         bind_cols(
           myo_length %>%
@@ -99,38 +95,38 @@ df_ig_disc <- df %>%
     peri_emergency = case_when(
       peri_emergency == 0 ~ "none",
       peri_emergency < 51 ~ "less than 51%",
-      peri_emergency > 51 ~ "52% or more",
+      peri_emergency >= 51 ~ "51% or more",
       peri_emergency == 100 ~ "all"
     ),
     peri_admitted = case_when(
       peri_admitted == 0 ~ "none",
       peri_admitted < 51 ~ "less than 51%",
-      peri_admitted > 51 ~ "52% or more",
+      peri_admitted >= 51 ~ "51% or more",
       peri_admitted == 100 ~ "all"
     ),
     peri_critical = case_when(
       peri_critical == 0 ~ "none",
       peri_critical < 51 ~ "less than 51%",
-      peri_critical > 51 ~ "52% or more",
+      peri_critical >= 51 ~ "51% or more",
       peri_critical == 100 ~ "all"
     ),
     myo_n = roundmid_any(myo_n, threshold),
     myo_emergency = case_when(
       myo_emergency == 0 ~ "none",
       myo_emergency < 51 ~ "less than 51%",
-      myo_emergency > 51 ~ "52% or more",
+      myo_emergency >= 51 ~ "51% or more",
       myo_emergency == 100 ~ "all"
     ),
     myo_admitted = case_when(
       myo_admitted == 0 ~ "none",
       myo_admitted < 51 ~ "less than 51%",
-      myo_admitted > 51 ~ "52% or more",
+      myo_admitted >= 51 ~ "51% or more",
       myo_admitted == 100 ~ "all"
     ),
     myo_critical = case_when(
       myo_critical == 0 ~ "none",
       myo_critical < 51 ~ "less than 51%",
-      myo_critical > 51 ~ "52% or more",
+      myo_critical >= 51 ~ "51% or more",
       myo_critical == 100 ~ "all"
     )
   )
