@@ -91,7 +91,6 @@ write_csv(df_disclosive, fs::path(output_dir, "full_disclosure_carditis_severity
 
 df_ig_disc <- df %>%
   mutate(
-    peri_n = roundmid_any(peri_n, threshold),
     peri_emergency = case_when(
       peri_emergency == 0 ~ "none",
       peri_emergency < 51 ~ "less than 51%",
@@ -110,7 +109,7 @@ df_ig_disc <- df %>%
       peri_critical >= 51 ~ "51% or more",
       peri_critical == 100 ~ "all"
     ),
-    myo_n = roundmid_any(myo_n, threshold),
+    peri_n = roundmid_any(peri_n, threshold),
     myo_emergency = case_when(
       myo_emergency == 0 ~ "none",
       myo_emergency < 51 ~ "less than 51%",
@@ -128,7 +127,8 @@ df_ig_disc <- df %>%
       myo_critical < 51 ~ "less than 51%",
       myo_critical >= 51 ~ "51% or more",
       myo_critical == 100 ~ "all"
-    )
+    ),
+    myo_n = roundmid_any(myo_n, threshold)
   )
 
 write_csv(df_ig_disc, fs::path(output_dir, "ig_discussion_carditis_severity.csv"))
