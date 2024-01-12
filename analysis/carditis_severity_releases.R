@@ -27,18 +27,18 @@ for (cohort in c("over12", "under12")) {
           peri_admitted = peri_admitted$admitted_to_hospital,
           peri_critical = peri_admitted$critical_care
         )
-      peri_length <- read_csv(fs::path(input_dir, "peri_spell_length_ranges_tables.csv"))
+      peri_length <- read_csv(fs::path(input_dir, "peri_spell_length_ranges_tables.csv"), col_types = "cddddddd")
       print(paste0(cohort, vaxn))
       dfappend <- dfappend %>%
         bind_cols(
           peri_length %>%
-            filter(stringr::str_detect(length,"critical")) %>%
+            filter(grepl("critical", length)) %>%
             summarise(peri_critical_maxlength = max(rank_max))
         )
       dfappend <- dfappend %>%
         bind_cols(
           peri_length %>%
-            filter(stringr::str_detect(length,"admission")) %>%
+            filter(grepl("admission", length)) %>%
             summarise(peri_admission_maxlength = max(rank_max))
         )
     }
@@ -52,18 +52,18 @@ for (cohort in c("over12", "under12")) {
           myo_admitted = myo_admitted$admitted_to_hospital,
           myo_critical = myo_admitted$critical_care
         )
-      myo_length <- read_csv(fs::path(input_dir, "myo_spell_length_ranges_tables.csv"))
+      myo_length <- read_csv(fs::path(input_dir, "myo_spell_length_ranges_tables.csv"), col_types = "cddddddd")
       print(paste0(cohort, vaxn))
       dfappend <- dfappend %>%
         bind_cols(
           myo_length %>%
-            filter(stringr::str_detect(length,"critical")) %>%
+            filter(grepl("critical", length)) %>%
             summarise(myo_critical_maxlength = max(rank_max))
         )
       dfappend <- dfappend %>%
         bind_cols(
           myo_length %>%
-            filter(stringr::str_detect(length,"admission")) %>%
+            filter(grepl("admission", length)) %>%
             summarise(myo_admission_maxlength = max(rank_max))
         )
     }
