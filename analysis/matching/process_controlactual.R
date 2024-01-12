@@ -70,7 +70,6 @@ data_potential_matchstatus <- read_rds(ghere("output", cohort, "vax{vaxn}", "mat
 
 # use externally created dummy data if not running in the server
 if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
-
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
 
@@ -174,7 +173,7 @@ data_processed <-
     ),
     vax1_date = covid_vax_any_1_date,
     vax2_date = covid_vax_any_2_date,
-    #vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]])
+    # vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]])
   )
 
 # Define selection criteria ----
@@ -204,7 +203,7 @@ data_control <- data_criteria %>%
 
 data_treated <-
   left_join(
-    data_potential_matchstatus %>% 
+    data_potential_matchstatus %>%
       filter(treated == 1L),
     read_rds(ghere("output", cohort, "vax{vaxn}", "treated", "data_treatedeligible.rds")) %>%
       # remove all outcome variables that appear in variables_outcome.py

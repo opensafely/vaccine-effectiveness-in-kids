@@ -61,7 +61,6 @@ fs::dir_create(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}"
 # use externally created dummy data if not running in the server
 # check variables are as they should be
 if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
-
   # ideally in future this will check column existence and types from metadata,
   # rather than from a cohort-extractor-generated dummy data
   data_studydef_dummy <- read_feather(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
@@ -69,10 +68,10 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
     mutate(across(ends_with("_date"), as.Date))
 
   if (file.exists(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}_{vaxn}.feather"))) {
-    data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}_{vaxn}.feather")) 
+    data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}_{vaxn}.feather"))
   } else {
     source(ghere("analysis", "dummy", "dummydata.R"))
-    data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}_{vaxn}.feather")) 
+    data_custom_dummy <- read_feather(ghere("lib", "dummydata", "dummy_control_potential1_{cohort}_{vaxn}.feather"))
   }
 
 
@@ -119,7 +118,7 @@ if (Sys.getenv("OPENSAFELY_BACKEND") %in% c("", "expectations")) {
 
   data_extract <- data_custom_dummy
 } else {
-  data_extract <- read_feather(ghere("output", cohort, "vax{vaxn}",  "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
+  data_extract <- read_feather(ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "extract", "input_controlpotential.feather")) %>%
     # because date types are not returned consistently by cohort extractor
     mutate(across(ends_with("_date"), as.Date))
 }
@@ -171,7 +170,7 @@ data_processed <- data_extract %>%
     ),
     vax1_date = covid_vax_any_1_date,
     vax2_date = covid_vax_any_2_date,
-    #vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]])
+    # vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]])
   )
 
 
@@ -206,4 +205,4 @@ data_controlpotential <- data_criteria %>%
   left_join(data_processed, by = "patient_id") %>%
   droplevels()
 
-write_rds(data_controlpotential, ghere("output", cohort, "vax{vaxn}",  "matchround{matching_round}", "process", glue("data_controlpotential.rds")), compress = "gz")
+write_rds(data_controlpotential, ghere("output", cohort, "vax{vaxn}", "matchround{matching_round}", "process", glue("data_controlpotential.rds")), compress = "gz")

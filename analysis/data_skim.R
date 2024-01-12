@@ -14,15 +14,15 @@
 
 
 # import libraries
-library('tidyverse')
-library('here')
+library("tidyverse")
+library("here")
 source(here("lib", "functions", "redaction.R"))
 
 # import command-line arguments ----
 
-args <- commandArgs(trailingOnly=TRUE)
+args <- commandArgs(trailingOnly = TRUE)
 
-if(length(args)==0){
+if (length(args) == 0) {
   # use for interactive testing
   rds_file <- "output/data/data_processed.rds"
   output_dir <- "output/data_properties"
@@ -32,7 +32,7 @@ if(length(args)==0){
 }
 
 
-stopifnot("must pass an .rds file" = fs::path_ext(rds_file)=="rds")
+stopifnot("must pass an .rds file" = fs::path_ext(rds_file) == "rds")
 
 filenamebase <- fs::path_ext_remove(fs::path_file(rds_file))
 
@@ -42,15 +42,15 @@ data <- readr::read_rds(here(rds_file))
 
 # Output summary .txt ----
 
-options(width=200) # set output width for capture.output
+options(width = 200) # set output width for capture.output
 
-dir.create(here(output_dir), showWarnings = FALSE, recursive=TRUE)
+dir.create(here(output_dir), showWarnings = FALSE, recursive = TRUE)
 
 ## high-level variable overview ----
 capture.output(
   skimr::skim_without_charts(data),
   file = here(output_dir, paste0(filenamebase, "_skim", ".txt")),
-  split=FALSE
+  split = FALSE
 )
 
 ## list of column types ----
@@ -63,7 +63,7 @@ capture.output(
 ## tabulated data ----
 
 # delete file if it exists
-if(file.exists(here(output_dir, paste0(filenamebase, "_tabulate", ".txt")))){
+if (file.exists(here(output_dir, paste0(filenamebase, "_tabulate", ".txt")))) {
   file.remove(here(output_dir, paste0(filenamebase, "_tabulate", ".txt")))
 }
 
@@ -79,7 +79,7 @@ sumtabs_cat <-
 capture.output(
   walk2(sumtabs_cat$value, sumtabs_cat$name, print_cat),
   file = here(output_dir, paste0(filenamebase, "_tabulate", ".txt")),
-  append=FALSE
+  append = FALSE
 )
 
 
@@ -87,14 +87,16 @@ capture.output(
 sumtabs_num <-
   data %>%
   select(-ends_with("_id")) %>%
-  select(where(~ {!is.logical(.x) & is.numeric(.x) & !is.Date(.x)})) %>%
+  select(where(~ {
+    !is.logical(.x) & is.numeric(.x) & !is.Date(.x)
+  })) %>%
   map(redacted_summary_num) %>%
   enframe()
 
 capture.output(
   walk2(sumtabs_num$value, sumtabs_num$name, print_num),
   file = here(output_dir, paste0(filenamebase, "_tabulate", ".txt")),
-  append=TRUE
+  append = TRUE
 )
 
 ### dates ----
@@ -109,5 +111,5 @@ sumtabs_date <-
 capture.output(
   walk2(sumtabs_date$value, sumtabs_date$name, print_num),
   file = here(output_dir, paste0(filenamebase, "_tabulate", ".txt")),
-  append=TRUE
+  append = TRUE
 )

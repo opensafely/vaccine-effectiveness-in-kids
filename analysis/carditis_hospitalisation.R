@@ -69,16 +69,16 @@ if (carditis == "myo" | carditis == "both") {
     ) %>%
     group_by(length) %>%
     summarise(across(contains("rank"),
-                     .fns =
-                       list(
-                         min = ~ min(., na.rm = T),
-                         median = ~ median(., na.rm = T),
-                         mean = ~ mean(., na.rm = T),
-                         stdev = ~ sd(., na.rm = T),
-                         q25 = ~ quantile(., 0.25, na.rm = T),
-                         q75 = ~ quantile(., 0.75, na.rm = T),
-                         max = ~ max(., na.rm = T)
-                       )
+      .fns =
+        list(
+          min = ~ min(., na.rm = T),
+          median = ~ median(., na.rm = T),
+          mean = ~ mean(., na.rm = T),
+          stdev = ~ sd(., na.rm = T),
+          q25 = ~ quantile(., 0.25, na.rm = T),
+          q75 = ~ quantile(., 0.75, na.rm = T),
+          max = ~ max(., na.rm = T)
+        )
     ))
   write_csv(spell_length, fs::path(output_dir, "myo_spell_length_ranges_tables.csv"))
 

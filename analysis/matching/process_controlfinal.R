@@ -131,14 +131,15 @@ data_treated <-
 
 ## check controls are all unique---
 
-match_dups <- data_matchstatus %>% filter(treated==0L) %>%
+match_dups <- data_matchstatus %>%
+  filter(treated == 0L) %>%
   arrange(patient_id, matching_round) %>%
   group_by(patient_id) %>%
   mutate(
-   n_id = n()
+    n_id = n()
   ) %>%
   filter(
-    n_id>1
+    n_id > 1
   ) %>%
   select(patient_id, matching_round, match_id, trial_date)
 
@@ -156,7 +157,7 @@ data_control <-
     map_dfr(
       seq_len(n_matching_rounds),
       ~ {
-        read_rds(ghere("output", cohort,  "vax{vaxn}", glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))
+        read_rds(ghere("output", cohort, "vax{vaxn}", glue("matchround", .x), "actual", "data_successful_matchedcontrols.rds"))
       }
     ) %>% select(-match_id, -trial_date, -treated, -controlistreated_date, -matching_round), # remove to avoid clash with already-stored variables
     by = c("patient_id")
@@ -184,7 +185,7 @@ data_matched <-
   ) %>%
   # derive some variables
   mutate(
-    
+
     # earliest covid event after study start
     anycovid_date = pmin(postest_date, covidemergency_date, covidadmitted_date, covidcritcare_date, coviddeath_date, na.rm = TRUE),
     noncoviddeath_date = if_else(!is.na(death_date) & is.na(coviddeath_date), death_date, as.Date(NA_character_)),
@@ -203,24 +204,24 @@ data_matched <-
     ),
     vax1_date = covid_vax_any_1_date,
     vax2_date = covid_vax_any_2_date,
-    #vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]]),
+    # vax1_day = as.integer(vax1_date-dates[[glue("start_date{vaxn}")]]),
     time_since_vax1 = as.integer(trial_date - vax1_date),
-    fracture_date = pmin(fractureemergency_date, fractureadmitted_date, fracturedeath_date, na.rm=TRUE),
+    fracture_date = pmin(fractureemergency_date, fractureadmitted_date, fracturedeath_date, na.rm = TRUE),
   )
 
 
-write_rds(data_matched, ghere("output", cohort,  "vax{vaxn}", "match", glue("data_matched.rds")), compress = "gz")
+write_rds(data_matched, ghere("output", cohort, "vax{vaxn}", "match", glue("data_matched.rds")), compress = "gz")
 
 ### Treated
 data_matched %>%
-  filter(treated==1L) %>%
-  select(patient_id,trial_date)  %>%
+  filter(treated == 1L) %>%
+  select(patient_id, trial_date) %>%
   write_csv(ghere("output", cohort, "vax{vaxn}", "match", glue("data_matched_treated.csv.gz")))
 
 ### Control
 data_matched %>%
-  filter(treated==0L) %>%
-  select(patient_id,trial_date)  %>%
+  filter(treated == 0L) %>%
+  select(patient_id, trial_date) %>%
   write_csv(ghere("output", cohort, "vax{vaxn}", "match", glue("data_matched_control.csv.gz")))
 
 # matching status of all treated, eligible people ----
